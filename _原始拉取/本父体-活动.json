@@ -1,0 +1,114 @@
+[
+ {
+  "campaignId": "CAMP05",
+  "name": "词组主干",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 188,
+  "creationDate": "2026-07-07 14:25:00"
+ },
+ {
+  "campaignId": "CAMP01",
+  "name": "自动-主",
+  "state": "enabled",
+  "targetingType": "auto",
+  "budget": 50,
+  "creationDate": "2026-07-07 09:56:28"
+ },
+ {
+  "campaignId": "CAMP11",
+  "name": "ASIN定位-2",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 19,
+  "creationDate": "2026-07-15 16:58:19"
+ },
+ {
+  "campaignId": "CAMP13",
+  "name": "属性-吸盘款2",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 19,
+  "creationDate": "2026-07-30 10:14:36"
+ },
+ {
+  "campaignId": "CAMP03",
+  "name": "广泛大词",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 94,
+  "creationDate": "2026-07-07 10:05:44"
+ },
+ {
+  "campaignId": "CAMP06",
+  "name": "类目定位",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 19,
+  "creationDate": "2026-07-07 14:29:37"
+ },
+ {
+  "campaignId": "CAMP09",
+  "name": "属性-防霉款",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 19,
+  "creationDate": "2026-07-15 16:44:07"
+ },
+ {
+  "campaignId": "CAMP14",
+  "name": "品类主题",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 13,
+  "creationDate": "2026-07-30 10:37:23"
+ },
+ {
+  "campaignId": "CAMP08",
+  "name": "ASIN定位-1",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 19,
+  "creationDate": "2026-07-07 14:43:16"
+ },
+ {
+  "campaignId": "CAMP02",
+  "name": "精确主干",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 19,
+  "creationDate": "2026-07-07 10:03:05"
+ },
+ {
+  "campaignId": "CAMP10",
+  "name": "属性-吸盘款",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 19,
+  "creationDate": "2026-07-15 16:47:19"
+ },
+ {
+  "campaignId": "CAMP07",
+  "name": "自动-低价",
+  "state": "enabled",
+  "targetingType": "auto",
+  "budget": 13,
+  "creationDate": "2026-07-07 14:31:08"
+ },
+ {
+  "campaignId": "CAMP12",
+  "name": "ASIN定位-3",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 31,
+  "creationDate": "2026-07-15 17:05:49"
+ },
+ {
+  "campaignId": "CAMP04",
+  "name": "词组拓词",
+  "state": "enabled",
+  "targetingType": "manual",
+  "budget": 57,
+  "creationDate": "2026-07-07 11:05:30"
+ }
+]

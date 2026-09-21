@@ -1,0 +1,17 @@
+{
+ "COMP": "ko ?verr?a|covera|kowera|drem ?m?o|halvex|pellura|norvane|quorra|zentab|mirabel|mira and co|\\boryn\\b|velmo|brightoak|lumaset|cindra|noblis|clarity dock|outersy|fabule|sorvel|pierline|lastever|ulmaro|jadeclaw|clearwick|avenor|fairman|spiro|thando|kelso|zubies|portiva|serenova|comfitra|modalisa",
+ "OFF": "curtain|towel|toilet brush|pillow|kitchen|laundry|garage|\\bdoors?\\b|yoga|\\bpet\\b|\\bcar\\b|sofa|pool",
+ "INTENT": "tub|shower|washable|quick drying|senior|elderly",
+ "MOD": "washable|quick drying|suction cups?|mildew resistant|\\d+ ?inch|size|large|small|medium|long|thick|cushioned|pebble|senior|best|trial|rubber|pack|runner|rug|shower|resistant|safety|tub grip|pvc|loofah|maximum|strong|corner",
+ "CORE": "bathtub|bath tub",
+ "标签": {
+  "0": "0-自家品牌词",
+  "1": "1-核心大词",
+  "2": "2-属性长尾",
+  "3": "3-竞品品牌词",
+  "41": "4a-跑偏(需求不同)",
+  "42": "4b-泛词(不是浴缸淋浴用)",
+  "5": "5-ASIN投放"
+ },
+ "SKU正则": "^([A-Z])款-(单片|两片装)-(.+)$"
+}

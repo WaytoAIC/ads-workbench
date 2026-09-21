@@ -1,0 +1,90 @@
+{
+ "20260706": [
+  {
+   "salesNum": 120,
+   "refundNum": 3,
+   "cpcSalesNum": 145,
+   "adSpOrderNum": 89,
+   "adSbOrderNum": 18,
+   "adSbvOrderNum": 38,
+   "productSales": 2889.63,
+   "refundSales": -94.23,
+   "cpcCost": -964.73,
+   "cpcSpCost": -504.94,
+   "cpcSbCost": -181.79,
+   "cpcSbvCost": -278.0,
+   "cpcSales": 4260.66,
+   "adSpOrderSales": 2345.66,
+   "adSbOrderSales": 652.57,
+   "adSbvOrderSales": 1256.98,
+   "grossProfit": 474.34,
+   "grossProfitRate": 0.1642
+  }
+ ],
+ "20260713": [
+  {
+   "salesNum": 357,
+   "refundNum": 6,
+   "cpcSalesNum": 400,
+   "adSpOrderNum": 193,
+   "adSbOrderNum": 63,
+   "adSbvOrderNum": 145,
+   "productSales": 9198.57,
+   "refundSales": -188.45,
+   "cpcCost": -3165.82,
+   "cpcSpCost": -1412.71,
+   "cpcSbCost": -617.35,
+   "cpcSbvCost": -1135.76,
+   "cpcSales": 10756.91,
+   "adSpOrderSales": 5215.24,
+   "adSbOrderSales": 1888.64,
+   "adSbvOrderSales": 3619.14,
+   "grossProfit": 1634.08,
+   "grossProfitRate": 0.1776
+  }
+ ],
+ "20260720": [
+  {
+   "salesNum": 760,
+   "refundNum": 29,
+   "cpcSalesNum": 646,
+   "adSpOrderNum": 232,
+   "adSbOrderNum": 284,
+   "adSbvOrderNum": 130,
+   "productSales": 20074.5,
+   "refundSales": -966.16,
+   "cpcCost": -5174.21,
+   "cpcSpCost": -1677.93,
+   "cpcSbCost": -2221.99,
+   "cpcSbvCost": -1274.29,
+   "cpcSales": 18181.85,
+   "adSpOrderSales": 6446.51,
+   "adSbOrderSales": 8303.87,
+   "adSbvOrderSales": 3373.77,
+   "grossProfit": 4220.88,
+   "grossProfitRate": 0.2103
+  }
+ ],
+ "20260727": [
+  {
+   "salesNum": 840,
+   "refundNum": 54,
+   "cpcSalesNum": 666,
+   "adSpOrderNum": 255,
+   "adSbOrderNum": 235,
+   "adSbvOrderNum": 176,
+   "productSales": 21834.0,
+   "refundSales": -1821.13,
+   "cpcCost": -6066.1,
+   "cpcSpCost": -1901.63,
+   "cpcSbCost": -2208.47,
+   "cpcSbvCost": -1956.0,
+   "cpcSales": 18480.36,
+   "adSpOrderSales": 6781.93,
+   "adSbOrderSales": 6814.75,
+   "adSbvOrderSales": 4851.05,
+   "grossProfit": 4561.4,
+   "grossProfitRate": 0.2089
+  }
+ ]
+}

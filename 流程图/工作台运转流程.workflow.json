@@ -1,0 +1,310 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "广告周检工作台：一圈 Loop 是怎么转的",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": {
+          "label": "人做的"
+        },
+        "backend": {
+          "label": "Agent 做的"
+        },
+        "database": {
+          "label": "存储"
+        },
+        "security": {
+          "label": "验证与异常"
+        },
+        "messagebus": {
+          "label": "正常停"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "human",
+      "label": "人（老板／广告运营／供应链）"
+    },
+    {
+      "id": "agent",
+      "label": "Agent（Loop 六动作）"
+    },
+    {
+      "id": "stops",
+      "label": "停与异常",
+      "variant": "exception"
+    },
+    {
+      "id": "state",
+      "label": "状态库（本机 SQLite）"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p-read",
+      "label": "读状态 · 做判断",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "p-work",
+      "label": "干活 · 验证",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p-hand",
+      "label": "写状态 · 停下 · 人接手",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "inputs",
+    "read",
+    "decide",
+    "run",
+    "verify",
+    "write",
+    "stop",
+    "review"
+  ],
+  "nodes": [
+    {
+      "id": "inputs",
+      "lane": "human",
+      "col": 0,
+      "type": "frontend",
+      "label": "填输入 · 选取舍",
+      "sublabel": "目标、到仓、阶段",
+      "width": 144
+    },
+    {
+      "id": "execute",
+      "lane": "human",
+      "col": 3,
+      "type": "frontend",
+      "label": "人执行",
+      "sublabel": "去后台上传清单",
+      "width": 144
+    },
+    {
+      "id": "review",
+      "lane": "human",
+      "col": 5,
+      "type": "frontend",
+      "label": "人检查",
+      "sublabel": "确认或驳回写理由",
+      "width": 132
+    },
+    {
+      "id": "read",
+      "lane": "agent",
+      "col": 0,
+      "type": "backend",
+      "label": "① 读取状态",
+      "sublabel": "读回人点过的",
+      "width": 144
+    },
+    {
+      "id": "decide",
+      "lane": "agent",
+      "col": 1,
+      "type": "backend",
+      "label": "② 判断下一步",
+      "sublabel": "输入变了才跑",
+      "width": 144
+    },
+    {
+      "id": "run",
+      "lane": "agent",
+      "col": 2,
+      "type": "backend",
+      "label": "③ 执行",
+      "sublabel": "找异常，出清单",
+      "tag": "只读报表，不碰后台",
+      "width": 144
+    },
+    {
+      "id": "verify",
+      "lane": "agent",
+      "col": 3,
+      "type": "security",
+      "label": "④ 验证",
+      "sublabel": "7 项底线",
+      "width": 144
+    },
+    {
+      "id": "write",
+      "lane": "agent",
+      "col": 4,
+      "type": "backend",
+      "label": "⑤ 写入状态",
+      "sublabel": "新动作一律待确认",
+      "width": 144
+    },
+    {
+      "id": "stop",
+      "lane": "agent",
+      "col": 5,
+      "type": "backend",
+      "label": "⑥ 判断停止",
+      "sublabel": "停下等人",
+      "width": 132
+    },
+    {
+      "id": "halt",
+      "lane": "stops",
+      "col": 1,
+      "type": "messagebus",
+      "label": "不跑",
+      "sublabel": "不重复派活",
+      "width": 144
+    },
+    {
+      "id": "problem",
+      "lane": "stops",
+      "col": 2,
+      "type": "security",
+      "label": "遇到问题",
+      "sublabel": "交人，旧结果不动",
+      "width": 144
+    },
+    {
+      "id": "db",
+      "lane": "state",
+      "col": 5,
+      "type": "database",
+      "label": "状态库",
+      "sublabel": "任务·动作·行动卡",
+      "width": 132
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-trigger",
+      "from": "inputs",
+      "to": "read",
+      "label": "点「跑一圈」",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e-read-decide",
+      "from": "read",
+      "to": "decide",
+      "variant": "default",
+      "role": "main"
+    },
+    {
+      "id": "e-decide-run",
+      "from": "decide",
+      "to": "run",
+      "label": "首次／输入变了",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e-run-verify",
+      "from": "run",
+      "to": "verify",
+      "variant": "default",
+      "role": "main"
+    },
+    {
+      "id": "e-verify-write",
+      "from": "verify",
+      "to": "write",
+      "label": "全过",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e-write-stop",
+      "from": "write",
+      "to": "stop",
+      "variant": "default",
+      "role": "main"
+    },
+    {
+      "id": "e-stop-review",
+      "from": "stop",
+      "to": "review",
+      "label": "停下等人",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e-review-execute",
+      "from": "review",
+      "to": "execute",
+      "label": "已确认的",
+      "variant": "default",
+      "role": "return"
+    },
+    {
+      "id": "e-next-loop",
+      "from": "execute",
+      "to": "inputs",
+      "label": "到复盘日／改输入",
+      "variant": "dashed",
+      "role": "return"
+    },
+    {
+      "id": "e-decide-halt",
+      "from": "decide",
+      "to": "halt",
+      "label": "没待处理／输入没变",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e-decide-problem",
+      "from": "decide",
+      "to": "problem",
+      "label": "缺输入",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e-verify-problem",
+      "from": "verify",
+      "to": "problem",
+      "label": "不过：恢复上一份",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e-write-db",
+      "from": "write",
+      "to": "db",
+      "label": "旧的未确认作废",
+      "variant": "default",
+      "role": "branch"
+    },
+    {
+      "id": "e-review-db",
+      "from": "review",
+      "to": "db",
+      "label": "人点的也入库",
+      "variant": "default",
+      "role": "branch"
+    },
+    {
+      "id": "e-db-read",
+      "from": "db",
+      "to": "read",
+      "label": "下一圈先读回",
+      "variant": "emphasis",
+      "role": "return"
+    }
+  ]
+}

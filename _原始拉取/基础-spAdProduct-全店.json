@@ -1,0 +1,542 @@
+[
+ {
+  "campaignId": "CAMP04",
+  "asin": "C03",
+  "sku": "A款-单片-47x17",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP09",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C03",
+  "sku": "A款-单片-47x17",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C03",
+  "sku": "A款-单片-47x17",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C07",
+  "sku": "A款-单片-40x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "asin": "C07",
+  "sku": "A款-单片-40x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C03",
+  "sku": "A款-单片-47x17",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP13",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "asin": "C05",
+  "sku": "A款-单片-28x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP11",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C21",
+  "sku": "B款-单片-40x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C03",
+  "sku": "A款-单片-47x17",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP04",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C07",
+  "sku": "A款-单片-40x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "asin": "C02",
+  "sku": "A款-单片-27x27",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "asin": "C02",
+  "sku": "A款-单片-27x27",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP04",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP14",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C02",
+  "sku": "A款-单片-27x27",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C05",
+  "sku": "A款-单片-28x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C01",
+  "sku": "A款-单片-21x21",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C05",
+  "sku": "A款-单片-28x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C06",
+  "sku": "A款-单片-24x14",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP14",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "asin": "C06",
+  "sku": "A款-单片-24x14",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C19",
+  "sku": "B款-单片-28x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C02",
+  "sku": "A款-单片-27x27",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP11",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP08",
+  "asin": "C03",
+  "sku": "A款-单片-47x17",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C06",
+  "sku": "A款-单片-24x14",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP13",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C01",
+  "sku": "A款-单片-21x21",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C05",
+  "sku": "A款-单片-28x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C01",
+  "sku": "A款-单片-21x21",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "asin": "C06",
+  "sku": "A款-单片-24x14",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C01",
+  "sku": "A款-单片-21x21",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C02",
+  "sku": "A款-单片-27x27",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C06",
+  "sku": "A款-单片-24x14",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP11",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C07",
+  "sku": "A款-单片-40x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP04",
+  "asin": "C01",
+  "sku": "A款-单片-21x21",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C02",
+  "sku": "A款-单片-27x27",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C06",
+  "sku": "A款-单片-24x14",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "asin": "C07",
+  "sku": "A款-单片-40x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C03",
+  "sku": "A款-单片-47x17",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C02",
+  "sku": "A款-单片-27x27",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C06",
+  "sku": "A款-单片-24x14",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP14",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C05",
+  "sku": "A款-单片-28x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C01",
+  "sku": "A款-单片-21x21",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "asin": "C05",
+  "sku": "A款-单片-28x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C04",
+  "sku": "A款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C01",
+  "sku": "A款-单片-21x21",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C07",
+  "sku": "A款-单片-40x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C03",
+  "sku": "A款-单片-47x17",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "asin": "C07",
+  "sku": "A款-单片-40x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C06",
+  "sku": "A款-单片-24x14",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "asin": "C05",
+  "sku": "A款-单片-28x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "asin": "C02",
+  "sku": "A款-单片-27x27",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C05",
+  "sku": "A款-单片-28x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP01",
+  "asin": "C07",
+  "sku": "A款-单片-40x16",
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP06",
+  "asin": "C18",
+  "sku": "B款-单片-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "asin": "C01",
+  "sku": "A款-单片-21x21",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "asin": "C11",
+  "sku": "A款-两片装-35x16",
+  "state": "enabled"
+ }
+]

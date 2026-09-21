@@ -1,0 +1,104 @@
+[
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "mildew resistant mat anti slip",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "non slip travel strong mat",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "keywordText": "skid free bathtub mat anti slip",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "keywordText": "mirabel bathtub mat anti slip",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "mildew resistant trusted mat non slip",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "nonslip bathtub",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "keywordText": "bathtub mat non slip machine washable",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "non slip rugs",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "kovera mat",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "non slip mildew resistant mat",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "shower curtain",
+  "matchType": "negativePhrase",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "bath towels non slip",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "pellura shower runners",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "mildew resistant runners",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "keywordText": "dremo non slip",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "keywordText": "shower curtain mat non slip",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "keywordText": "kovera all day comfort runner rugs",
+  "matchType": "negativeExact",
+  "state": "enabled"
+ }
+]

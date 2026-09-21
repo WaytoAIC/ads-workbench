@@ -1,0 +1,380 @@
+[
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "nonslip bathtub mat",
+  "matchType": "phrase",
+  "bid": 0.82,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP14",
+  "keywordText": "keyword-group=\"category\"",
+  "matchType": "theme",
+  "bid": 0.69,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "nonslip bathtub mat machine washable",
+  "matchType": "phrase",
+  "bid": 1.1,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "non slip bathtub mat with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "machine washable bathtub mat non slip",
+  "matchType": "phrase",
+  "bid": 1.1,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "anti slip bath towel mat with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "bathtub mat non slip",
+  "matchType": "exact",
+  "bid": 1.06,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "shower stall runner rugs",
+  "matchType": "exact",
+  "bid": 1.06,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "bathtub mat non slip",
+  "matchType": "phrase",
+  "bid": 1.1,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "non slip bathtub mat",
+  "matchType": "exact",
+  "bid": 1.06,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "keywordText": "shower mildew resistant mat",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "non slip shower mat machine washable with strong suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "keywordText": "nonslip mildew resistant mat tub draining",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "keywordText": "non skid bathtub mat",
+  "matchType": "phrase",
+  "bid": 0.94,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "bathtub runner rugs with trusted suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "nonslip bathtub mat machine washable with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "machine washable bathtub runner rugs non slip with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "nonslip bathtub mat machine washable",
+  "matchType": "exact",
+  "bid": 1.06,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "non slip toilet brushes with suction cups compact",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "keywordText": "mildew resistant shower stall mats non slip",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "keywordText": "ulmaro non slip bathtub rugs mildew resistant",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "anti slip bathtub mat machine washable",
+  "matchType": "phrase",
+  "bid": 1.1,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "shower stall runner rugs",
+  "matchType": "phrase",
+  "bid": 1.1,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "bathtub runner rugs with trusted suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "keywordText": "runners for bathtub anti slip",
+  "matchType": "phrase",
+  "bid": 1.05,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "non slip mat for bathtub machine washable",
+  "matchType": "phrase",
+  "bid": 1.1,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "shower stall mat non slip",
+  "matchType": "phrase",
+  "bid": 0.82,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "non slip shower stall mat strong and original with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "keywordText": "bathtub rugs non slip",
+  "matchType": "phrase",
+  "bid": 1.05,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "non slip mat for bathtub machine washable",
+  "matchType": "exact",
+  "bid": 1.06,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "keywordText": "bathtub bath mat non slip",
+  "matchType": "phrase",
+  "bid": 1.05,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "non slip bathtub mat with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "keywordText": "bathtub mat non slip",
+  "matchType": "broad",
+  "bid": 1.1,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "anti slip bathtub mat machine washable",
+  "matchType": "exact",
+  "bid": 1.06,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "anti slip bath towel mat with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "nonslip bathtub mat with suction cups",
+  "matchType": "broad",
+  "bid": 1.17,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "keywordText": "mildew resistant trusted bathtub mat non slip",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "nonslip bathtub rugs with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "nonslip bathtub mat",
+  "matchType": "exact",
+  "bid": 1.06,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "thick tub showers machine washable strong suction cups rugs non slip",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "non slip shower stall mat strong and original with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "machine washable bathtub mat non slip",
+  "matchType": "exact",
+  "bid": 0.98,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "keywordText": "mildew resistant shower stall mat",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "keywordText": "mildew resistant non slip bathtub mat",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "keywordText": "mildew resistant bathtub mat non slip",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "nonslip bathtub mat machine washable with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "fairman non slip shower stall mat with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "keywordText": "non slip bathtub mat",
+  "matchType": "phrase",
+  "bid": 1.1,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "thick tub showers machine washable strong suction cups rugs non slip",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "nonslip bathtub rugs with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "keywordText": "shower stall mat non slip",
+  "matchType": "exact",
+  "bid": 1.06,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "non slip shower mat machine washable with strong suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "keywordText": "machine washable bathtub runner rugs non slip with suction cups",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "keywordText": "non slip toilet brushes with suction cups compact",
+  "matchType": "broad",
+  "bid": 1.02,
+  "state": "enabled"
+ }
+]
