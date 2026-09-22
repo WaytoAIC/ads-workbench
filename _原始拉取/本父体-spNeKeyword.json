@@ -7,7 +7,7 @@
  },
  {
   "campaignId": "CAMP01",
-  "keywordText": "non slip travel strong mat",
+  "keywordText": "non slip floor mat",
   "matchType": "negativeExact",
   "state": "enabled"
  },
@@ -43,13 +43,13 @@
  },
  {
   "campaignId": "CAMP01",
-  "keywordText": "non slip rugs",
+  "keywordText": "non slip bath rugs",
   "matchType": "negativeExact",
   "state": "enabled"
  },
  {
   "campaignId": "CAMP01",
-  "keywordText": "kovera mat",
+  "keywordText": "kovera bath mat",
   "matchType": "negativeExact",
   "state": "enabled"
  },
@@ -73,7 +73,7 @@
  },
  {
   "campaignId": "CAMP01",
-  "keywordText": "pellura shower runners",
+  "keywordText": "pellura shower mat",
   "matchType": "negativeExact",
   "state": "enabled"
  },
@@ -97,7 +97,7 @@
  },
  {
   "campaignId": "CAMP03",
-  "keywordText": "kovera all day comfort runner rugs",
+  "keywordText": "kovera extra long bath mat",
   "matchType": "negativeExact",
   "state": "enabled"
  }

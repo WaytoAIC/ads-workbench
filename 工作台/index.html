@@ -53,12 +53,19 @@ tr.void td{color:var(--muted);text-decoration:line-through}tr.void td:last-child
 .log{max-height:300px;overflow:auto;font-size:12.5px}.log div{padding:5px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:118px 64px 78px 1fr;gap:8px}.log span{color:var(--ink2)}
 .empty{text-align:center;padding:60px 20px}.empty p{color:var(--ink2);max-width:560px;margin:8px auto 18px}
 #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:80vw}#toast.show{opacity:1}
+body.demo{font-size:17.5px}body.demo table{font-size:16px}body.demo th,body.demo td{padding:9px 10px}body.demo .tile .v{font-size:34px}body.demo .tile .l,body.demo .tile .s{font-size:14px}
+body.demo .lstep .d{font-size:14px;-webkit-line-clamp:unset}body.demo .lstep .t{font-size:15px}body.demo h2{font-size:22px}body.demo .col ol,body.demo .col ul{font-size:15px}body.demo .opt p,body.demo .opt .c{font-size:14px}
+body.demo #s4 details table th:first-child,body.demo #s4 details table td:first-child{display:none}body.demo .btn.sm{font-size:14px;padding:5px 12px}
+.banner{border-left:4px solid var(--warn);background:var(--tag);border-radius:0 10px 10px 0;padding:12px 16px;margin:0 0 14px;font-size:16px}.banner b{font-weight:600}body.demo .banner{font-size:19px}
+.cmp{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:14px}.cmp b{font-size:17px}.cmp .chg{color:var(--ink2)}.cmp .chg b{font-size:14px;color:var(--ink)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:60}#modal.show{display:flex}#modal .box{background:var(--surface);color:var(--ink);border-radius:14px;padding:22px 26px;max-width:560px;font-size:18px;line-height:1.6;box-shadow:0 10px 40px rgba(0,0,0,.25);border-left:6px solid var(--critical)}#modal .box button{margin-top:14px}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.opts{grid-template-columns:repeat(2,1fr)}.loop{grid-template-columns:repeat(3,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
 @media(max-width:620px){.kpis{grid-template-columns:repeat(2,1fr)}.opts,.loop{grid-template-columns:1fr}main,.bar,nav{padding-left:16px;padding-right:16px}.log div{grid-template-columns:1fr 1fr}}
 </style></head><body>
 <header><div class="bar">
   <div class="brand"><b>广告周检工作台</b><span id="meta">加载中…</span></div>
   <span class="pill" id="badge" title=""></span>
+  <label class="pill" title="投屏用：字号加大、六格慢放、拦截提示改成弹层"><input type="checkbox" id="demo" style="margin:0 4px 0 0"> 演示模式</label>
   <label class="pill">我是 <select id="who" style="border:0;padding:0 2px;background:transparent"></select></label>
   <span class="pill" id="tstatus"><i class="dot"></i><span></span></span>
   <a class="btn" href="/arch" target="_blank">架构图</a>
@@ -67,7 +74,7 @@ tr.void td{color:var(--muted);text-decoration:line-through}tr.void td:last-child
   <button class="btn ghost" id="reset">重置</button>
   <button class="btn primary" id="run">跑一圈</button>
 </div><nav><a href="#loop">Loop 六动作</a><a href="#s1">① 发现异常</a><a href="#s2">② 判断原因</a><a href="#s3">③ 制定动作</a><a href="#s4">④ 调用工具执行</a><a href="#s5">⑤ 复盘学习</a></nav></header>
-<main id="app"></main><div id="toast"></div>
+<main id="app"></main><div id="toast"></div><div id="modal" onclick="this.classList.remove('show')"><div class="box"><div id="modalmsg"></div><button class="btn primary" onclick="document.getElementById('modal').classList.remove('show')">知道了</button></div></div>
 <script>
 const $=s=>document.querySelector(s), h=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const md=s=>h(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/`(.+?)`/g,"<code>$1</code>");
@@ -75,7 +82,9 @@ const usd=v=>"$"+Math.round(v).toLocaleString("en-US"), pct=(v,n=1)=>(v*100).toF
 let S=null, UI={tab:"分组账",openGroups:new Set(),showVoid:false,stFilter:"全部",opts:null,rejecting:null,openSteps:new Set(),playing:false};
 const who=()=>$("#who").value;
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),3800)}
-async function api(path,body){const r=await fetch(path,body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({who:who(),...body})}:{});const j=await r.json().catch(()=>({}));if(!r.ok){toast(j.error||("出错了："+r.status));throw new Error(j.error)}return j}
+async function api(path,body){const r=await fetch(path,body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({who:who(),...body})}:{});const j=await r.json().catch(()=>({}));if(!r.ok){modal(j.error||("出错了："+r.status));throw new Error(j.error)}return j}
+function modal(m){document.getElementById("modalmsg").textContent=m;document.getElementById("modal").classList.add("show")}
+const isDemo=()=>document.body.classList.contains("demo");
 const ST={"待确认":"--st-wait","已确认":"--st-ok","驳回":"--st-rej","已执行":"--st-done","已验证":"--st-ver","作废":"--st-void"}, ST_ORDER=["待确认","已确认","已执行","已验证","驳回","作废"];
 const stHtml=s=>`<span class="st"><i style="background:var(${ST[s]})"></i>${h(s)}</span>`;
 const ICON={critical:`<svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1l6.2 11H.8z" fill="var(--critical)"/><rect x="6.3" y="5" width="1.4" height="4" fill="#fff"/><rect x="6.3" y="9.8" width="1.4" height="1.4" fill="#fff"/></svg>`,
@@ -97,7 +106,8 @@ function render(){
   $("#run").disabled=S.progress.running||UI.playing;$("#run").textContent=(S.progress.running||UI.playing)?"Agent 正在跑…":(S.hasRun?"跑一圈":"跑第一圈");
   const F=S.facts; let out=loopHtml();
   if(!S.hasRun){out+=`<div class="card empty"><h2 style="justify-content:center">任务 ${h(t.id)} 已建好，状态「${h(t.status)}」</h2><p>目标 ACOS ${pct(t.target_acos,0)}、补货到仓 ${t.arrive_weeks} 周、${h(t.stage)}。点右上角「跑第一圈」：Agent 读状态、跑分析、过验证器、把结果写进工作台，然后停下来等人。</p><button class="btn primary" onclick="runLoop()">跑第一圈</button></div>`;$("#app").innerHTML=out;return}
-  out+=kpiHtml(F)+s1(F)+s2(F)+s3()+s4()+s5(F);$("#app").innerHTML=out;
+  const concl=S.runs[0]&&S.runs[0].conclusion;
+  out+=(concl?`<div class="banner"><b>一句话：</b>${h(concl)}</div>`:"")+kpiHtml(F)+s1(F)+s2(F)+s3()+s4()+s5(F);$("#app").innerHTML=out;
 }
 const LOOP=["读取状态","判断下一步","执行","验证","写入状态","判断停止条件"];
 function loopHtml(){const steps=S.progress.steps||[],by={};steps.forEach(s=>by[s.i]=s);const shown=UI.playing?UI.shown:99,cur=UI.playing?UI.cur:0;
@@ -132,7 +142,12 @@ function s4(){const ver=S.task.version,all=S.actions,live=all.filter(a=>a.versio
   const gh=Object.entries(groups).map(([g,list])=>{const pend=list.filter(a=>a.status==="待确认").length,isType=!g.startsWith("上一版");
     return `<details class="grp" ${UI.openGroups.has(g)?"open":""} ontoggle="UI.openGroups[this.open?'add':'delete']('${h(g)}')"><summary>${h(g)} <span class="chip">${list.length} 条</span><span class="sp">${pend?`<span class="hint">${pend} 条待确认</span>`:""}${pend&&isType?`<button class="btn sm ok" onclick="event.preventDefault();bulk('${h(g)}')">这一类全部确认</button>`:""}</span></summary><div class="scroll"><table><thead><tr><th>编号</th><th>广告活动</th><th>对象</th><th>现值 → 新值</th><th>依据</th><th>状态与操作</th></tr></thead><tbody>${list.map(rowHtml).join("")}</tbody></table></div></details>`}).join("");
   return `<section class="card" id="s4"><div class="sec-head"><h2><span class="n">4</span>调用工具执行 <small>AI 只出清单、只读数据；人点头，人去后台上传</small></h2><span class="sp ops"><select onchange="UI.stFilter=this.value;render()">${["全部",...ST_ORDER].map(s=>`<option ${s===UI.stFilter?"selected":""}>${s}</option>`).join("")}</select><label class="hint"><input type="checkbox" ${UI.showVoid?"checked":""} onchange="UI.showVoid=this.checked;render()"> 显示作废</label><a class="btn sm" href="/api/export.csv?status=已确认">导出已确认清单</a></span></div>
-  <div class="sbar" role="img" aria-label="动作状态分布">${vis.map(s=>`<i style="flex:${cnt[s]};background:var(${ST[s]})" title="${s} ${cnt[s]} 条"></i>`).join("")}</div><div class="legend">${ST_ORDER.filter(s=>cnt[s]).map(s=>`<span><i style="background:var(${ST[s]})"></i>${s} <b style="color:var(--ink)">${cnt[s]}</b></span>`).join("")}<span>｜ 当前 v${ver}，验证器 ${S.checks.filter(c=>c.通过).length}/${S.checks.length} 项通过</span></div>${gh||`<p class="hint">这个筛选下没有动作。</p>`}</section>`}
+  ${cmpHtml()}<div class="sbar" role="img" aria-label="动作状态分布">${vis.map(s=>`<i style="flex:${cnt[s]};background:var(${ST[s]})" title="${s} ${cnt[s]} 条"></i>`).join("")}</div><div class="legend">${ST_ORDER.filter(s=>cnt[s]).map(s=>`<span><i style="background:var(${ST[s]})"></i>${s} <b style="color:var(--ink)">${cnt[s]}</b></span>`).join("")}<span>｜ 当前 v${ver}，验证器 ${S.checks.filter(c=>c.通过).length}/${S.checks.length} 项通过</span></div>${gh||`<p class="hint">这个筛选下没有动作。</p>`}</section>`}
+function cmpHtml(){const v=S.task.version;if(v<2)return "";const prev=S.actions.filter(a=>a.version===v-1),cur=S.actions.filter(a=>a.version===v);if(!prev.length)return "";
+  const cnt=l=>{const c={};l.forEach(a=>c[a.type]=(c[a.type]||0)+1);return c};const pc=cnt(prev),cc=cnt(cur);const types=[...new Set([...Object.keys(pc),...Object.keys(cc)])].filter(t=>(pc[t]||0)!==(cc[t]||0));
+  const st={};prev.forEach(a=>st[a.status]=(st[a.status]||0)+1);const rev=prev.filter(a=>a.note&&a.status==="已确认").length,last=S.runs.find(r=>r.version===v),pl=S.runs.find(r=>r.version===v-1);
+  const diff=last&&pl?Object.keys(last.inputs).filter(k=>JSON.stringify(last.inputs[k])!==JSON.stringify(pl.inputs[k])).map(k=>`${k}：${JSON.stringify(pl.inputs[k])} → ${JSON.stringify(last.inputs[k])}`).join("；"):"";
+  return `<div class="cmp"><span>v${v-1} → v${v}${diff?`，因为 <b style="font-size:14px">${h(diff)}</b>`:""}</span><span>新动作 <b>${cur.length}</b></span><span>作废 <b>${st["作废"]||0}</b></span><span>人处理过的保留 <b>${(st["已确认"]||0)+(st["驳回"]||0)+(st["已执行"]||0)+(st["已验证"]||0)}</b></span><span>请复核 <b>${rev}</b></span>${types.map(t=>`<span class="chg">${h(t)} <b>${pc[t]||0} → ${cc[t]||0}</b></span>`).join("")}</div>`}
 function rowHtml(a){let ops="";const b=(txt,st,cls="")=>`<button class="btn sm ${cls}" onclick="act('${a.no}','${st}')">${txt}</button>`;
   if(a.status==="待确认")ops=b("确认","已确认","ok")+`<button class="btn sm no" onclick="UI.rejecting='${a.no}';render();setTimeout(()=>document.getElementById('rj')?.focus(),30)">驳回</button>`;
   if(a.status==="已确认")ops=b("标为已执行","已执行")+b("撤回","待确认","ghost");if(a.status==="驳回")ops=b("撤回驳回","待确认","ghost");if(a.status==="已执行")ops=b("标为已验证","已验证")+b("撤回","已确认","ghost");
@@ -153,10 +168,11 @@ async function bulk(type){try{const r=await api("/api/bulk",{type});toast(`已�
 async function saveInputs(){const a=$("#in_acos").value,w=$("#in_weeks").value;try{const r=await api("/api/inputs",{target_acos:a===""?"":a/100,arrive_weeks:w,stage:$("#in_stage").value});toast(r.changed.length?"已保存，任务回到「待处理」。点「跑一圈」":"输入没有变化");await load()}catch(e){}}
 async function retrigger(){try{await api("/api/inputs",{retrigger:true});toast("已重新触发（输入没动）。点「跑一圈」看它会不会重复跑");await load()}catch(e){}}
 async function saveOpts(){try{await api("/api/inputs",{options:[...UI.opts]});UI.opts=null;toast("取舍已改，任务回到「待处理」。点「跑一圈」");await load()}catch(e){UI.opts=null;render()}}
-async function runLoop(){try{await api("/api/run",{trigger:S.hasRun?"改输入重跑":"手动"})}catch(e){return}UI.playing=true;UI.shown=0;UI.cur=1;UI.openSteps.clear();render();window.scrollTo({top:0,behavior:"auto"});
-  const tick=async()=>{const p=await (await fetch("/api/progress")).json();S.progress=p;if(UI.shown<p.steps.length){UI.shown++;const nx=p.steps[UI.shown];UI.cur=nx?nx.i:(p.running?Math.min(6,(p.steps.at(-1)?.i||0)+1):0);render();return setTimeout(tick,650)}
+async function runLoop(){try{await api("/api/run",{trigger:S.hasRun?"改输入重跑":"手动"})}catch(e){return}UI.playing=true;UI.shown=0;UI.cur=1;UI.openSteps.clear();if(isDemo())[1,2,3,4,5,6].forEach(i=>UI.openSteps.add(i));render();window.scrollTo({top:0,behavior:"auto"});
+  const tick=async()=>{const p=await (await fetch("/api/progress")).json();S.progress=p;if(UI.shown<p.steps.length){UI.shown++;const nx=p.steps[UI.shown];UI.cur=nx?nx.i:(p.running?Math.min(6,(p.steps.at(-1)?.i||0)+1):0);render();return setTimeout(tick,isDemo()?1400:650)}
     if(p.running){UI.cur=Math.min(6,(p.steps.at(-1)?.i||0)+1);render();return setTimeout(tick,350)}UI.playing=false;UI.cur=0;UI.opts=null;await load();const last=p.steps.at(-1);toast(p.steps.every(s=>s.ok)?"这一圈跑完了，停下来等人":"这一圈停在了异常：看红色那一格")};setTimeout(tick,300)}
 $("#run").onclick=runLoop;$("#reset").onclick=async()=>{if(!confirm("重置：清空工作台的状态库，回到还没跑过的样子。确定？"))return;try{await api("/api/reset",{});UI.opts=null;UI.openGroups.clear();toast("已重置");await load()}catch(e){}};
 const Q=new URLSearchParams(location.search);if(Q.get("void"))UI.showVoid=true;if(Q.get("tab"))UI.tab=Q.get("tab");
-(async()=>{S=await (await fetch("/api/state")).json();if(Q.get("open")){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];(Q.get("open")==="all"?ts:ts.slice(0,1)).forEach(t=>UI.openGroups.add(t));if(Q.get("open")==="all")S.actions.filter(a=>a.version!==v).forEach(a=>UI.openGroups.add(`上一版里人处理过的（v${a.version}）`))}$("#who").innerHTML=S.roles.map(r=>`<option>${r}</option>`).join("");try{const w=localStorage.getItem("who");if(w)$("#who").value=w}catch(e){}$("#who").onchange=()=>{try{localStorage.setItem("who",who())}catch(e){}};render()})();
+(async()=>{S=await (await fetch("/api/state")).json();if(Q.get("open")){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];(Q.get("open")==="all"?ts:ts.slice(0,1)).forEach(t=>UI.openGroups.add(t));if(Q.get("open")==="all")S.actions.filter(a=>a.version!==v).forEach(a=>UI.openGroups.add(`上一版里人处理过的（v${a.version}）`))}$("#who").innerHTML=S.roles.map(r=>`<option>${r}</option>`).join("");try{const w=localStorage.getItem("who");if(w)$("#who").value=w}catch(e){}$("#who").onchange=()=>{try{localStorage.setItem("who",who())}catch(e){}};
+  const dm=$("#demo");try{dm.checked=localStorage.getItem("demo")==="1"||Q.get("demo")==="1"}catch(e){}document.body.classList.toggle("demo",dm.checked);dm.onchange=()=>{document.body.classList.toggle("demo",dm.checked);try{localStorage.setItem("demo",dm.checked?"1":"0")}catch(e){}render()};render()})();
 </script></body></html>
