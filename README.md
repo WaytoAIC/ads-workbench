@@ -85,13 +85,14 @@ Open http://localhost:8810 and click “跑第一圈”.
 - **Loop 六动作**：读取状态 → 判断下一步 → 执行 → 验证 → 写入状态 → 判断停止条件（`流程图/`）
 - **五步**：发现异常 → 判断原因（事实／推断／未知）→ 制定动作（五条路各带代价）→ 调用工具执行（确认／驳回必填理由）→ 复盘学习
 - 权限与状态流转在服务端强制；改一个输入再跑，输出跟着变；人驳回过的下一圈不再提
-- `实操手册.html`：学员 18 步（Codex 版）｜`台上操作卡-业务工作台.md`：讲师 7 步｜`数据说明.md`
+- `实操手册.html`：学员 18 步（Codex 版，带截图）｜`台上操作卡-业务工作台.md`：讲师 7 步｜`数据说明.md`
+- 换成自己的数据：`数据格式.md` ＋ 模板 `我的数据-示例/` ＋ `python3 _脚本/import_my_data.py 我的数据 ~/ads-lab-mine`
 
 Six-step loop, five-stage review page, server-enforced roles and state transitions, a student handbook and an instructor card. UI and docs are in Chinese.
 
 ## 数据 / Data
 
-示例是脱敏并替换过品类的演示数据（浴室防滑垫／NORDLY），竞品品牌名全部是编的。换成自己的数据：`python3 工作台/app.py --root <目录>`，真实数据只留在你自己电脑上。
+示例是脱敏并替换过品类的演示数据（浴室防滑垫／NORDLY），竞品品牌名全部是编的。换成自己的数据：照 `数据格式.md` 准备一份搜索词报告加三张手填小表，导入后 `python3 工作台/app.py --root <目录>`；真实数据只留在你自己电脑上。
 Sample data is desensitized demo data with a substituted category; all competitor brand names are fictional.
 
 ## License

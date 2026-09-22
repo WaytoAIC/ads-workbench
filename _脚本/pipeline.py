@@ -18,12 +18,18 @@ usd = lambda v: f"${v:,.0f}"; pct = lambda v, n=1: f"{v*100:.{n}f}%"
 s = pd.read_pickle(f"{RAW}/本父体-SP搜索词-按天.pkl")
 for n in NUM: s[n] = pd.to_numeric(s[n], errors="coerce").fillna(0)
 s["日期"] = pd.to_datetime(s["日期"])
-kids, camps_l, kws, ne, adprod = J("在线产品-本父体.json"), J("本父体-活动.json"), J("本父体-spKeyword.json"), J("本父体-spNeKeyword.json"), J("基础-spAdProduct-全店.json")
+JO = lambda name, default: J(name) if os.path.exists(f"{RAW}/{name}") else default          # 可选输入：文件不在就当空
+kids, camps_l, kws, ne, adprod = J("在线产品-本父体.json"), J("本父体-活动.json"), JO("本父体-spKeyword.json", []), JO("本父体-spNeKeyword.json", []), JO("基础-spAdProduct-全店.json", [])
 camps = {str(c["campaignId"]): c for c in camps_l}; cname = {i: c["name"] for i, c in camps.items()}
 adprod = [r for r in adprod if str(r["campaignId"]) in camps]
 inv = {r[0]: r for r in J("库存与动销-按SKU.json")}
 prof = {k_: v[0] for k_, v in J("利润-父体-四周.json").items()}
-ret = J("FBA退货-本父体.json")
+ret = JO("FBA退货-本父体.json", [])
+def derived(name, keys):
+    """活动报告 / 投放报告缺失时，从搜索词报告按天聚合出来（口径核对随之失去意义，验证器里标明）。"""
+    f = f"{RAW}/{name}"
+    if os.path.exists(f): return pd.read_pickle(f), False
+    d = s.groupby(keys)[NUM].sum().reset_index(); return d, True
 BRAND = (kids[0].get("brand") or kids[0].get("amazonBrand") or "").strip().lower()
 ne_by_camp = collections.defaultdict(set)
 for n_ in ne: ne_by_camp[cname[str(n_["campaignId"])]].add(n_["keywordText"].lower())
@@ -56,10 +62,11 @@ def facts():
         d = win(s, w).groupby(["广告活动", "匹配类型", "用户搜索词"])[NUM].sum().reset_index(); d.insert(0, "日期范围", f"{w[0]}~{w[1]}")
         d = d.rename(columns={"用户搜索词": "客户搜索词", "广告曝光量": "曝光量", "广告点击量": "点击量", "广告花费": "花费(USD)", "广告订单量": "7天总订单数", "广告销售额": "7天总销售额(USD)"})
         d.sort_values("花费(USD)", ascending=False).to_csv(f"{IN}/搜索词报告-{w[0][5:].replace('-','')}-{w[1][5:].replace('-','')}.csv", index=False, encoding="utf-8-sig")
-    c = pd.read_pickle(f"{RAW}/报表-adCampaignReport-0.pkl"); c = c[c["广告活动ID"].astype(str).isin(camps)].copy(); c["日期"] = pd.to_datetime(c["日期"])
+    c, c_derived = derived("报表-adCampaignReport-0.pkl", ["日期", "广告活动", "广告活动ID"]); c = c[c["广告活动ID"].astype(str).isin(camps)].copy(); c["日期"] = pd.to_datetime(c["日期"])
     for n in NUM: c[n] = pd.to_numeric(c[n], errors="coerce").fillna(0)
-    F["口径核对"] = {"活动报告花费": round(c["广告花费"].sum(), 2), "搜索词报告花费": round(s["广告花费"].sum(), 2)}
-    assert abs(c["广告花费"].sum() - s["广告花费"].sum()) / c["广告花费"].sum() < 0.01, "搜索词报告与活动报告花费相差超过 1%"
+    F["口径核对"] = {"活动报告花费": round(c["广告花费"].sum(), 2), "搜索词报告花费": round(s["广告花费"].sum(), 2), "活动报告缺失_由搜索词报告聚合": c_derived}
+    assert abs(c["广告花费"].sum() - s["广告花费"].sum()) / c["广告花费"].sum() < 0.01, "搜索词报告与活动报告花费相差超过 1%：先查两份报告的日期范围是否一致"
+    assert len(prof) >= 2, "周度经营至少要 2 周（建议 4 周）"
     wk = []
     for key in sorted(prof):
         x = prof[key]; ad = -x["cpcCost"]; d0 = pd.Timestamp(f"{key[:4]}-{key[4:6]}-{key[6:]}"); cw = c[(c["日期"] >= d0) & (c["日期"] < d0 + pd.Timedelta(days=7))][NUM].sum()
@@ -94,20 +101,20 @@ def facts():
     rows = sorted(inv.values(), key=lambda r: -(r[5] or 0)); tw = sum(r[5] for r in rows); top4 = rows[:4]
     out_ = [r for r in rows if r[6] is not None and r[6] < 1 and r[5] > 0]
     F["库存"] = {"可售": sum(r[1] for r in rows), "调拨中": sum(r[2] for r in rows), "途中": sum(r[3] for r in rows), "上周销量": tw, "整体可售周数": sum(r[1] for r in rows) / tw,
-               "前四SKU": [r[0] for r in top4], "前四占上周件数": sum(r[5] for r in top4) / tw, "前四可售": sum(r[1] for r in top4), "前四可售周数": sum(r[1] for r in top4) / sum(r[5] for r in top4),
+               "前四SKU": [r[0] for r in top4], "前四占上周件数": sum(r[5] for r in top4) / tw, "前四可售": sum(r[1] for r in top4), "前四可售周数": (sum(r[1] for r in top4) / sum(r[5] for r in top4) if sum(r[5] for r in top4) else None),
                "将断货SKU": [{"SKU": r[0], "上周销量": r[5], "可售": r[1], "可售周数": r[6]} for r in out_], "将断货占上周件数": sum(r[5] for r in out_) / tw}
     soon = [r for r in rows if r[6] is not None and r[6] < 2 and r[5] > 0]
     F["库存"].update({"两周内断货SKU": [r[0] for r in soon], "两周内断货占上周件数": sum(r[5] for r in soon) / tw, "两周内断货可售": sum(r[1] for r in soon), "两周内断货可售周数": (sum(r[1] for r in soon) / sum(r[5] for r in soon) if soon else None)})
     F["断货后等效ACOS"] = F["SP-近14天"]["ACOS"] / (1 - F["库存"]["将断货占上周件数"]); F["断货每周白花上限"] = wk[-1]["广告费"] * F["库存"]["将断货占上周件数"]
-    rc = collections.Counter(x["reasonStr"] for x in ret); F["退货原因"] = rc.most_common(); F["已退回件"] = len(ret); F["退货首因占比"] = rc.most_common(1)[0][1] / len(ret)
+    rc = collections.Counter(x["reasonStr"] for x in ret); F["退货原因"] = rc.most_common() or [("没有退货明细", 0)]; F["已退回件"] = len(ret); F["退货首因占比"] = (rc.most_common(1)[0][1] / len(ret) if ret else 0)
     F["活动"] = {"个数": len(camps), "名义日预算合计": sum(float(c_["budget"]) for c_ in camps.values()), "上周日均SP花费": wk[-1]["SP"] / 7,
-               "竞价区间": [min(float(k_["bid"]) for k_ in kws if k_["state"] == "enabled" and k_["matchType"] != "theme"), max(float(k_["bid"]) for k_ in kws if k_["state"] == "enabled")], "已有否词": len(ne)}
+               "竞价区间": ([min(float(k_["bid"]) for k_ in kws if k_["state"] == "enabled" and k_["matchType"] != "theme"), max(float(k_["bid"]) for k_ in kws if k_["state"] == "enabled")] if any(k_["state"] == "enabled" and k_["matchType"] != "theme" for k_ in kws) else [None, None]), "已有否词": len(ne)}
     Rw, TA, be_ = float(P["补货到仓周数"]), float(P["目标ACOS"]), F["四周"]["盈亏线"]; an = []
     def flag(name, val, ref, level, note): an.append({"指标": name, "现值": val, "参照": ref, "级别": level, "说明": note})
     I_ = F["库存"]
     flag("库存够卖几周", f"{I_['整体可售周数']:.1f} 周", f"补货到仓要 {Rw:g} 周", "critical" if I_["整体可售周数"] < Rw else "good",
          (f"将断货的 SKU 占上周件数 {pct(I_['将断货占上周件数'],0)}；两周内会断货的 {len(I_['两周内断货SKU'])} 个 SKU 只剩 {I_['两周内断货可售周数']:.2f} 周" if I_["两周内断货SKU"] else "各 SKU 库存充足"))
-    flag("退款率", pct(wk[-1]["退款率"]), f"首周 {pct(wk[0]['退款率'])}", "serious" if (wk[-1]["退款率"] > 0.05 and wk[-1]["退款率"] > 1.5 * wk[0]["退款率"]) else "good", f"已退回 {F['已退回件']} 件里 {pct(F['退货首因占比'],0)} 是「{F['退货原因'][0][0]}」")
+    flag("退款率", pct(wk[-1]["退款率"]), f"首周 {pct(wk[0]['退款率'])}", "serious" if (wk[-1]["退款率"] > 0.05 and wk[-1]["退款率"] > 1.5 * wk[0]["退款率"]) else "good", (f"已退回 {F['已退回件']} 件里 {pct(F['退货首因占比'],0)} 是「{F['退货原因'][0][0]}」" if ret else "没有退货明细，只看退款率"))
     flag("同一批词被几个活动重复买", pct(F["同词多活动"]["占比"], 0), "≥3 个活动同时买的花费占比", "warning" if F["同词多活动"]["占比"] > 0.5 else "good", f"{F['同词多活动']['词数']} 个搜索词、{usd(F['同词多活动']['花费'])}；精确组只占头部词花费的 {pct(F['精确组占头部词花费'])}")
     flag("末周广告费增速 vs 件数增速", f"{F['末周环比']['广告费']:+.0%} vs {F['末周环比']['件数']:+.0%}", "广告费不该比件数涨得快", "warning" if F["末周环比"]["广告费"] > F["末周环比"]["件数"] + 0.03 else "good", "多花的钱没有换来等比例的单")
     a_ = F["SP-近14天"]["ACOS"]
@@ -158,7 +165,8 @@ def actions(F):
         for camp, skus in enabled.items():
             risk = [x for x in skus if inv.get(x) and inv[x][6] is not None and inv[x][6] < 1]
             if risk:
-                bud = float(next(c_["budget"] for c_ in camps.values() if c_["name"] == camp))
+                bud = float(next(c_["budget"] for c_ in camps.values() if c_["name"] == camp) or 0)
+                if not bud: add("E", "查证", camp, "日预算", "未提供", "填进 活动.csv 后重跑", f"组内 {len(risk)} 个 SKU 一周内会断货，本该降预算，但没有预算数"); continue
                 add("A", "下调预算", camp, "日预算", bud, round(bud * 0.7), f"组内 {len(risk)} 个 SKU 一周内会断货；补货 {R:g} 周就到，不暂停，预算先降 30%，到仓后恢复")
     pd.DataFrame(tabA).to_csv(f"{OUT}/广告产品调整表.csv", index=False, encoding="utf-8-sig")
     # B 结构去重：换道否定 + 竞价分层
@@ -168,7 +176,7 @@ def actions(F):
         if r["广告活动"] in P["主干活动"] or r["广告花费"] <= 0 or r["用户搜索词"].lower() in ne_by_camp[r["广告活动"]]: continue
         negs.append({"广告活动": r["广告活动"], "否定词": r["用户搜索词"], "匹配方式": "精确否定", "来由": "B 换道", "近14天该组花费": round(r["广告花费"], 2), "近14天该组订单": int(r["广告订单量"]), "状态": "待确认"})
         add("B", "换道否定", r["广告活动"], r["用户搜索词"], "在本组出词", "本组精确否定", f"头部词串到了这个组（近14天 {usd(r['广告花费'])}、{int(r['广告订单量'])} 单）；不是弃词，让它回主干组跑", round(r["广告花费"], 2))
-    t = pd.read_pickle(f"{RAW}/报表-adTargeringReport-0.pkl"); t = t[t["广告活动ID"].astype(str).isin(camps)].copy(); t["日期"] = pd.to_datetime(t["日期"])
+    t, _ = derived("报表-adTargeringReport-0.pkl", ["日期", "投放", "匹配类型", "广告活动", "广告活动ID"]); t = t[t["广告活动ID"].astype(str).isin(camps)].copy(); t["日期"] = pd.to_datetime(t["日期"])
     for n in NUM: t[n] = pd.to_numeric(t[n], errors="coerce").fillna(0)
     t14 = win(t, B).groupby(["广告活动", "投放"])[NUM].sum()
     bids_by = collections.defaultdict(list)
@@ -217,7 +225,7 @@ def actions(F):
                 negs.append({"广告活动": camp, "否定词": term_, "匹配方式": "精确否定", "来由": "D 粗规则", "近14天该组花费": round(r["广告花费"], 2), "近14天该组订单": 0, "状态": "待确认"})
                 add("D", "粗规则否词", camp, term_, "出词", "精确否定", f"近 14 天 {int(r['广告点击量'])} 次点击 0 单；按基准转化率，纯属偶然的概率 {pct((1-cvr0)**int(r['广告点击量']),0)}", round(r["广告花费"], 2))
     # E 查证
-    if F["逐周"][-1]["退款率"] > 0.05:
+    if F["逐周"][-1]["退款率"] > 0.05 and ret:
         top, n_ = F["退货原因"][0]; add("E", "Listing 建议稿", "—", f"退货首因：{top}", f"退款率 {pct(F['逐周'][-1]['退款率'])}", "规格表与主图加选码提示，出建议稿走 A/B，不直接替换", f"已退回 {F['已退回件']} 件里 {n_} 件是这个原因", "", "可逆")
     add("E", "查证", "—", "补货到仓日期", f"按 {R:g} 周估", "供应链回填实际到仓日", "到仓周数决定 A 的力度；改了这个数，动作清单要重算", "", "—")
     for i, r in enumerate(rows, 1):
@@ -229,7 +237,7 @@ def actions(F):
               ("没有重复否定已经否过的词", all(n_["否定词"].lower() not in ne_by_camp[n_["广告活动"]] for n_ in negs)),
               ("竞价单次调幅不超过 15%", all(abs(float(x["调幅"].strip("%"))) <= 15 for x in bidrows)),
               ("所有动作都停在「待确认」", all(r["状态"] == "待确认" for r in rows)),
-              ("搜索词报告与活动报告花费相差 <1%", abs(F["口径核对"]["活动报告花费"] - F["口径核对"]["搜索词报告花费"]) / F["口径核对"]["活动报告花费"] < 0.01),
+              (("搜索词报告与活动报告花费相差 <1%" if not F["口径核对"]["活动报告缺失_由搜索词报告聚合"] else "口径核对：活动报告缺失，跳过"), abs(F["口径核对"]["活动报告花费"] - F["口径核对"]["搜索词报告花费"]) / F["口径核对"]["活动报告花费"] < 0.01),
               ("只生成了人选中的取舍项", all(r["取舍项"] in CHOSEN for r in rows))]
     json.dump([{"检查": c, "通过": bool(ok)} for c, ok in checks], open(f"{OUT}/验证器.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     bad = [c for c, ok in checks if not ok]; assert not bad, "验证器未通过：" + "；".join(bad)

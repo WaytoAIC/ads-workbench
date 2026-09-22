@@ -63,7 +63,9 @@ def _loop(who, trigger):
     if miss:
         c.execute("UPDATE task SET status='遇到问题', updated_at=? WHERE id=?", (now(), tid)); log(c, "Agent", "遇到问题", tid, f"缺输入：{'、'.join(miss)}。没有跑，上一份有效结果未动。"); c.commit()
         step(2, "判断下一步", f"缺输入：{'、'.join(miss)} → 标「遇到问题」，不拿旧数据硬跑，上一份有效结果不动。", ok=False); step(6, "判断停止条件", "停。补齐后重新标「待处理」。接手人：老板。"); return
-    inputs = {"目标ACOS": t["target_acos"], "补货到仓周数": t["arrive_weeks"], "产品阶段": t["stage"], "取舍项": sorted(json.loads(t["options"]))}
+    P0 = jread(PARAMS)
+    inputs = {"目标ACOS": t["target_acos"], "补货到仓周数": t["arrive_weeks"], "产品阶段": t["stage"], "取舍项": sorted(json.loads(t["options"])), "数据窗口": P0.get("窗口近"),
+              "规则版本": __import__("hashlib").md5(open(f"{ROOT}/分组规则.json", "rb").read()).hexdigest()[:8]}   # 新报表导入后窗口会变、改了分组规则，都算输入变了
     last = c.execute("SELECT * FROM run WHERE task_id=? ORDER BY version DESC LIMIT 1", (tid,)).fetchone()
     if last and json.loads(last["inputs"]) == inputs:
         c.execute("UPDATE task SET status='待核对', updated_at=? WHERE id=?", (now(), tid)); log(c, "Agent", "跳过", tid, "重复触发：输入没变，不重跑。"); c.commit()
@@ -72,7 +74,7 @@ def _loop(who, trigger):
     diff = "；".join(f"{k}：{json.loads(last['inputs']).get(k)} → {v}" for k, v in inputs.items() if json.loads(last["inputs"]).get(k) != v) if last else ""
     step(2, "判断下一步", (f"输入变了（{diff}）→ 重跑，出 v{ver}。" if last else "首次运行 → 跑 v1。"))
     c.execute("UPDATE task SET status='处理中', updated_at=? WHERE id=?", (now(), tid)); c.commit()
-    P0 = jread(PARAMS); P = dict(P0); P.update({"目标ACOS": inputs["目标ACOS"], "补货到仓周数": inputs["补货到仓周数"], "产品阶段": inputs["产品阶段"], "取舍项": inputs["取舍项"], "版本": ver, "触发方式": trigger})
+    P = dict(P0); P.update({"目标ACOS": inputs["目标ACOS"], "补货到仓周数": inputs["补货到仓周数"], "产品阶段": inputs["产品阶段"], "取舍项": inputs["取舍项"], "版本": ver, "触发方式": trigger})
     bak = f"{ROOT}/.上一份有效结果"; shutil.rmtree(bak, ignore_errors=True); shutil.copytree(f"{ROOT}/广告闭环", bak)
     json.dump(P, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1); t0 = time.time()
     r = subprocess.run([sys.executable, os.path.join(SCRIPTS, "render.py")], capture_output=True, text=True, env=dict(os.environ, ADS_ROOT=ROOT))
