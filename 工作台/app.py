@@ -143,6 +143,9 @@ class H(BaseHTTPRequestHandler):
         if u.path in ("/", "/index.html"): return self.send(200, open(f"{HERE}/index.html", "rb").read(), "text/html; charset=utf-8")
         if u.path == "/api/state": return self.send(200, state())
         if u.path == "/api/progress": return self.send(200, PROG)
+        if u.path == "/arch":
+            f = os.path.join(os.path.dirname(HERE), "流程图", "项目架构.html")
+            return self.send(200, open(f, "rb").read(), "text/html; charset=utf-8") if os.path.exists(f) else self.send(404, {"error": "还没有架构图"})
         if u.path == "/flow":
             f = os.path.join(os.path.dirname(HERE), "流程图", "工作台运转流程.html")
             return self.send(200, open(f, "rb").read(), "text/html; charset=utf-8") if os.path.exists(f) else self.send(404, {"error": "还没有流程图"})

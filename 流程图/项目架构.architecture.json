@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "广告周检工作台：项目架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "people",
+      "type": "external",
+      "label": "人",
+      "sublabel": "老板／广告运营／供应链",
+      "pos": [
+        40,
+        320
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "页面 index.html",
+      "sublabel": "五步区块＋六格",
+      "pos": [
+        300,
+        320
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "后端 app.py",
+      "sublabel": "权限、状态流转、Loop",
+      "pos": [
+        520,
+        320
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "tag": "只监听本机"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "状态库 工作台.db",
+      "sublabel": "任务／动作／行动卡／记录",
+      "pos": [
+        520,
+        130
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "pipe",
+      "type": "backend",
+      "label": "流水线",
+      "sublabel": "render.py ＋ pipeline.py",
+      "pos": [
+        740,
+        320
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "tag": "算数、规则、验证器"
+    },
+    {
+      "id": "data",
+      "type": "database",
+      "label": "数据目录",
+      "sublabel": "_原始拉取／参数／分组规则",
+      "pos": [
+        960,
+        320
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "out",
+      "type": "database",
+      "label": "本圈产物",
+      "sublabel": "输出／行动卡／运行报告",
+      "pos": [
+        740,
+        510
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "importer",
+      "type": "backend",
+      "label": "导入脚本",
+      "sublabel": "import_my_data.py",
+      "pos": [
+        960,
+        130
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "mydata",
+      "type": "external",
+      "label": "我的数据",
+      "sublabel": "卖家后台导出＋手填",
+      "pos": [
+        1180,
+        130
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "console",
+      "type": "external",
+      "label": "亚马逊广告后台",
+      "sublabel": "人去上传，工作台不连",
+      "pos": [
+        40,
+        510
+      ],
+      "size": [
+        140,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "本机（不联网）",
+      "wraps": [
+        "page",
+        "app",
+        "db",
+        "pipe",
+        "data",
+        "out",
+        "importer"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c-people-page",
+      "from": "people",
+      "to": "page",
+      "label": "点、填、确认／驳回",
+      "variant": "emphasis",
+      "labelDy": -20
+    },
+    {
+      "id": "c-page-app",
+      "from": "page",
+      "to": "app",
+      "label": "本机 :8810"
+    },
+    {
+      "id": "c-app-db",
+      "from": "app",
+      "to": "db",
+      "label": "读状态、写状态",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "c-app-pipe",
+      "from": "app",
+      "to": "pipe",
+      "label": "跑一圈",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c-pipe-data",
+      "from": "pipe",
+      "to": "data",
+      "label": "只读"
+    },
+    {
+      "id": "c-pipe-out",
+      "from": "pipe",
+      "to": "out",
+      "label": "写",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "c-mydata-importer",
+      "from": "mydata",
+      "to": "importer",
+      "variant": "dashed"
+    },
+    {
+      "id": "c-importer-data",
+      "from": "importer",
+      "to": "data",
+      "label": "生成",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "c-page-console",
+      "from": "page",
+      "to": "console",
+      "label": "导出已确认清单，人上传",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "四个部件",
+      "items": [
+        "页面＋后端：一个本机进程，管权限和状态流转",
+        "状态库：谁在什么时候点了什么，下一圈先读回"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "流水线",
+      "items": [
+        "只读数据目录，写本圈产物；验证器不过整轮作废",
+        "换数据不换代码：导入脚本把自己的报表整理成数据目录"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "边界",
+      "items": [
+        "整套只在本机，不联网",
+        "动钱的动作停在「待确认」；上传广告后台永远是人做"
+      ]
+    }
+  ]
+}
