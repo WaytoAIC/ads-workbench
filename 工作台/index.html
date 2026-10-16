@@ -341,7 +341,7 @@ const RC={"好转":"--good","省下":"--good","持平":"--st-wait","变差":"--c
 const MTN={exact:"精确",phrase:"词组",broad:"广泛",negativeExact:"精确否定"};
 function histHtml(){const H=S.history;if(!H||!H.圈||!H.圈.length)return "";if(UI.hk==null)UI.hk=H.圈.at(-1).圈;
   const W=S.facts.逐周,ca=S.actions.filter(a=>a.status!=="作废"),cc={};ca.forEach(a=>cc[a.status]=(cc[a.status]||0)+1);
-  const card=r=>{const n=r.动作.length,ok=r.动作.filter(a=>a.审批==="通过").length,rj=n-ok,res={};r.动作.forEach(a=>{const k=a.下周结果.结果;res[k]=(res[k]||0)+1});const w=r.周||{};
+  const card=r=>{const n=r.动作.length,ok=r.动作.filter(a=>a.审批==="通过").length,rj=r.动作.filter(a=>a.审批==="驳回").length,res={};r.动作.forEach(a=>{const k=a.下周结果.结果;res[k]=(res[k]||0)+1});const w=r.周||{};
     return `<div class="run ${UI.hk===r.圈?"on":""}" onclick="UI.hk=${r.圈};render()"><div class="t">第 ${r.圈} 圈 <small>${h(r.运行日)} 周一</small><span class="chip" style="margin-left:auto;line-height:18px">模拟</span></div><div class="w">看 ${h(r.看的数据)}</div>
     <div class="k4"><span>销售额</span><b>${w.销售额!=null?usd(w.销售额):"—"}</b><span>广告费</span><b>${w.广告费!=null?usd(w.广告费):"—"}</b><span>TACOS</span><b>${w.TACOS!=null?pct(w.TACOS):"—"}</b><span>SP ACOS</span><b>${w.SP_ACOS!=null?pct(w.SP_ACOS):"—"}</b></div>
     <div><b>${n}</b> 条动作 · 通过 ${ok} · 驳回 ${rj}</div><div class="bar">${["好转","省下","持平","看不出","变差","没执行"].filter(k=>res[k]).map(k=>`<i style="flex:${res[k]};background:var(${RC[k]})" title="${k} ${res[k]}"></i>`).join("")}</div>
@@ -356,7 +356,7 @@ function histHtml(){const H=S.history;if(!H||!H.圈||!H.圈.length)return "";if(
   const tb=`<div class="tw"><table class="acts"><thead><tr><th>编号</th><th>改什么（层级 · 类型）</th><th>Campaign / 广告组</th><th>对象</th><th>现值 → 新值</th><th>依据</th><th>人审批</th><th>下周真实表现</th></tr></thead><tbody>${r.动作.map(a=>{const f=a.f||{},v=a.下周结果;
     return `<tr><td class="mono">${h(a.no)}</td><td><span class="lvl">${h(a.level)}</span>${h(a.type)}<div class="sub2">${h(a.field)}</div></td><td>${f.Campaign?`<div class="cn">${h(f.Campaign)}</div>${f.广告组?`<div class="sub2">广告组 ${h(f.广告组)}</div>`:""}`:h(a.campaign)}</td>
     <td>${a.kw?`<span class="kw">${h(a.kw)}</span><span class="mt">${h(MTN[a.match]||a.match)}</span>`:a.target?`<span class="cn">${h(a.target)}</span>`:`<span class="kw">整个活动</span>`}</td>
-    <td style="white-space:nowrap">${h(a.old)}<span class="arrow">→</span><span class="nv">${h(a.new)}</span></td><td>${h(a.why)}</td><td>${a.审批==="通过"?stHtml("已执行"):stHtml("驳回")}${a.理由?`<div class="note">理由：${h(a.理由)}</div>`:""}</td>
+    <td style="white-space:nowrap">${h(a.old)}<span class="arrow">→</span><span class="nv">${h(a.new)}</span></td><td>${h(a.why)}</td><td>${a.审批==="通过"?stHtml("已执行"):a.审批==="驳回"?stHtml("驳回"):`<span class="hint">${h(a.执行||a.审批)}</span>`}${a.理由?`<div class="note">理由：${h(a.理由)}</div>`:""}</td>
     <td><span class="res" style="--c:var(${RC[v.结果]||"--muted"})"><i></i>${h(v.结果)}</span><div class="note">${h(v.说明)}</div></td></tr>`}).join("")}</tbody></table></div>`;
   const tools=`<span class="chip warn">前 ${H.圈.length} 圈是模拟回放</span><span class="chip on">第 ${H.圈.length+1} 圈是本周真实运行</span>`;
   return panel("hist",ic("cal"),"持续运行：每周一跑一圈","每圈先读回上一圈（执行后的新竞价、人的驳回、已暂停的对象、观察期），再出新动作；点一圈看它当时出了什么、下周发生了什么",tools,
