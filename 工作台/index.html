@@ -2,165 +2,341 @@
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>广告周检工作台</title>
 <style>
-:root{--page:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--line:#e1e0d9;--axis:#c3c2b7;--accent:#2a78d6;--accent-soft:#e3eefb;--accent-ink:#184f95;
---good:#0ca30c;--warning:#fab219;--serious:#ec835a;--critical:#d03b3b;--up-good:#006300;--st-ok:#2a78d6;--st-rej:#eb6834;--st-done:#1baf7a;--st-ver:#eda100;--st-wait:#898781;--st-void:#d6d5cf;--shadow:0 1px 2px rgba(0,0,0,.05)}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--page:#0d0d0d;--surface:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--muted:#898781;--line:#2c2c2a;--axis:#383835;--accent:#3987e5;--accent-soft:#16283f;--accent-ink:#9ec5f4;
---up-good:#0ca30c;--st-ok:#3987e5;--st-rej:#d95926;--st-done:#199e70;--st-ver:#c98500;--st-void:#383835;--shadow:none}}
-*{box-sizing:border-box}html{scroll-behavior:smooth}section{scroll-margin-top:104px}body{margin:0;background:var(--page);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
-button,select,input{font:inherit;color:inherit}button{cursor:pointer}
-header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
-.bar{max-width:1280px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.brand{display:flex;flex-direction:column;flex:1 1 0;min-width:180px;overflow:hidden}.brand b{font-size:18px;line-height:1.25}.brand span{color:var(--ink2);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12.5px;color:var(--ink2);background:var(--surface);white-space:nowrap}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;font-size:13.5px}.btn:hover{border-color:var(--axis)}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:8px 18px;font-size:15px}
-.btn.primary:disabled{opacity:.55;cursor:wait}.btn.sm{padding:3px 9px;font-size:12.5px;border-radius:6px}.btn.ghost{border-color:transparent;color:var(--ink2)}.btn.ok{border-color:var(--st-ok);color:var(--accent-ink)}.btn.no{border-color:var(--st-rej)}
-select,input[type=number],input[type=text]{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:6px 8px}
-nav{max-width:1280px;margin:0 auto;padding:0 20px 8px;display:flex;gap:4px;overflow-x:auto}nav a{color:var(--ink2);text-decoration:none;font-size:13px;padding:3px 10px;border-radius:999px;white-space:nowrap}nav a:hover{background:var(--accent-soft);color:var(--accent-ink)}
-main{max-width:1280px;margin:0 auto;padding:16px 20px 80px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px;margin:0 0 14px}
-h2{font-size:19px;margin:0;display:flex;align-items:center;gap:10px}h2 .n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex:none}
-h2 small{font-weight:400;color:var(--ink2);font-size:13px}h3{font-size:14px;color:var(--ink2);margin:16px 0 8px;font-weight:600}
-.sec-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.sec-head .sp{margin-left:auto}
-/* Loop 六动作 */
-.loop{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.lstep{border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-height:74px;background:var(--surface);transition:border-color .2s,background .2s}
-.lstep .t{display:flex;align-items:center;gap:6px;font-weight:600;font-size:13.5px}.lstep .k{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--axis);color:var(--ink2);font-size:11.5px;display:inline-flex;align-items:center;justify-content:center;flex:none}
-.lstep .d{font-size:12.5px;color:var(--ink2);margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.lstep.open .d{-webkit-line-clamp:unset}.lstep ul{margin:4px 0 0 16px;padding:0;font-size:12px;color:var(--ink2);display:none}.lstep.open ul{display:block}
-.lstep.done{border-color:var(--accent)}.lstep.done .k{background:var(--accent);border-color:var(--accent);color:#fff}.lstep.fail{border-color:var(--critical)}.lstep.fail .k{background:var(--critical);border-color:var(--critical);color:#fff}
-.lstep.now{background:var(--accent-soft);border-color:var(--accent)}.lstep.now .k{animation:pulse 1s infinite}@keyframes pulse{50%{transform:scale(1.18)}}
+:root{--page:#f3f4f6;--surface:#fff;--surface2:#f8f9fb;--ink:#111318;--ink2:#4b5162;--muted:#8a909d;--line:#e3e5ea;--line2:#eef0f3;--axis:#c8ccd4;
+--accent:#2a6fdb;--accent-h:#1f5fc4;--accent-soft:#e9f1fd;--accent-ink:#1a4c99;
+--good:#12a150;--good-soft:#e6f6ed;--warning:#f0a817;--warn-soft:#fdf5e2;--serious:#ec835a;--critical:#d63a3a;--crit-soft:#fcebeb;--up-good:#0d7a3c;
+--st-ok:#2a6fdb;--st-rej:#e0602e;--st-done:#15a374;--st-ver:#d99a00;--st-wait:#8a909d;--st-void:#c8ccd4;
+--side:#151820;--side2:#1e222c;--side-ink:#eceef2;--side-muted:#8d94a3;--side-line:#272c37;
+--shadow:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.06);--shadow-lg:0 16px 40px rgba(16,24,40,.18);--ring:0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--page:#0d0e11;--surface:#16181d;--surface2:#1b1e24;--ink:#f1f2f4;--ink2:#b3b8c3;--muted:#7c8391;--line:#2a2e37;--line2:#21242b;--axis:#3a3f4a;
+--accent:#3d84ea;--accent-h:#5a97ee;--accent-soft:#15243a;--accent-ink:#9cc2f6;--good-soft:#10291b;--warn-soft:#2c2412;--crit-soft:#331818;--up-good:#2fc06d;--st-ok:#3d84ea;--st-void:#3a3f4a;
+--side:#0a0b0e;--side2:#15171c;--side-line:#1f232b;--shadow:none}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--page);color:var(--ink);font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}button{cursor:pointer}a{color:inherit}
+svg.i{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── 外壳：侧栏 + 主区 ── */
+.shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;padding:18px 14px;gap:18px;overflow-y:auto}
+.logo{display:flex;align-items:center;gap:10px;padding:0 6px}.logo .mk{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#3d84ea,#1f5fc4);display:flex;align-items:center;justify-content:center;flex:none}
+.logo .mk svg{stroke:#fff;width:19px;height:19px}.logo b{display:block;font-size:15px;line-height:1.25}.logo small{display:block;color:var(--side-muted);font-size:11.5px;letter-spacing:.04em}
+.tcard{background:var(--side2);border:1px solid var(--side-line);border-radius:10px;padding:11px 12px;font-size:12.5px}
+.tcard .r{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--side-muted)}.tcard .r+.r{margin-top:6px}.tcard b{color:var(--side-ink);font-weight:600}
+.tcard .id{font-size:14px;font-weight:600;color:var(--side-ink)}
+.glabel{font-size:11px;letter-spacing:.08em;color:var(--side-muted);padding:0 10px;margin-bottom:6px;text-transform:uppercase}
+.snav{display:flex;flex-direction:column;gap:2px}
+.snav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--side-muted);text-decoration:none;font-size:13.5px;transition:background .15s,color .15s;white-space:nowrap}
+.snav a:hover{background:var(--side2);color:var(--side-ink)}.snav a.on{background:color-mix(in srgb,var(--accent) 22%,transparent);color:#fff}.snav a.on svg{stroke:#8db8f5}
+.snav .sn{width:18px;height:18px;border-radius:5px;border:1.5px solid currentColor;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}.snav a.on .sn{border-color:#8db8f5;color:#8db8f5}
+.snav .ct{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;font-size:11.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;background:var(--side-line);color:var(--side-ink)}
+.snav .ct.hot{background:var(--critical);color:#fff}.snav .ct.warn{background:var(--warning);color:#1b1300}
+.side .foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--side-line);padding-top:14px}
+.sw{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--side-ink);cursor:pointer;padding:0 6px}.sw input{display:none}
+.sw .tr{width:34px;height:20px;border-radius:999px;background:var(--side-line);position:relative;transition:background .2s;flex:none}.sw .tr:after{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw input:checked+.tr{background:var(--accent)}.sw input:checked+.tr:after{transform:translateX(14px)}.sw small{display:block;color:var(--side-muted);font-size:11.5px}
+.dmark{font-size:11.5px;color:var(--side-muted);padding:0 6px;line-height:1.5}
+
+/* ── 顶栏 ── */
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.topin{max-width:1360px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ttl{flex:1 1 260px;min-width:0}.ttl .crumb{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center}.ttl h1{margin:1px 0 0;font-size:18px;line-height:1.3;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ttl .meta{font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:6px;padding:4px 11px;font-size:13px;color:var(--ink2);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.seg button:hover{color:var(--ink)}.seg button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
+.seg .n{font-size:11.5px;color:var(--muted);font-weight:500}.seg button.on .n{color:var(--accent)}
+.flabel{font-size:12px;color:var(--muted);margin-right:-6px}
+.spill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:4px 11px;font-size:12.5px;font-weight:600;white-space:nowrap;background:color-mix(in srgb,var(--c) 13%,transparent);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.spill i{width:8px;height:8px;border-radius:50%;background:var(--c)}.spill.live i{animation:blink 1.2s infinite}@keyframes blink{50%{opacity:.3}}
+.vtag{font-size:11.5px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 6px}
+
+/* ── 按钮体系 ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13.5px;font-weight:500;white-space:nowrap;text-decoration:none;transition:background .15s,border-color .15s,box-shadow .15s,color .15s;position:relative}
+.btn:hover{border-color:var(--axis);background:var(--surface2)}.btn:focus-visible{outline:0;box-shadow:var(--ring)}.btn:active{transform:translateY(.5px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;box-shadow:0 1px 2px rgba(31,95,196,.3)}.btn.primary:hover{background:var(--accent-h);border-color:var(--accent-h)}
+.btn.lg{height:40px;padding:0 20px;font-size:14.5px;border-radius:9px}.btn.sm{height:28px;padding:0 10px;font-size:12.5px;border-radius:7px;gap:5px}.btn.sm svg.i{width:14px;height:14px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink2)}.btn.ghost:hover{background:var(--surface2);color:var(--ink)}
+.btn.success{background:var(--good);border-color:var(--good);color:#fff;font-weight:600}.btn.success:hover{filter:brightness(.94)}
+.btn.soft{background:var(--accent-soft);border-color:transparent;color:var(--accent-ink);font-weight:600}.btn.soft:hover{background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
+.btn.danger{border-color:color-mix(in srgb,var(--critical) 45%,var(--line));color:var(--critical)}.btn.danger:hover{background:var(--crit-soft);border-color:var(--critical)}
+.btn.danger.solid{background:var(--critical);border-color:var(--critical);color:#fff}
+.btn.locked{opacity:.62}.btn.locked .lk{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--ink2);display:flex;align-items:center;justify-content:center}.btn.locked .lk svg{width:10px;height:10px;stroke:var(--surface);stroke-width:2.4}
+.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}
+.tsep{width:1px;height:24px;background:var(--line)}
+
+/* ── 主区与面板 ── */
+main{max-width:1360px;margin:0 auto;padding:22px 28px 90px}
+section{scroll-margin-top:84px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin:0 0 18px;overflow:hidden}
+.ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--line2)}
+.ph .no{width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none}
+.ph .no svg{stroke:var(--accent-ink)}.ph h2{margin:0;font-size:16.5px;line-height:1.3}.ph .sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+.ph .tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pb{padding:18px 20px}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 20px;background:var(--surface2);border-bottom:1px solid var(--line2)}.toolbar .r{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sub-h{font-size:13px;font-weight:600;color:var(--ink);margin:0 0 10px;display:flex;align-items:center;gap:8px}.sub-h .hint{font-weight:400}
+.box{border:1px solid var(--line);border-radius:11px;background:var(--surface);min-width:0}.box .bh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line2);font-size:13px;font-weight:600}.box .bh .r{margin-left:auto;font-weight:400}.box .bb{padding:12px 14px}
+.hint{font-size:12.5px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.stack{display:flex;flex-direction:column;gap:16px}
+code{background:var(--accent-soft);color:var(--accent-ink);border-radius:4px;padding:0 5px;font-size:12.5px}
+
+/* 结论横幅 */
+.banner{display:flex;gap:14px;align-items:flex-start;background:linear-gradient(90deg,var(--warn-soft),var(--surface) 75%);border:1px solid color-mix(in srgb,var(--warning) 40%,var(--line));border-radius:14px;padding:14px 18px;margin:0 0 18px;font-size:15px}
+.banner .ic{width:34px;height:34px;border-radius:9px;background:var(--warning);display:flex;align-items:center;justify-content:center;flex:none}.banner .ic svg{stroke:#1b1300}
+.banner .k{font-size:12px;font-weight:600;color:var(--ink2);letter-spacing:.04em;margin-bottom:2px}
+
 /* KPI */
-.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);min-width:0}
-.tile .l{font-size:12.5px;color:var(--ink2)}.tile .v{font-size:26px;font-weight:600;line-height:1.2;margin:2px 0}.tile .s{font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.delta.good{color:var(--up-good)}.delta.bad{color:var(--critical)}.spark{display:block;margin-top:6px;width:100%;height:28px}.meter{height:8px;border-radius:4px;margin-top:10px;overflow:hidden;background:color-mix(in srgb,var(--mc) 20%,var(--surface))}.meter i{display:block;height:100%;border-radius:4px;background:var(--mc)}
-.stat{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--ink);white-space:nowrap}.stat svg{flex:none}
-/* 通用 */
-.grid2{display:grid;grid-template-columns:1.7fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:14px}
-table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}th{color:var(--ink2);font-weight:500;font-size:12.5px;white-space:nowrap}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.scroll{overflow-x:auto}.an td:first-child{white-space:nowrap}.an b{font-weight:600}
-.col{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}.col h4{margin:0 0 6px;font-size:13.5px}.col ol,.col ul{margin:0;padding-left:18px;font-size:13px;color:var(--ink)}.col li{margin:0 0 7px}.col li b{font-weight:600}
-code{background:var(--accent-soft);border-radius:4px;padding:0 4px;font-size:12.5px}
-.tabs{display:flex;gap:6px;margin:14px 0 8px;flex-wrap:wrap}.tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 12px;font-size:13px;color:var(--ink2)}.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.form{display:grid;gap:10px}.form label{display:grid;gap:3px;font-size:12.5px;color:var(--ink2)}.form .row{display:flex;gap:8px;align-items:center}.form input,.form select{width:100%}.hint{font-size:12.5px;color:var(--ink2)}
-.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.opt{border:1.5px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0;background:var(--surface)}.opt.on{border-color:var(--accent);background:var(--accent-soft)}
-.opt .h{display:flex;align-items:center;gap:8px;font-weight:600}.opt .h .key{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--axis);display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;flex:none}.opt.on .key{background:var(--accent);border-color:var(--accent);color:#fff}
-.opt p{margin:0;font-size:12.5px;color:var(--ink2)}.opt .c{font-size:12.5px;color:var(--ink)}.chip{display:inline-block;border-radius:999px;background:var(--page);border:1px solid var(--line);padding:0 8px;font-size:12px;color:var(--ink2);white-space:nowrap}
-.sbar{display:flex;gap:2px;height:14px;margin:4px 0 8px}.sbar i{display:block;height:100%;border-radius:4px;min-width:3px}.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}.legend span{display:inline-flex;align-items:center;gap:5px}.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.grp{border:1px solid var(--line);border-radius:10px;margin-top:10px;overflow:hidden}.grp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--page);font-weight:600;font-size:14px}.grp>summary::-webkit-details-marker{display:none}
-.grp>summary:before{content:"▸";color:var(--muted);font-size:12px}.grp[open]>summary:before{content:"▾"}.grp .sp{margin-left:auto;display:flex;gap:8px;align-items:center;font-weight:400}
-tr.void td{color:var(--muted);text-decoration:line-through}tr.void td:last-child{text-decoration:none}.st{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;white-space:nowrap}.st i{width:9px;height:9px;border-radius:3px;display:inline-block}
-.ops{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.rej{display:flex;gap:6px;margin-top:6px}.rej input{flex:1;min-width:160px;font-size:12.5px;padding:4px 8px}.note{font-size:12.5px;color:var(--ink2);margin-top:3px}.note.warn{color:var(--ink)}
-.arrow{color:var(--muted);margin:0 4px}.cardf{border:1px solid var(--line);border-radius:10px;margin-top:8px}.cardf summary{padding:8px 12px;cursor:pointer;font-size:13.5px;font-weight:600}.cardf div{padding:0 12px 10px;font-size:13px;color:var(--ink)}.cardf.key{border-color:var(--accent);background:var(--accent-soft)}
-.log{max-height:300px;overflow:auto;font-size:12.5px}.log div{padding:5px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:118px 64px 78px 1fr;gap:8px}.log span{color:var(--ink2)}
-.empty{text-align:center;padding:60px 20px}.empty p{color:var(--ink2);max-width:560px;margin:8px auto 18px}
-#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:80vw}#toast.show{opacity:1}
-body.demo{font-size:17.5px}body.demo table{font-size:16px}body.demo th,body.demo td{padding:9px 10px}body.demo .tile .v{font-size:34px}body.demo .tile .l,body.demo .tile .s{font-size:14px}
-body.demo .lstep .d{font-size:14px;-webkit-line-clamp:unset}body.demo .lstep .t{font-size:15px}body.demo h2{font-size:22px}body.demo .col ol,body.demo .col ul{font-size:15px}body.demo .opt p,body.demo .opt .c{font-size:14px}
-body.demo #s4 details table th:first-child,body.demo #s4 details table td:first-child{display:none}body.demo .btn.sm{font-size:14px;padding:5px 12px}
-.banner{border-left:4px solid var(--warn);background:var(--tag);border-radius:0 10px 10px 0;padding:12px 16px;margin:0 0 14px;font-size:16px}.banner b{font-weight:600}body.demo .banner{font-size:19px}
-.cmp{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:14px}.cmp b{font-size:17px}.cmp .chg{color:var(--ink2)}.cmp .chg b{font-size:14px;color:var(--ink)}
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:60}#modal.show{display:flex}#modal .box{background:var(--surface);color:var(--ink);border-radius:14px;padding:22px 26px;max-width:560px;font-size:18px;line-height:1.6;box-shadow:0 10px 40px rgba(0,0,0,.25);border-left:6px solid var(--critical)}#modal .box button{margin-top:14px}
-@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.opts{grid-template-columns:repeat(2,1fr)}.loop{grid-template-columns:repeat(3,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
-@media(max-width:620px){.kpis{grid-template-columns:repeat(2,1fr)}.opts,.loop{grid-template-columns:1fr}main,.bar,nav{padding-left:16px;padding-right:16px}.log div{grid-template-columns:1fr 1fr}}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px 11px;box-shadow:var(--shadow);min-width:0;position:relative;overflow:hidden}
+.tile:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--lc,transparent)}
+.tile .l{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tile .v{font-size:25px;font-weight:650;line-height:1.2;margin:4px 0 3px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.tile .s{font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.delta{font-weight:600}.delta.good{color:var(--up-good)}.delta.bad{color:var(--critical)}.spark{display:block;margin-top:8px;width:100%;height:28px}
+.meter{height:7px;border-radius:4px;margin-top:12px;overflow:hidden;background:color-mix(in srgb,var(--mc) 18%,var(--surface))}.meter i{display:block;height:100%;border-radius:4px;background:var(--mc)}
+.stat{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--ink);white-space:nowrap;font-weight:500}.stat svg{flex:none}
+
+/* Loop 六动作 */
+.loop{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;counter-reset:s}
+.lstep{position:relative;border:1px solid var(--line);border-radius:11px;padding:11px 12px;min-height:84px;background:var(--surface2);cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
+.lstep:hover{border-color:var(--axis)}
+.lstep:not(:last-child):after{content:"";position:absolute;right:-12px;top:22px;width:12px;height:2px;background:var(--line)}
+.lstep.done:not(:last-child):after{background:var(--accent)}
+.lstep .t{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px}.lstep .k{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--axis);color:var(--ink2);font-size:11.5px;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--surface)}
+.lstep .d{font-size:12.5px;color:var(--ink2);margin-top:6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.lstep.open .d{-webkit-line-clamp:unset}
+.lstep ul{margin:6px 0 0 16px;padding:0;font-size:12px;color:var(--ink2);display:none}.lstep.open ul{display:block}
+.lstep.done{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:var(--surface)}.lstep.done .k{background:var(--accent);border-color:var(--accent);color:#fff}
+.lstep.fail{border-color:var(--critical);background:var(--crit-soft)}.lstep.fail .k{background:var(--critical);border-color:var(--critical);color:#fff}
+.lstep.now{background:var(--accent-soft);border-color:var(--accent);box-shadow:var(--ring)}.lstep.now .k{animation:pulse 1s infinite;border-color:var(--accent);color:var(--accent)}@keyframes pulse{50%{transform:scale(1.18)}}
+
+/* 表格 */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:11px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{border-bottom:1px solid var(--line2);padding:8px 12px;text-align:left;vertical-align:top}
+thead th{background:var(--surface2);color:var(--ink2);font-weight:600;font-size:12px;white-space:nowrap;position:sticky;top:0}
+tbody tr:last-child td{border-bottom:0}tbody tr:hover td{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.an td:first-child{white-space:nowrap}.an b{font-weight:600}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--ink2)}
+
+/* 输入表单 */
+.form{display:grid;gap:12px}.fld{display:grid;gap:5px}.fld>span{font-size:12.5px;color:var(--ink2);font-weight:500;display:flex;justify-content:space-between}.fld>span em{font-style:normal;color:var(--muted);font-weight:400;font-size:11.5px}
+.ipt{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden;transition:border-color .15s,box-shadow .15s}.ipt:focus-within{border-color:var(--accent);box-shadow:var(--ring)}
+.ipt input,.ipt select{flex:1;min-width:0;border:0;background:transparent;padding:7px 10px;outline:0}.ipt .u{padding:0 10px;color:var(--muted);font-size:12.5px;border-left:1px solid var(--line2);align-self:stretch;display:flex;align-items:center;background:var(--surface2)}
+.frow{display:flex;gap:8px;flex-wrap:wrap}.tip{display:flex;gap:8px;align-items:flex-start;background:var(--surface2);border-radius:8px;padding:9px 11px;font-size:12.5px;color:var(--ink2)}.tip svg{stroke:var(--accent);margin-top:2px}
+
+/* 证据三栏 */
+.evi{border:1px solid var(--line);border-radius:11px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.evi .eh{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:13px;font-weight:600;border-bottom:1px solid var(--line2);background:color-mix(in srgb,var(--c) 9%,var(--surface))}.evi .eh i{width:8px;height:8px;border-radius:2px;background:var(--c)}.evi .eh small{font-weight:400;color:var(--muted);font-size:11.5px}
+.evi ol,.evi ul{margin:0;padding:12px 14px 6px 32px;font-size:13px}.evi li{margin:0 0 8px}.evi li b{font-weight:600}
+.utabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:22px 0 12px;overflow-x:auto}.utab{border:0;background:transparent;padding:8px 12px;font-size:13.5px;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.utab:hover{color:var(--ink)}.utab.on{color:var(--accent-ink);border-bottom-color:var(--accent);font-weight:600}
+
+/* 取舍选项 */
+.opts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.opt{border:1.5px solid var(--line);border-radius:12px;padding:13px;cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;background:var(--surface);transition:border-color .15s,box-shadow .15s,background .15s}
+.opt:hover{border-color:var(--axis);box-shadow:var(--shadow)}.opt.on{border-color:var(--accent);background:linear-gradient(180deg,var(--accent-soft),var(--surface) 70%)}
+.opt .h{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}.opt .key{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--axis);display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none;background:var(--surface)}
+.opt.on .key{background:var(--accent);border-color:var(--accent);color:#fff}.opt .ck{margin-left:auto;width:18px;height:18px;border-radius:5px;border:1.5px solid var(--axis);display:flex;align-items:center;justify-content:center;flex:none}.opt.on .ck{background:var(--accent);border-color:var(--accent)}.opt .ck svg{width:12px;height:12px;stroke:#fff;stroke-width:3;opacity:0}.opt.on .ck svg{opacity:1}
+.opt p{margin:0;font-size:12.5px;color:var(--ink2)}.opt .c{font-size:12.5px;color:var(--ink);background:var(--warn-soft);border-radius:7px;padding:7px 9px}.opt .m{font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin-top:auto}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);padding:0 8px;font-size:11.5px;color:var(--ink2);white-space:nowrap;font-weight:500;line-height:20px}
+.chip.on{background:var(--accent-soft);border-color:transparent;color:var(--accent-ink)}.chip.warn{background:var(--warn-soft);border-color:transparent;color:#8a5a00}
+
+/* 动作清单 */
+.sbar{display:flex;gap:2px;height:10px;margin:0 0 8px;border-radius:5px;overflow:hidden}.sbar i{display:block;height:100%;min-width:3px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-bottom:6px}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}.legend b{color:var(--ink)}
+.grp{border:1px solid var(--line);border-radius:11px;margin-top:12px;overflow:hidden;background:var(--surface)}
+.grp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);font-weight:600;font-size:14px}.grp>summary::-webkit-details-marker{display:none}
+.grp>summary .chev{transition:transform .2s;stroke:var(--muted)}.grp[open]>summary .chev{transform:rotate(90deg)}.grp[open]>summary{border-bottom:1px solid var(--line)}
+.grp .sp{margin-left:auto;display:flex;gap:8px;align-items:center;font-weight:400}.grp table th{background:var(--surface)}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap;border-radius:999px;padding:1px 9px 1px 7px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--ink)}.badge i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+tr.void td{color:var(--muted);text-decoration:line-through}tr.void td:last-child{text-decoration:none}
+.ops{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.acts td:nth-child(3),.acts td:nth-child(4){white-space:nowrap}.acts th:last-child,.acts td:last-child{min-width:300px}.acts .ops{flex-wrap:nowrap}.ops .badge{margin-right:4px}
+.rej{display:flex;gap:6px;margin-top:8px;align-items:center}.rej .ipt{flex:1;min-width:180px}.rej .ipt input{padding:4px 8px;font-size:12.5px}
+.note{font-size:12px;color:var(--muted);margin-top:4px}.note.warn{color:#8a5a00;background:var(--warn-soft);border-radius:6px;padding:2px 7px;display:inline-block}
+.arrow{color:var(--muted);margin:0 5px}.nv{font-weight:600;color:var(--accent-ink)}
+.cmp{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:11px;padding:11px 15px;margin:0 0 14px;font-size:13.5px}.cmp b{font-size:16px}.cmp .chg{color:var(--ink2)}.cmp .chg b{font-size:13.5px;color:var(--ink)}
+
+/* 复盘 */
+.cardf{border:1px solid var(--line);border-radius:10px;margin-top:8px;background:var(--surface)}.cardf summary{padding:9px 13px;cursor:pointer;font-size:13.5px;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}.cardf summary::-webkit-details-marker{display:none}
+.cardf summary .chev{stroke:var(--muted);transition:transform .2s}.cardf[open] summary .chev{transform:rotate(90deg)}.cardf>div{padding:0 13px 11px 37px;font-size:13px}.cardf.key{border-color:var(--accent);background:var(--accent-soft)}
+.log{max-height:320px;overflow:auto;font-size:12.5px}.log div{padding:7px 14px;border-bottom:1px solid var(--line2);display:grid;grid-template-columns:120px 70px 84px 1fr;gap:10px}.log div:last-child{border-bottom:0}.log span{color:var(--muted)}
+.prov{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink2);background:var(--surface2);border-radius:10px;padding:11px 14px;margin-top:16px}.prov svg{stroke:var(--muted);margin-top:2px}
+
+.empty{text-align:center;padding:56px 20px}.empty .ic{width:56px;height:56px;border-radius:16px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}.empty .ic svg{width:26px;height:26px;stroke:var(--accent)}
+.empty h2{margin:0;font-size:19px}.empty p{color:var(--ink2);max-width:560px;margin:8px auto 20px}
+.loading{padding:80px;text-align:center;color:var(--muted)}
+
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,8px);background:var(--ink);color:var(--surface);padding:11px 16px;border-radius:11px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70;max-width:80vw;display:flex;gap:9px;align-items:center;box-shadow:var(--shadow-lg)}#toast.show{opacity:1;transform:translate(-50%,0)}#toast svg{stroke:#4ade80}
+#modal{position:fixed;inset:0;background:rgba(10,12,16,.5);display:none;align-items:center;justify-content:center;z-index:80;padding:16px}#modal.show{display:flex}
+#modal .mbox{background:var(--surface);color:var(--ink);border-radius:16px;max-width:520px;width:100%;box-shadow:var(--shadow-lg);overflow:hidden}
+#modal .mh{display:flex;gap:12px;align-items:center;padding:18px 22px 6px}#modal .mh .ic{width:38px;height:38px;border-radius:10px;background:var(--crit-soft);display:flex;align-items:center;justify-content:center;flex:none}#modal .mh .ic svg{stroke:var(--critical);width:20px;height:20px}
+#modal .mh b{font-size:16px}#modal .mm{padding:4px 22px 18px 72px;font-size:15px;line-height:1.65;color:var(--ink2)}#modal .mf{display:flex;justify-content:flex-end;padding:12px 22px;background:var(--surface2);border-top:1px solid var(--line2)}
+
+/* 演示模式：投屏放大 */
+body.demo{font-size:17px}body.demo table{font-size:15.5px}body.demo th,body.demo td{padding:10px 12px}body.demo .tile .v{font-size:32px}body.demo .tile .l,body.demo .tile .s{font-size:14px}
+body.demo .lstep .d{font-size:14px;-webkit-line-clamp:unset}body.demo .lstep .t{font-size:15px}body.demo .ph h2{font-size:20px}body.demo .evi ol,body.demo .evi ul{font-size:15px}body.demo .opt p,body.demo .opt .c{font-size:14px}
+body.demo #s4 .grp table th:first-child,body.demo #s4 .grp table td:first-child{display:none}body.demo .btn.sm{font-size:14px;height:32px;padding:0 12px}body.demo .banner{font-size:19px}body.demo #modal .mm{font-size:18px}
+
+@media(max-width:1280px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.opts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1100px){.loop{grid-template-columns:repeat(3,minmax(0,1fr))}.lstep:nth-child(3n):after{display:none}.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:960px){.shell{display:block}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px 16px;gap:12px}
+ .tcard,.glabel,.side .foot .dmark{display:none}.snav{flex-direction:row;overflow-x:auto;width:100%}.side .grp2{width:100%}.side .foot{margin:0;border:0;padding:0;flex-direction:row;width:100%;justify-content:space-between}
+ .topin,main{padding-left:16px;padding-right:16px}.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.top .flabel,.tsep{display:none}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.opts,.loop{grid-template-columns:1fr}.lstep:after{display:none}.log div{grid-template-columns:1fr 1fr}.ph,.pb,.toolbar{padding-left:14px;padding-right:14px}}
 </style></head><body>
-<header><div class="bar">
-  <div class="brand"><b>广告周检工作台</b><span id="meta">加载中…</span></div>
-  <span class="pill" id="badge" title=""></span>
-  <label class="pill" title="投屏用：字号加大、六格慢放、拦截提示改成弹层"><input type="checkbox" id="demo" style="margin:0 4px 0 0"> 演示模式</label>
-  <label class="pill">我是 <select id="who" style="border:0;padding:0 2px;background:transparent"></select></label>
-  <span class="pill" id="tstatus"><i class="dot"></i><span></span></span>
-  <a class="btn" href="/arch" target="_blank">架构图</a>
-  <a class="btn" href="/flow" target="_blank">流程图</a>
-  <a class="btn" href="/report" target="_blank">运行报告</a>
-  <button class="btn ghost" id="reset">重置</button>
-  <button class="btn primary" id="run">跑一圈</button>
-</div><nav><a href="#loop">Loop 六动作</a><a href="#s1">① 发现异常</a><a href="#s2">② 判断原因</a><a href="#s3">③ 制定动作</a><a href="#s4">④ 调用工具执行</a><a href="#s5">⑤ 复盘学习</a></nav></header>
-<main id="app"></main><div id="toast"></div><div id="modal" onclick="this.classList.remove('show')"><div class="box"><div id="modalmsg"></div><button class="btn primary" onclick="document.getElementById('modal').classList.remove('show')">知道了</button></div></div>
+<div class="shell">
+<aside class="side">
+  <div class="logo"><span class="mk"><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/></svg></span><div><b>广告周检工作台</b><small>ADS OPS CONSOLE</small></div></div>
+  <div class="tcard" id="tcard"></div>
+  <div class="grp2"><div class="glabel">工作流</div><nav class="snav" id="snav"></nav></div>
+  <div class="grp2"><div class="glabel">资料</div><nav class="snav">
+    <a href="/arch" target="_blank"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="8.5" y="14" width="7" height="7" rx="1.5"/><path d="M6.5 10v2h11v-2M12 12v2"/></svg>架构图<svg class="i" viewBox="0 0 24 24" style="margin-left:auto;width:13px;height:13px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+    <a href="/flow" target="_blank"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H15a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6.5"/></svg>流程图<svg class="i" viewBox="0 0 24 24" style="margin-left:auto;width:13px;height:13px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+    <a href="/report" target="_blank"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>运行报告<svg class="i" viewBox="0 0 24 24" style="margin-left:auto;width:13px;height:13px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+  </nav></div>
+  <div class="foot">
+    <label class="sw" title="投屏用：字号加大、六格慢放、拦截提示改成弹层"><input type="checkbox" id="demo"><span class="tr"></span><span>演示模式<small>投屏放大 · 六格慢放</small></span></label>
+    <div class="dmark" id="dmark"></div>
+  </div>
+</aside>
+<div class="mainw">
+<header class="top"><div class="topin">
+  <div class="ttl"><div class="crumb">工作台 <span>/</span> 广告周检</div><h1><span>本周广告周检</span><span class="spill" id="tstatus" style="--c:var(--muted)"><i></i><span>加载中</span></span></h1><div class="meta" id="meta">加载中…</div></div>
+  <span class="flabel">当前身份</span><div class="seg" id="roles" role="group" aria-label="切换身份"></div>
+  <span class="tsep"></span>
+  <button class="btn ghost" id="reset" title="清空状态库，回到还没跑过的样子（只有老板能做）"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>重置</button>
+  <button class="btn primary lg" id="run"></button>
+</div></header>
+<main id="app"><div class="loading">加载中…</div></main>
+</div></div>
+<div id="toast"></div>
+<div id="modal" onclick="if(event.target===this)this.classList.remove('show')"><div class="mbox"><div class="mh"><span class="ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span><b>这一步没有通过</b></div><div class="mm" id="modalmsg"></div><div class="mf"><button class="btn primary" onclick="document.getElementById('modal').classList.remove('show')">知道了</button></div></div></div>
 <script>
 const $=s=>document.querySelector(s), h=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const md=s=>h(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/`(.+?)`/g,"<code>$1</code>");
 const usd=v=>"$"+Math.round(v).toLocaleString("en-US"), pct=(v,n=1)=>(v*100).toFixed(n)+"%";
-let S=null, UI={tab:"分组账",openGroups:new Set(),showVoid:false,stFilter:"全部",opts:null,rejecting:null,openSteps:new Set(),playing:false};
-const who=()=>$("#who").value;
-function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),3800)}
+let S=null, UI={tab:"分组账",openGroups:new Set(),showVoid:false,stFilter:"全部",opts:null,rejecting:null,openSteps:new Set(),playing:false,who:"老板",sec:"loop"};
+const who=()=>UI.who;
+const P={play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',chev:'<path d="M9 6l6 6-6 6"/>',save:'<path d="M5 4h11l3 3v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
+  refresh:'<path d="M20 12a8 8 0 1 1-2.3-5.7L20 8.5"/><path d="M20 3.5v5h-5"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',done2:'<path d="M3 12.5l4 4L15 8.5M10 16.5l1 1L21 7.5"/>',
+  loop:'<path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/>',alert:'<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4M12 17h.01"/>',brain:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/><path d="M8.5 11h5M11 8.5v5"/>',
+  route:'<circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H17a3.5 3.5 0 0 0 0-7H7a3.5 3.5 0 0 1 0-7h8.5"/>',list:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/>',
+  grid:'<rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/>',db:'<ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/>'};
+const ic=(n,st="")=>`<svg class="i" viewBox="0 0 24 24"${st?` style="${st}"`:""}>${P[n]}</svg>`;
+const can=perm=>!S||!S.can||!S.can[perm]||S.can[perm].includes(UI.who);
+// 统一按钮：没权限的照样能点（服务端会拦，这是演示点），只是带锁标记和提示
+function B({label,icon,cls="",on,perm,title="",id=""}){const lk=perm&&!can(perm);const t=lk?`当前身份「${UI.who}」没有「${perm}」权限，点了会被服务端拦下。能做的人：${S.can[perm].join("、")}`:title;
+  return `<button class="btn ${cls}${lk?" locked":""}"${id?` id="${id}"`:""} ${t?`title="${h(t)}"`:""} onclick="${h(on)}">${icon?ic(icon):""}${label}${lk?`<span class="lk">${ic("lock")}</span>`:""}</button>`}
+function toast(m){const t=$("#toast");t.innerHTML=ic("check")+`<span>${h(m)}</span>`;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),3800)}
 async function api(path,body){const r=await fetch(path,body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({who:who(),...body})}:{});const j=await r.json().catch(()=>({}));if(!r.ok){modal(j.error||("出错了："+r.status));throw new Error(j.error)}return j}
 function modal(m){document.getElementById("modalmsg").textContent=m;document.getElementById("modal").classList.add("show")}
 const isDemo=()=>document.body.classList.contains("demo");
 const ST={"待确认":"--st-wait","已确认":"--st-ok","驳回":"--st-rej","已执行":"--st-done","已验证":"--st-ver","作废":"--st-void"}, ST_ORDER=["待确认","已确认","已执行","已验证","驳回","作废"];
-const stHtml=s=>`<span class="st"><i style="background:var(${ST[s]})"></i>${h(s)}</span>`;
+const stHtml=s=>`<span class="badge" style="--c:var(${ST[s]})"><i></i>${h(s)}</span>`;
 const ICON={critical:`<svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1l6.2 11H.8z" fill="var(--critical)"/><rect x="6.3" y="5" width="1.4" height="4" fill="#fff"/><rect x="6.3" y="9.8" width="1.4" height="1.4" fill="#fff"/></svg>`,
 serious:`<svg width="14" height="14" viewBox="0 0 14 14"><rect x="1.5" y="1.5" width="11" height="11" rx="2" transform="rotate(45 7 7)" fill="var(--serious)"/><rect x="6.3" y="3.8" width="1.4" height="4.2" fill="#fff"/><rect x="6.3" y="8.9" width="1.4" height="1.4" fill="#fff"/></svg>`,
 warning:`<svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="var(--warning)"/><rect x="6.3" y="3.5" width="1.4" height="4.4" fill="#0b0b0b"/><rect x="6.3" y="8.9" width="1.4" height="1.4" fill="#0b0b0b"/></svg>`,
 good:`<svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="var(--good)"/><path d="M4 7.2l2.1 2.1L10 5.3" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`};
-const LV={critical:"严重",serious:"要管",warning:"留意",good:"正常"};
+const LV={critical:"严重",serious:"要管",warning:"留意",good:"正常"}, LC={critical:"--critical",serious:"--serious",warning:"--warning",good:"--good"};
 const stat=l=>`<span class="stat">${ICON[l]}${LV[l]}</span>`;
 function spark(vals,fmt,labels){const w=120,hh=28,p=4,mn=Math.min(...vals),mx=Math.max(...vals),x=i=>p+i*(w-2*p)/(vals.length-1),y=v=>hh-p-(mx===mn?.5:(v-mn)/(mx-mn))*(hh-2*p);
   const pts=vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-  return `<svg class="spark" viewBox="0 0 ${w} ${hh}" preserveAspectRatio="none" role="img" aria-label="近四周趋势"><polyline points="${pts}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+  return `<svg class="spark" viewBox="0 0 ${w} ${hh}" preserveAspectRatio="none" role="img" aria-label="近四周趋势"><polyline points="${pts}" fill="none" stroke="var(--axis)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
   ${vals.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="7" fill="transparent"><title>${h(labels[i])}：${h(fmt(v))}</title></circle>`).join("")}<circle cx="${x(vals.length-1)}" cy="${y(vals.at(-1))}" r="3.2" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`}
 function delta(cur,prev,upGood,asPt){const d=asPt?(cur-prev)*100:(cur/prev-1)*100, good=(d>=0)===upGood;return `<span class="delta ${Math.abs(d)<0.05?"":(good?"good":"bad")}">${d>=0?"▲":"▼"} ${Math.abs(d).toFixed(asPt?1:0)}${asPt?" 个点":"%"}</span><span>较上周</span>`}
+const panel=(id,no,title,sub,tools,body,extra="")=>`<section class="panel" id="${id}"><div class="ph"><span class="no">${no}</span><div><h2>${title}</h2><div class="sub">${sub}</div></div>${tools?`<div class="tools">${tools}</div>`:""}</div>${extra}<div class="pb">${body}</div></section>`;
 
-function render(){
-  const m=S.meta,t=S.task;$("#meta").textContent=`${m.店铺}｜${m.产品}｜数据 ${m.周期}`;$("#badge").textContent=(m.数据标记||"").split("：")[0];$("#badge").title=m.数据标记;
-  const col={"待处理":"--warning","处理中":"--accent","待核对":"--st-ok","已完成":"--good","遇到问题":"--critical"}[t.status]||"--muted";
-  $("#tstatus").innerHTML=`<i class="dot" style="background:var(${col})"></i><span>${h(t.id)} · ${h(t.status)}${t.version?` · v${t.version}`:""}</span>`;
-  $("#run").disabled=S.progress.running||UI.playing;$("#run").textContent=(S.progress.running||UI.playing)?"Agent 正在跑…":(S.hasRun?"跑一圈":"跑第一圈");
-  const F=S.facts; let out=loopHtml();
-  if(!S.hasRun){out+=`<div class="card empty"><h2 style="justify-content:center">任务 ${h(t.id)} 已建好，状态「${h(t.status)}」</h2><p>目标 ACOS ${pct(t.target_acos,0)}、补货到仓 ${t.arrive_weeks} 周、${h(t.stage)}。点右上角「跑第一圈」：Agent 读状态、跑分析、过验证器、把结果写进工作台，然后停下来等人。</p><button class="btn primary" onclick="runLoop()">跑第一圈</button></div>`;$("#app").innerHTML=out;return}
-  const concl=S.runs[0]&&S.runs[0].conclusion;
-  out+=(concl?`<div class="banner"><b>一句话：</b>${h(concl)}</div>`:"")+kpiHtml(F)+s1(F)+s2(F)+s3()+s4()+s5(F);$("#app").innerHTML=out;
-}
+const TCOL={"待处理":"--warning","处理中":"--accent","待核对":"--st-ok","已完成":"--good","遇到问题":"--critical"};
+function chrome(){const m=S.meta,t=S.task,running=S.progress.running||UI.playing,col=TCOL[t.status]||"--muted";
+  $("#meta").textContent=`${m.店铺}｜${m.产品}｜数据 ${m.周期}`;$("#dmark").textContent=m.数据标记||"";
+  const ts=$("#tstatus");ts.style.setProperty("--c",`var(${running?"--accent":col})`);ts.classList.toggle("live",running);ts.querySelector("span").textContent=running?"Agent 运行中":t.status;
+  const days=Math.ceil((new Date(m.复盘日)-new Date(m.今天))/864e5);
+  $("#tcard").innerHTML=`<div class="r"><span class="id">${h(t.id)}</span><span class="spill" style="--c:var(${col});color:var(--side-ink)"><i></i>${h(t.status)}</span></div><div class="r"><span>当前版本</span><b>v${t.version||"—"}</b></div><div class="r"><span>目标 ACOS · 到仓</span><b>${t.target_acos==null?"—":pct(t.target_acos,0)} · ${t.arrive_weeks??"—"} 周</b></div><div class="r"><span>复盘日</span><b>${h(m.复盘日)}（${days} 天后）</b></div>`;
+  $("#roles").innerHTML=S.roles.map(r=>`<button class="${r===UI.who?"on":""}" onclick="setWho('${r}')">${h(r)}</button>`).join("");
+  $("#reset").classList.toggle("locked",!can("重置"));
+  const rb=$("#run");rb.disabled=running;rb.classList.toggle("locked",!can("跑一圈"));rb.title=can("跑一圈")?"让 Agent 读状态→分析→验证→写回，然后停下等人":`当前身份「${UI.who}」不能跑一圈，点了会被服务端拦下`;
+  rb.innerHTML=running?`<span class="spin"></span>Agent 正在跑…`:`${ic("play")}${S.hasRun?"跑一圈":"跑第一圈"}${can("跑一圈")?"":`<span class="lk">${ic("lock")}</span>`}`;
+  const F=S.facts,anom=F?F.异常.filter(a=>a.级别!=="good").length:0,crit=F?F.异常.some(a=>a.级别==="critical"):false,pend=S.actions.filter(a=>a.status==="待确认").length,rej=S.actions.filter(a=>a.status==="驳回").length;
+  const NAV=[["loop","grid","总览 · Loop",null],["s1",1,"发现异常",anom?[anom,crit?"hot":"warn"]:null],["s2",2,"判断原因",null],["s3",3,"制定动作",S.hasRun?[S.task.options.length,""]:null],["s4",4,"执行清单",pend?[pend,"warn"]:null],["s5",5,"复盘学习",rej?[rej,""]:null]];
+  $("#snav").innerHTML=NAV.map(([id,i,l,c])=>`<a href="#${id}" data-s="${id}" class="${UI.sec===id?"on":""}">${typeof i==="number"?`<span class="sn">${i}</span>`:ic(i)}${l}${c?`<span class="ct ${c[1]}">${c[0]}</span>`:""}</a>`).join("")}
+function setWho(r){UI.who=r;try{localStorage.setItem("who",r)}catch(e){}render();toast(`已切换为「${r}」`)}
+
+function render(){chrome();const t=S.task;let out="";
+  if(!S.hasRun){out+=loopHtml()+`<div class="panel"><div class="empty"><div class="ic">${ic("bolt")}</div><h2>任务 ${h(t.id)} 已建好，状态「${h(t.status)}」</h2><p>目标 ACOS ${pct(t.target_acos,0)}、补货到仓 ${t.arrive_weeks} 周、${h(t.stage)}。点「跑第一圈」：Agent 读状态、跑分析、过验证器、把结果写进工作台，然后停下来等人。</p>${B({label:"跑第一圈",icon:"play",cls:"primary lg",on:"runLoop()",perm:"跑一圈"})}</div></div>`;$("#app").innerHTML=out;spy();return}
+  const F=S.facts,concl=S.runs[0]&&S.runs[0].conclusion;
+  out+=(concl?`<div class="banner"><span class="ic">${ic("bolt")}</span><div><div class="k">本周结论 · v${t.version}</div>${h(concl)}</div></div>`:"")+kpiHtml(F)+loopHtml()+s1(F)+s2(F)+s3()+s4()+s5(F);$("#app").innerHTML=out;spy()}
 const LOOP=["读取状态","判断下一步","执行","验证","写入状态","判断停止条件"];
 function loopHtml(){const steps=S.progress.steps||[],by={};steps.forEach(s=>by[s.i]=s);const shown=UI.playing?UI.shown:99,cur=UI.playing?UI.cur:0;
-  return `<section class="card" id="loop"><div class="sec-head"><h2>Loop 六动作 <small>模型可以忘，系统状态不能忘</small></h2><span class="sp hint">${steps.length?`上一圈 ${steps.at(-1).t} 秒跑完，点格子看细节`:"还没跑过"}</span></div><div class="loop">${LOOP.map((n,k)=>{const i=k+1,s=by[i]&&steps.indexOf(by[i])<shown?by[i]:null;
-  return `<div class="lstep ${s?(s.ok?"done":"fail"):""} ${cur===i?"now":""} ${UI.openSteps.has(i)?"open":""}" onclick="tog(${i})"><div class="t"><span class="k">${i}</span>${n}</div><div class="d">${s?h(s.detail):(cur===i?"…":"")}</div>${s&&s.extra&&s.extra.length?`<ul>${s.extra.map(e=>`<li>${h(e)}</li>`).join("")}</ul>`:""}</div>`}).join("")}</div></section>`}
+  const ok=steps.length&&steps.every(s=>s.ok),tools=steps.length?`<span class="chip ${ok?"on":"warn"}">${ok?ic("check","width:12px;height:12px"):""}上一圈 ${steps.at(-1).t} 秒跑完</span><span class="hint">点格子看细节</span>`:`<span class="hint">还没跑过</span>`;
+  return panel("loop",ic("loop"),"Loop 六动作","模型可以忘，系统状态不能忘",tools,`<div class="loop">${LOOP.map((n,k)=>{const i=k+1,s=by[i]&&steps.indexOf(by[i])<shown?by[i]:null;
+  return `<div class="lstep ${s?(s.ok?"done":"fail"):""} ${cur===i?"now":""} ${UI.openSteps.has(i)?"open":""}" onclick="tog(${i})"><div class="t"><span class="k">${s&&s.ok?ic("check","width:12px;height:12px;stroke-width:3"):i}</span>${n}</div><div class="d">${s?h(s.detail):(cur===i?"处理中…":"等待")}</div>${s&&s.extra&&s.extra.length?`<ul>${s.extra.map(e=>`<li>${h(e)}</li>`).join("")}</ul>`:""}</div>`}).join("")}</div>`)}
 function tog(i){UI.openSteps.has(i)?UI.openSteps.delete(i):UI.openSteps.add(i);render()}
 function kpiHtml(F){const W=F.逐周,Y=F.四周,I=F.库存,lab=W.map(w=>w.周),L=W.at(-1),Pv=W.at(-2),R=S.task.arrive_weeks,lv=k=>F.异常.find(a=>a.指标===k)?.级别||"good";
   const mc={critical:"--critical",serious:"--serious",warning:"--warning",good:"--accent"}[lv("库存够卖几周")];
-  const T=(l,v,s,sp)=>`<div class="tile"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div>${sp||""}</div>`;
+  const T=(l,v,s,sp,lvl)=>`<div class="tile" style="--lc:${lvl&&lvl!=="good"?`var(${LC[lvl]})`:"transparent"}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div>${sp||""}</div>`;
   return `<div class="kpis">${T("上周销售额",usd(L.销售额),delta(L.销售额,Pv.销售额,true),spark(W.map(w=>w.销售额),usd,lab))}${T("上周广告费",usd(L.广告费),delta(L.广告费,Pv.广告费,false),spark(W.map(w=>w.广告费),usd,lab))}
-  ${T("TACOS（四周）",pct(Y.TACOS),`${stat(lv("TACOS"))}<span>盈亏线 ${pct(Y.盈亏线)}</span>`,spark(W.map(w=>w.TACOS),v=>pct(v),lab))}${T("SP 的 ACOS（近 14 天）",pct(F["SP-近14天"].ACOS),`${stat(lv("SP 的 ACOS"))}<span>目标 ${pct(S.task.target_acos,0)}</span>`,spark(W.map(w=>w.SP_ACOS),v=>pct(v),lab))}
-  ${T("库存够卖",I.整体可售周数.toFixed(1)+" 周",`${stat(lv("库存够卖几周"))}<span>${R==null?"补货周数没填":"补货要 "+R+" 周"}</span>`,`<div class="meter" style="--mc:var(${mc})" title="可售周数 ÷ 到仓周数"><i style="width:${Math.min(100,I.整体可售周数/Math.max(R,.1)*100).toFixed(0)}%"></i></div>`)}${T("上周退款率",pct(L.退款率),`${stat(lv("退款率"))}${delta(L.退款率,Pv.退款率,false,true)}`,spark(W.map(w=>w.退款率),v=>pct(v),lab))}</div>`}
-function s1(F){const t=S.task;return `<section class="card" id="s1"><div class="sec-head"><h2><span class="n">1</span>发现异常 <small>脚本算数，对着人给的目标比。没有目标，就没有异常</small></h2></div><div class="grid2"><div class="scroll"><table class="an"><thead><tr><th>判定</th><th>指标</th><th>现值</th><th>对着什么比</th><th>说明</th></tr></thead><tbody>
-  ${F.异常.map(a=>`<tr><td>${stat(a.级别)}</td><td><b>${h(a.指标)}</b></td><td class="num">${h(a.现值)}</td><td>${h(a.参照)}</td><td>${h(a.说明)}</td></tr>`).join("")}</tbody></table></div>
-  <div class="col"><h4>三个输入（人填）</h4><div class="form"><label>目标 ACOS（%）<input id="in_acos" type="number" min="1" max="100" step="1" value="${t.target_acos==null?"":Math.round(t.target_acos*100)}"></label><label>补货到仓还要几周<input id="in_weeks" type="number" min="0" max="26" step="1" value="${t.arrive_weeks??""}"></label>
-  <label>产品阶段<select id="in_stage">${["新品期","成长期","成熟期"].map(x=>`<option ${x===t.stage?"selected":""}>${x}</option>`).join("")}</select></label><div class="row"><button class="btn ok" onclick="saveInputs()">保存，任务回到「待处理」</button><button class="btn ghost sm" onclick="retrigger()" title="输入不动，只重新触发，看它会不会重复跑">原样再触发</button></div>
-  <div class="hint">改完点右上角「跑一圈」。到仓周数改成 1 试试：动作清单会从「暂停」变成「只降预算」。</div></div></div></div></section>`}
+  ${T("TACOS（四周）",pct(Y.TACOS),`${stat(lv("TACOS"))}<span>盈亏线 ${pct(Y.盈亏线)}</span>`,spark(W.map(w=>w.TACOS),v=>pct(v),lab),lv("TACOS"))}${T("SP 的 ACOS（近 14 天）",pct(F["SP-近14天"].ACOS),`${stat(lv("SP 的 ACOS"))}<span>目标 ${pct(S.task.target_acos,0)}</span>`,spark(W.map(w=>w.SP_ACOS),v=>pct(v),lab),lv("SP 的 ACOS"))}
+  ${T("库存够卖",I.整体可售周数.toFixed(1)+" 周",`${stat(lv("库存够卖几周"))}<span>${R==null?"补货周数没填":"补货要 "+R+" 周"}</span>`,`<div class="meter" style="--mc:var(${mc})" title="可售周数 ÷ 到仓周数"><i style="width:${Math.min(100,I.整体可售周数/Math.max(R,.1)*100).toFixed(0)}%"></i></div>`,lv("库存够卖几周"))}${T("上周退款率",pct(L.退款率),`${stat(lv("退款率"))}${delta(L.退款率,Pv.退款率,false,true)}`,spark(W.map(w=>w.退款率),v=>pct(v),lab),lv("退款率"))}</div>`}
+function s1(F){const t=S.task,n=F.异常.filter(a=>a.级别!=="good").length;
+  const tbl=`<div class="tw"><table class="an"><thead><tr><th>判定</th><th>指标</th><th class="num">现值</th><th>对着什么比</th><th>说明</th></tr></thead><tbody>${F.异常.map(a=>`<tr><td>${stat(a.级别)}</td><td><b>${h(a.指标)}</b></td><td class="num">${h(a.现值)}</td><td>${h(a.参照)}</td><td>${h(a.说明)}</td></tr>`).join("")}</tbody></table></div>`;
+  const form=`<div class="box"><div class="bh">${ic("save")}任务输入<span class="r chip">人填 · 改了就重跑</span></div><div class="bb"><div class="form">
+  <label class="fld"><span>目标 ACOS<em>老板可改</em></span><div class="ipt"><input id="in_acos" type="number" min="1" max="100" step="1" value="${t.target_acos==null?"":Math.round(t.target_acos*100)}"><span class="u">%</span></div></label>
+  <label class="fld"><span>补货到仓还要几周<em>老板、供应链可改</em></span><div class="ipt"><input id="in_weeks" type="number" min="0" max="26" step="1" value="${t.arrive_weeks??""}"><span class="u">周</span></div></label>
+  <label class="fld"><span>产品阶段<em>老板可改</em></span><div class="ipt"><select id="in_stage">${["新品期","成长期","成熟期"].map(x=>`<option ${x===t.stage?"selected":""}>${x}</option>`).join("")}</select></div></label>
+  <div class="frow">${B({label:"保存，任务回到「待处理」",icon:"save",cls:"soft",on:"saveInputs()"})}${B({label:"原样再触发",icon:"refresh",cls:"ghost sm",on:"retrigger()",title:"输入不动，只重新触发，看它会不会重复跑"})}</div>
+  <div class="tip">${ic("info")}<span>改完点右上角「跑一圈」。到仓周数改成 1 试试：动作清单会从「暂停」变成「只降预算」。</span></div></div></div></div>`;
+  return panel("s1","1","发现异常","脚本算数，对着人给的目标比。没有目标，就没有异常",`<span class="chip ${n?"warn":"on"}">${n} 项需要处理</span>`,`<div class="grid2">${tbl}${form}</div>`)}
 function s2(F){const sl=S.sanlan,tabs=["分组账","头部词花在哪","库存","逐周","退货原因"];let tb="";const gB=F["分组账-近14天"];
   if(UI.tab==="分组账")tb=`<table><thead><tr><th>分组（AI 按语义分的，报表里没有这一列）</th><th class="num">花费</th><th class="num">占比</th><th class="num">点击</th><th class="num">订单</th><th class="num">CVR</th><th class="num">CPC</th><th class="num">ACOS</th></tr></thead><tbody>${Object.entries(gB).map(([k,v])=>`<tr><td>${h(k.slice(k.indexOf("-")+1))}</td><td class="num">${usd(v.广告花费)}</td><td class="num">${pct(v.占比)}</td><td class="num">${v.广告点击量}</td><td class="num">${v.广告订单量}</td><td class="num">${pct(v.CVR)}</td><td class="num">$${v.CPC.toFixed(2)}</td><td class="num">${v.ACOS?pct(v.ACOS):"—"}</td></tr>`).join("")}</tbody></table>`;
-  if(UI.tab==="头部词花在哪")tb=`<div class="hint" style="margin-bottom:6px">头部 4 词：${F.头部词.map(h).join("、")}。精确组只占 ${pct(F.精确组占头部词花费)}。</div><table><thead><tr><th>广告活动</th><th class="num">花费</th><th class="num">点击</th><th class="num">订单</th><th class="num">ACOS</th></tr></thead><tbody>${F.头部词分道.map(x=>`<tr><td>${h(x.广告活动)}</td><td class="num">${usd(x.花费)}</td><td class="num">${x.点击}</td><td class="num">${x.订单}</td><td class="num">${x.ACOS?pct(x.ACOS,0):"—"}</td></tr>`).join("")}</tbody></table>`;
+  if(UI.tab==="头部词花在哪")tb=`<div class="hint" style="padding:10px 12px;border-bottom:1px solid var(--line2)">头部 4 词：${F.头部词.map(h).join("、")}。精确组只占 ${pct(F.精确组占头部词花费)}。</div><table><thead><tr><th>广告活动</th><th class="num">花费</th><th class="num">点击</th><th class="num">订单</th><th class="num">ACOS</th></tr></thead><tbody>${F.头部词分道.map(x=>`<tr><td>${h(x.广告活动)}</td><td class="num">${usd(x.花费)}</td><td class="num">${x.点击}</td><td class="num">${x.订单}</td><td class="num">${x.ACOS?pct(x.ACOS,0):"—"}</td></tr>`).join("")}</tbody></table>`;
   if(UI.tab==="库存")tb=`<table><thead><tr><th>SKU</th><th class="num">可售</th><th class="num">调拨中</th><th class="num">途中</th><th class="num">上上周销量</th><th class="num">上周销量</th><th class="num">够卖几周</th></tr></thead><tbody>${S.inventory.slice(0,12).map(r=>`<tr><td>${h(r[0])}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td><td class="num">${r[4]}</td><td class="num">${r[5]}</td><td class="num">${r[6]==null?"—":(r[6]<1?ICON.critical+" ":r[6]<2?ICON.warning+" ":"")+r[6]}</td></tr>`).join("")}</tbody></table>`;
   if(UI.tab==="逐周")tb=`<table><thead><tr><th>周</th><th class="num">件数</th><th class="num">销售额</th><th class="num">广告费</th><th class="num">SP</th><th class="num">SB</th><th class="num">SBV</th><th class="num">TACOS</th><th class="num">SP 的 ACOS</th><th class="num">SP 的 CVR</th><th class="num">退款率</th><th class="num">广告后毛利率</th></tr></thead><tbody>${F.逐周.map(w=>`<tr><td>${h(w.周)}</td><td class="num">${w.件数}</td><td class="num">${usd(w.销售额)}</td><td class="num">${usd(w.广告费)}</td><td class="num">${usd(w.SP)}</td><td class="num">${usd(w.SB)}</td><td class="num">${usd(w.SBV)}</td><td class="num">${pct(w.TACOS)}</td><td class="num">${pct(w.SP_ACOS)}</td><td class="num">${pct(w.SP_CVR)}</td><td class="num">${pct(w.退款率)}</td><td class="num">${pct(w.广告后毛利率)}</td></tr>`).join("")}</tbody></table>`;
   if(UI.tab==="退货原因")tb=`<table><thead><tr><th>已退回 ${F.已退回件} 件的原因</th><th class="num">件数</th><th class="num">占比</th></tr></thead><tbody>${F.退货原因.map(([k,v])=>`<tr><td>${h(k)}</td><td class="num">${v}</td><td class="num">${pct(v/F.已退回件,0)}</td></tr>`).join("")}</tbody></table>`;
-  return `<section class="card" id="s2"><div class="sec-head"><h2><span class="n">2</span>判断原因 <small>AI 做语义分组和归因；事实、推断、未知分开写</small></h2></div><div class="grid3"><div class="col"><h4>事实（可复算）</h4><ol>${sl.事实.map(x=>`<li>${md(x)}</li>`).join("")}</ol></div><div class="col"><h4>推断（带依据，和什么情况下不成立）</h4><ul>${sl.推断.map(x=>`<li>${md(x)}</li>`).join("")}</ul></div><div class="col"><h4>未知（缺什么，去哪取）</h4><ul>${sl.未知.map(x=>`<li>${md(x)}</li>`).join("")}</ul></div></div>
-  <div class="tabs">${tabs.map(x=>`<button class="tab ${x===UI.tab?"on":""}" onclick="UI.tab='${x}';render()">${x}</button>`).join("")}</div><div class="scroll">${tb}</div></section>`}
+  const col=(c,t,s,tag,list)=>`<div class="evi" style="--c:var(${c})"><div class="eh"><i></i>${t}<small>${s}</small></div><${tag}>${list.map(x=>`<li>${md(x)}</li>`).join("")}</${tag}></div>`;
+  return panel("s2","2","判断原因","AI 做语义分组和归因；事实、推断、未知分开写",`<span class="chip">事实 ${sl.事实.length}</span><span class="chip">推断 ${sl.推断.length}</span><span class="chip">未知 ${sl.未知.length}</span>`,
+  `<div class="grid3">${col("--accent","事实","可复算","ol",sl.事实)}${col("--warning","推断","带依据，和什么情况下不成立","ul",sl.推断)}${col("--muted","未知","缺什么，去哪取","ul",sl.未知)}</div>
+  <div class="utabs" role="tablist">${tabs.map(x=>`<button class="utab ${x===UI.tab?"on":""}" role="tab" onclick="UI.tab='${x}';render()">${x}</button>`).join("")}</div><div class="tw">${tb}</div>`)}
 function s3(){const cur=S.task.options;if(!UI.opts)UI.opts=new Set(cur);const changed=[...UI.opts].sort().join()!==[...cur].sort().join();
-  return `<section class="card" id="s3"><div class="sec-head"><h2><span class="n">3</span>制定动作 <small>AI 摆选项和代价，不替你选；取舍是人的</small></h2><span class="sp">${changed?`<button class="btn ok" onclick="saveOpts()">按这个取舍重新生成</button>`:`<span class="hint">点卡片改取舍（只有老板能改）</span>`}</span></div><div class="opts">
-  ${S.options.map(o=>`<div class="opt ${UI.opts.has(o.key)?"on":""}" onclick="pick('${o.key}')"><div class="h"><span class="key">${o.key}</span>${h(o.名称)}</div><p>${h(o.做什么)}</p><div class="c"><b>代价：</b>${h(o.代价)}</div><p>该选的时候：${h(o.何时选)}｜${h(o.可逆)}</p><div><span class="chip">${o.已选?`本轮 ${o.动作条数} 条动作`:"本轮没选"}</span></div></div>`).join("")}</div></section>`}
+  const tools=`<span class="hint">已选 <b style="color:var(--ink)">${[...UI.opts].sort().join(" · ")||"无"}</b></span>`+(changed?B({label:"按这个取舍重新生成",icon:"refresh",cls:"primary sm",on:"saveOpts()",perm:"改取舍"})+B({label:"放弃修改",cls:"ghost sm",on:"UI.opts=null;render()"}):`<span class="chip">点卡片改取舍 · 只有老板能改</span>`);
+  return panel("s3","3","制定动作","AI 摆选项和代价，不替你选；取舍是人的",tools,`<div class="opts">
+  ${S.options.map(o=>`<div class="opt ${UI.opts.has(o.key)?"on":""}" onclick="pick('${o.key}')"><div class="h"><span class="key">${o.key}</span>${h(o.名称)}<span class="ck">${ic("check")}</span></div><p>${h(o.做什么)}</p><div class="c"><b>代价：</b>${h(o.代价)}</div><div class="m">该选的时候：${h(o.何时选)}｜${h(o.可逆)}<div style="margin-top:6px"><span class="chip ${o.已选?"on":""}">${o.已选?`本轮 ${o.动作条数} 条动作`:"本轮没选"}</span></div></div></div>`).join("")}</div>`)}
 function pick(k){UI.opts.has(k)?UI.opts.delete(k):UI.opts.add(k);render()}
-function s4(){const ver=S.task.version,all=S.actions,live=all.filter(a=>a.version===ver||(a.status!=="作废")),cnt={};all.forEach(a=>cnt[a.status]=(cnt[a.status]||0)+1);const vis=ST_ORDER.filter(s=>cnt[s]&&(s!=="作废"));const tot=vis.reduce((x,s)=>x+cnt[s],0)||1;
-  let rows=(UI.showVoid?all:live).filter(a=>UI.stFilter==="全部"||a.status===UI.stFilter);const groups={};rows.forEach(a=>{const g=a.version===ver?a.type:`上一版里人处理过的（v${a.version}）`;(groups[g]=groups[g]||[]).push(a)});
+function s4(){const ver=S.task.version,all=S.actions,live=all.filter(a=>a.version===ver||(a.status!=="作废")),cnt={};all.forEach(a=>cnt[a.status]=(cnt[a.status]||0)+1);const vis=ST_ORDER.filter(s=>cnt[s]&&(s!=="作废"));
+  const base=UI.showVoid?all:live,fc={全部:base.length};base.forEach(a=>fc[a.status]=(fc[a.status]||0)+1);
+  let rows=base.filter(a=>UI.stFilter==="全部"||a.status===UI.stFilter);const groups={};rows.forEach(a=>{const g=a.version===ver?a.type:`上一版里人处理过的（v${a.version}）`;(groups[g]=groups[g]||[]).push(a)});
   const gh=Object.entries(groups).map(([g,list])=>{const pend=list.filter(a=>a.status==="待确认").length,isType=!g.startsWith("上一版");
-    return `<details class="grp" ${UI.openGroups.has(g)?"open":""} ontoggle="UI.openGroups[this.open?'add':'delete']('${h(g)}')"><summary>${h(g)} <span class="chip">${list.length} 条</span><span class="sp">${pend?`<span class="hint">${pend} 条待确认</span>`:""}${pend&&isType?`<button class="btn sm ok" onclick="event.preventDefault();bulk('${h(g)}')">这一类全部确认</button>`:""}</span></summary><div class="scroll"><table><thead><tr><th>编号</th><th>广告活动</th><th>对象</th><th>现值 → 新值</th><th>依据</th><th>状态与操作</th></tr></thead><tbody>${list.map(rowHtml).join("")}</tbody></table></div></details>`}).join("");
-  return `<section class="card" id="s4"><div class="sec-head"><h2><span class="n">4</span>调用工具执行 <small>AI 只出清单、只读数据；人点头，人去后台上传</small></h2><span class="sp ops"><select onchange="UI.stFilter=this.value;render()">${["全部",...ST_ORDER].map(s=>`<option ${s===UI.stFilter?"selected":""}>${s}</option>`).join("")}</select><label class="hint"><input type="checkbox" ${UI.showVoid?"checked":""} onchange="UI.showVoid=this.checked;render()"> 显示作废</label><a class="btn sm" href="/api/export.csv?status=已确认">导出已确认清单</a></span></div>
-  ${cmpHtml()}<div class="sbar" role="img" aria-label="动作状态分布">${vis.map(s=>`<i style="flex:${cnt[s]};background:var(${ST[s]})" title="${s} ${cnt[s]} 条"></i>`).join("")}</div><div class="legend">${ST_ORDER.filter(s=>cnt[s]).map(s=>`<span><i style="background:var(${ST[s]})"></i>${s} <b style="color:var(--ink)">${cnt[s]}</b></span>`).join("")}<span>｜ 当前 v${ver}，验证器 ${S.checks.filter(c=>c.通过).length}/${S.checks.length} 项通过</span></div>${gh||`<p class="hint">这个筛选下没有动作。</p>`}</section>`}
+    return `<details class="grp" ${UI.openGroups.has(g)?"open":""} ontoggle="UI.openGroups[this.open?'add':'delete']('${h(g)}')"><summary>${ic("chev","").replace('class="i"','class="i chev"')}${h(g)} <span class="chip">${list.length} 条</span><span class="sp">${pend?`<span class="chip warn">${pend} 条待确认</span>`:""}${pend&&isType?B({label:"这一类全部确认",icon:"done2",cls:"success sm",on:`event.preventDefault();bulk('${g}')`,perm:"点动作"}):""}</span></summary><div class="tw" style="border:0;border-radius:0"><table class="acts"><thead><tr><th>编号</th><th>广告活动</th><th>对象</th><th>现值 → 新值</th><th>依据</th><th>状态与操作</th></tr></thead><tbody>${list.map(rowHtml).join("")}</tbody></table></div></details>`}).join("");
+  const filt=`<span class="flabel" style="margin:0">状态</span><div class="seg">${["全部",...ST_ORDER].filter(s=>s==="全部"||fc[s]||s===UI.stFilter).map(s=>`<button class="${s===UI.stFilter?"on":""}" onclick="UI.stFilter='${s}';render()">${s}<span class="n">${fc[s]||0}</span></button>`).join("")}</div>
+  <div class="r"><label class="hint" style="display:inline-flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" ${UI.showVoid?"checked":""} onchange="UI.showVoid=this.checked;render()"> 显示作废</label><a class="btn sm" href="/api/export.csv?status=已确认">${ic("dl")}导出已确认清单</a></div>`;
+  return panel("s4","4","调用工具执行","AI 只出清单、只读数据；人点头，人去后台上传",`<span class="chip">当前 v${ver}</span><span class="chip ${S.checks.every(c=>c.通过)?"on":"warn"}">验证器 ${S.checks.filter(c=>c.通过).length}/${S.checks.length} 通过</span>`,
+  `${cmpHtml()}<div class="sbar" role="img" aria-label="动作状态分布">${vis.map(s=>`<i style="flex:${cnt[s]};background:var(${ST[s]})" title="${s} ${cnt[s]} 条"></i>`).join("")}</div><div class="legend">${ST_ORDER.filter(s=>cnt[s]).map(s=>`<span><i style="background:var(${ST[s]})"></i>${s} <b>${cnt[s]}</b></span>`).join("")}</div>${gh||`<p class="hint" style="padding:20px 0;text-align:center">这个筛选下没有动作。</p>`}`,
+  `<div class="toolbar">${filt}</div>`)}
 function cmpHtml(){const v=S.task.version;if(v<2)return "";const prev=S.actions.filter(a=>a.version===v-1),cur=S.actions.filter(a=>a.version===v);if(!prev.length)return "";
   const cnt=l=>{const c={};l.forEach(a=>c[a.type]=(c[a.type]||0)+1);return c};const pc=cnt(prev),cc=cnt(cur);const types=[...new Set([...Object.keys(pc),...Object.keys(cc)])].filter(t=>(pc[t]||0)!==(cc[t]||0));
   const st={};prev.forEach(a=>st[a.status]=(st[a.status]||0)+1);const rev=prev.filter(a=>a.note&&a.status==="已确认").length,last=S.runs.find(r=>r.version===v),pl=S.runs.find(r=>r.version===v-1);
   const diff=last&&pl?Object.keys(last.inputs).filter(k=>JSON.stringify(last.inputs[k])!==JSON.stringify(pl.inputs[k])).map(k=>`${k}：${JSON.stringify(pl.inputs[k])} → ${JSON.stringify(last.inputs[k])}`).join("；"):"";
-  return `<div class="cmp"><span>v${v-1} → v${v}${diff?`，因为 <b style="font-size:14px">${h(diff)}</b>`:""}</span><span>新动作 <b>${cur.length}</b></span><span>作废 <b>${st["作废"]||0}</b></span><span>人处理过的保留 <b>${(st["已确认"]||0)+(st["驳回"]||0)+(st["已执行"]||0)+(st["已验证"]||0)}</b></span><span>请复核 <b>${rev}</b></span>${types.map(t=>`<span class="chg">${h(t)} <b>${pc[t]||0} → ${cc[t]||0}</b></span>`).join("")}</div>`}
-function rowHtml(a){let ops="";const b=(txt,st,cls="")=>`<button class="btn sm ${cls}" onclick="act('${a.no}','${st}')">${txt}</button>`;
-  if(a.status==="待确认")ops=b("确认","已确认","ok")+`<button class="btn sm no" onclick="UI.rejecting='${a.no}';render();setTimeout(()=>document.getElementById('rj')?.focus(),30)">驳回</button>`;
-  if(a.status==="已确认")ops=b("标为已执行","已执行")+b("撤回","待确认","ghost");if(a.status==="驳回")ops=b("撤回驳回","待确认","ghost");if(a.status==="已执行")ops=b("标为已验证","已验证")+b("撤回","已确认","ghost");
-  const rj=UI.rejecting===a.no?`<div class="rej"><input id="rj" type="text" placeholder="驳回理由（必填，下一轮 Agent 要读）" onkeydown="if((event.key==='Enter'||event.keyCode===13)&&!event.isComposing)act('${a.no}','驳回',this.value)"><button class="btn sm no" onclick="act('${a.no}','驳回',document.getElementById('rj').value)">提交</button><button class="btn sm ghost" onclick="UI.rejecting=null;render()">取消</button></div>`:"";
-  return `<tr class="${a.status==="作废"?"void":""}"><td style="white-space:nowrap">${h(a.no)}</td><td>${h(a.campaign)}</td><td>${h(a.object)}</td><td>${h(a.old)}<span class="arrow">→</span><b>${h(a.new)}</b></td><td>${h(a.why)}${a.spend!=null?`<div class="note">近 14 天涉及 ${usd(a.spend)}</div>`:""}</td><td><div class="ops">${stHtml(a.status)}${ops}</div>${a.by?`<div class="note">${h(a.by)} · ${h((a.updated_at||"").slice(5,16))}</div>`:""}${a.reason?`<div class="note">理由：${h(a.reason)}</div>`:""}${a.note?`<div class="note warn">${h(a.note)}</div>`:""}${rj}</td></tr>`}
+  return `<div class="cmp"><span>v${v-1} → v${v}${diff?`，因为 <b style="font-size:13.5px">${h(diff)}</b>`:""}</span><span>新动作 <b>${cur.length}</b></span><span>作废 <b>${st["作废"]||0}</b></span><span>人处理过的保留 <b>${(st["已确认"]||0)+(st["驳回"]||0)+(st["已执行"]||0)+(st["已验证"]||0)}</b></span><span>请复核 <b>${rev}</b></span>${types.map(t=>`<span class="chg">${h(t)} <b>${pc[t]||0} → ${cc[t]||0}</b></span>`).join("")}</div>`}
+function rowHtml(a){let ops="";const b=(txt,st,cls,icon)=>B({label:txt,icon,cls:"sm "+cls,on:`act('${a.no}','${st}')`,perm:"点动作"});
+  if(a.status==="待确认")ops=b("确认","已确认","success","check")+B({label:"驳回",icon:"x",cls:"sm danger",perm:"点动作",on:`UI.rejecting='${a.no}';render();setTimeout(()=>document.getElementById('rj')?.focus(),30)`});
+  if(a.status==="已确认")ops=b("标为已执行","已执行","soft","bolt")+b("撤回","待确认","ghost","undo");if(a.status==="驳回")ops=b("撤回驳回","待确认","ghost","undo");if(a.status==="已执行")ops=b("标为已验证","已验证","soft","done2")+b("撤回","已确认","ghost","undo");
+  const rj=UI.rejecting===a.no?`<div class="rej"><div class="ipt"><input id="rj" type="text" placeholder="驳回理由（必填，下一轮 Agent 要读）" onkeydown="if((event.key==='Enter'||event.keyCode===13)&&!event.isComposing)act('${a.no}','驳回',this.value)"></div><button class="btn sm danger solid" onclick="act('${a.no}','驳回',document.getElementById('rj').value)">提交驳回</button><button class="btn sm ghost" onclick="UI.rejecting=null;render()">取消</button></div>`:"";
+  return `<tr class="${a.status==="作废"?"void":""}"><td class="mono" style="white-space:nowrap">${h(a.no)}</td><td>${h(a.campaign)}</td><td>${h(a.object)}</td><td>${h(a.old)}<span class="arrow">→</span><span class="nv">${h(a.new)}</span></td><td>${h(a.why)}${a.spend!=null?`<div class="note">近 14 天涉及 ${usd(a.spend)}</div>`:""}</td><td><div class="ops">${stHtml(a.status)}${ops}</div>${a.by?`<div class="note">${h(a.by)} · ${h((a.updated_at||"").slice(5,16))}</div>`:""}${a.reason?`<div class="note">理由：${h(a.reason)}</div>`:""}${a.note?`<div class="note warn">${h(a.note)}</div>`:""}${rj}</td></tr>`}
 function s5(F){const c=S.card,names=["1 业务问题","2 已知事实","3 判断与待证假设","4 具体动作","5 接手岗位","6 执行条件","7 完成时间","8 成本条件","9 复核证据与观察期（＝下一次运行的触发）"],days=Math.ceil((new Date(S.meta.复盘日)-new Date(S.meta.今天))/864e5),rej=S.actions.filter(a=>a.status==="驳回");
-  return `<section class="card" id="s5"><div class="sec-head"><h2><span class="n">5</span>复盘学习 <small>下一圈先读回上一张行动卡；失败也记</small></h2><span class="sp pill">复盘日 ${h(S.meta.复盘日)} · 还有 ${days} 天</span></div><div class="grid2"><div>
-  <h3 style="margin-top:0">回测：如果当初照粗规则否词，这些词后来怎样（动作还没执行，所以不是执行效果）</h3><div class="scroll"><table><thead><tr>${Object.keys(F.回测[0]).map(k=>`<th class="num">${h(k)}</th>`).join("")}</tr></thead><tbody>${F.回测.map(r=>`<tr>${Object.values(r).map(v=>`<td class="num">${h(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
-  <h3>人驳回过的，下一圈不再原样提</h3>${rej.length?`<table><tbody>${rej.map(a=>`<tr><td style="white-space:nowrap">${h(a.no)}</td><td>${h(a.type)}｜${h(a.object)}</td><td>${h(a.reason)}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">还没有驳回。驳回时写的理由会留在这里，下一圈 Agent 先读它。</p>`}
-  <h3>运行历史</h3><div class="scroll"><table><thead><tr><th>版本</th><th>时间</th><th>触发</th><th>输入</th><th class="num">动作</th><th class="num">用时</th></tr></thead><tbody>${S.runs.map(r=>`<tr><td>v${r.version}</td><td style="white-space:nowrap">${h(r.at.slice(5,16))}</td><td>${h(r.trigger)}</td><td>目标 ${pct(r.inputs.目标ACOS,0)}｜到仓 ${r.inputs.补货到仓周数} 周｜${h(r.inputs.产品阶段)}｜取舍 ${r.inputs.取舍项.join("")}${r.inputs.数据窗口?`｜数据到 ${h(r.inputs.数据窗口[1])}`:""}</td><td class="num">${r.summary.合计}</td><td class="num">${r.seconds} 秒</td></tr>`).join("")}</tbody></table></div></div>
-  <div><h3 style="margin-top:0">行动卡 ${h(c.no)}（${h(c.status)}）</h3>${c.fields.map((f,i)=>`<details class="cardf ${i===8?"key":""}" ${i===8||i===0?"open":""}><summary>${names[i]}</summary><div>${md(f)}</div></details>`).join("")}</div></div>
-  <h3>操作记录（谁、什么时候、做了什么）</h3><div class="log">${S.events.map(e=>`<div><span>${h(e.at.slice(5))}</span><b>${h(e.who)}</b><span>${h(e.kind)}</span><span style="color:var(--ink)">${h(e.ref)}　${h(e.detail)}</span></div>`).join("")}</div>
-  <h3>这套数据是怎么来的</h3><p class="hint">全部是只读查询：${Object.entries(S.calls).map(([k,v])=>`<code>${h(k.split("/").slice(-2).join("/"))}</code>×${v}`).join("　")}。${h(S.meta.数据标记)}。${h(S.meta.归因未满)} 归因未满。</p></section>`}
+  const chev=ic("chev").replace('class="i"','class="i chev"');
+  const left=`<div class="stack"><div class="box"><div class="bh">回测<span class="r hint">如果当初照粗规则否词，这些词后来怎样（动作还没执行，所以不是执行效果）</span></div><div class="tw" style="border:0;border-radius:0 0 11px 11px"><table><thead><tr>${Object.keys(F.回测[0]).map(k=>`<th class="num">${h(k)}</th>`).join("")}</tr></thead><tbody>${F.回测.map(r=>`<tr>${Object.values(r).map(v=>`<td class="num">${h(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
+  <div class="box"><div class="bh">人驳回过的<span class="r hint">下一圈不再原样提</span></div>${rej.length?`<div class="tw" style="border:0"><table><tbody>${rej.map(a=>`<tr><td class="mono" style="white-space:nowrap">${h(a.no)}</td><td>${h(a.type)}｜${h(a.object)}</td><td>${h(a.reason)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="bb hint">还没有驳回。驳回时写的理由会留在这里，下一圈 Agent 先读它。</div>`}</div>
+  <div class="box"><div class="bh">运行历史<span class="r chip">${S.runs.length} 次</span></div><div class="tw" style="border:0;border-radius:0 0 11px 11px"><table><thead><tr><th>版本</th><th>时间</th><th>触发</th><th>输入</th><th class="num">动作</th><th class="num">用时</th></tr></thead><tbody>${S.runs.map(r=>`<tr><td><span class="vtag">v${r.version}</span></td><td style="white-space:nowrap">${h(r.at.slice(5,16))}</td><td>${h(r.trigger)}</td><td>目标 ${pct(r.inputs.目标ACOS,0)}｜到仓 ${r.inputs.补货到仓周数} 周｜${h(r.inputs.产品阶段)}｜取舍 ${r.inputs.取舍项.join("")}${r.inputs.数据窗口?`｜数据到 ${h(r.inputs.数据窗口[1])}`:""}</td><td class="num">${r.summary.合计}</td><td class="num">${r.seconds} 秒</td></tr>`).join("")}</tbody></table></div></div></div>`;
+  const right=`<div class="box"><div class="bh">行动卡 ${h(c.no)}<span class="r chip on">${h(c.status)}</span></div><div class="bb" style="padding-top:4px">${c.fields.map((f,i)=>`<details class="cardf ${i===8?"key":""}" ${i===8||i===0?"open":""}><summary>${chev}${names[i]}</summary><div>${md(f)}</div></details>`).join("")}</div></div>`;
+  return panel("s5","5","复盘学习","下一圈先读回上一张行动卡；失败也记",`<span class="chip warn">复盘日 ${h(S.meta.复盘日)} · 还有 ${days} 天</span>`,
+  `<div class="grid2">${left}${right}</div><div class="box" style="margin-top:16px"><div class="bh">操作记录<span class="r hint">谁、什么时候、做了什么</span></div><div class="log">${S.events.map(e=>`<div><span>${h(e.at.slice(5))}</span><b>${h(e.who)}</b><span>${h(e.kind)}</span><span style="color:var(--ink)">${h(e.ref)}　${h(e.detail)}</span></div>`).join("")}</div></div>
+  <div class="prov">${ic("db")}<span><b style="color:var(--ink)">这套数据是怎么来的：</b>全部是只读查询：${Object.entries(S.calls).map(([k,v])=>`<code>${h(k.split("/").slice(-2).join("/"))}</code>×${v}`).join("　")}。${h(S.meta.数据标记)}。${h(S.meta.归因未满)} 归因未满。</span></div>`)}
+
+// 侧栏高亮当前所在分区
+function spy(){const ids=["loop","s1","s2","s3","s4","s5"];let cur=ids[0];for(const id of ids){const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<220)cur=id}
+  if(cur!==UI.sec){UI.sec=cur;document.querySelectorAll("#snav a").forEach(a=>a.classList.toggle("on",a.dataset.s===cur))}}
+addEventListener("scroll",()=>{cancelAnimationFrame(spy.f);spy.f=requestAnimationFrame(spy)},{passive:true});
 
 async function load(){S=await api("/api/state");render()}
 async function act(no,status,reason){try{await api("/api/action/"+encodeURIComponent(no),{status,reason});UI.rejecting=null;await load()}catch(e){}}
@@ -168,11 +344,12 @@ async function bulk(type){try{const r=await api("/api/bulk",{type});toast(`已�
 async function saveInputs(){const a=$("#in_acos").value,w=$("#in_weeks").value;try{const r=await api("/api/inputs",{target_acos:a===""?"":a/100,arrive_weeks:w,stage:$("#in_stage").value});toast(r.changed.length?"已保存，任务回到「待处理」。点「跑一圈」":"输入没有变化");await load()}catch(e){}}
 async function retrigger(){try{await api("/api/inputs",{retrigger:true});toast("已重新触发（输入没动）。点「跑一圈」看它会不会重复跑");await load()}catch(e){}}
 async function saveOpts(){try{await api("/api/inputs",{options:[...UI.opts]});UI.opts=null;toast("取舍已改，任务回到「待处理」。点「跑一圈」");await load()}catch(e){UI.opts=null;render()}}
-async function runLoop(){try{await api("/api/run",{trigger:S.hasRun?"改输入重跑":"手动"})}catch(e){return}UI.playing=true;UI.shown=0;UI.cur=1;UI.openSteps.clear();if(isDemo())[1,2,3,4,5,6].forEach(i=>UI.openSteps.add(i));render();window.scrollTo({top:0,behavior:"auto"});
+async function runLoop(){try{await api("/api/run",{trigger:S.hasRun?"改输入重跑":"手动"})}catch(e){return}UI.playing=true;UI.shown=0;UI.cur=1;UI.openSteps.clear();if(isDemo())[1,2,3,4,5,6].forEach(i=>UI.openSteps.add(i));render();document.getElementById("loop")?.scrollIntoView({behavior:"auto"});
   const tick=async()=>{const p=await (await fetch("/api/progress")).json();S.progress=p;if(UI.shown<p.steps.length){UI.shown++;const nx=p.steps[UI.shown];UI.cur=nx?nx.i:(p.running?Math.min(6,(p.steps.at(-1)?.i||0)+1):0);render();return setTimeout(tick,isDemo()?1400:650)}
-    if(p.running){UI.cur=Math.min(6,(p.steps.at(-1)?.i||0)+1);render();return setTimeout(tick,350)}UI.playing=false;UI.cur=0;UI.opts=null;await load();const last=p.steps.at(-1);toast(p.steps.every(s=>s.ok)?"这一圈跑完了，停下来等人":"这一圈停在了异常：看红色那一格")};setTimeout(tick,300)}
+    if(p.running){UI.cur=Math.min(6,(p.steps.at(-1)?.i||0)+1);render();return setTimeout(tick,350)}UI.playing=false;UI.cur=0;UI.opts=null;await load();toast(p.steps.every(s=>s.ok)?"这一圈跑完了，停下来等人":"这一圈停在了异常：看红色那一格")};setTimeout(tick,300)}
 $("#run").onclick=runLoop;$("#reset").onclick=async()=>{if(!confirm("重置：清空工作台的状态库，回到还没跑过的样子。确定？"))return;try{await api("/api/reset",{});UI.opts=null;UI.openGroups.clear();toast("已重置");await load()}catch(e){}};
 const Q=new URLSearchParams(location.search);if(Q.get("void"))UI.showVoid=true;if(Q.get("tab"))UI.tab=Q.get("tab");
-(async()=>{S=await (await fetch("/api/state")).json();if(Q.get("open")){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];(Q.get("open")==="all"?ts:ts.slice(0,1)).forEach(t=>UI.openGroups.add(t));if(Q.get("open")==="all")S.actions.filter(a=>a.version!==v).forEach(a=>UI.openGroups.add(`上一版里人处理过的（v${a.version}）`))}$("#who").innerHTML=S.roles.map(r=>`<option>${r}</option>`).join("");try{const w=localStorage.getItem("who");if(w)$("#who").value=w}catch(e){}$("#who").onchange=()=>{try{localStorage.setItem("who",who())}catch(e){}};
+(async()=>{S=await (await fetch("/api/state")).json();if(Q.get("open")){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];(Q.get("open")==="all"?ts:ts.slice(0,1)).forEach(t=>UI.openGroups.add(t));if(Q.get("open")==="all")S.actions.filter(a=>a.version!==v).forEach(a=>UI.openGroups.add(`上一版里人处理过的（v${a.version}）`))}
+  try{const w=localStorage.getItem("who");if(w&&S.roles.includes(w))UI.who=w}catch(e){}
   const dm=$("#demo");try{dm.checked=localStorage.getItem("demo")==="1"||Q.get("demo")==="1"}catch(e){}document.body.classList.toggle("demo",dm.checked);dm.onchange=()=>{document.body.classList.toggle("demo",dm.checked);try{localStorage.setItem("demo",dm.checked?"1":"0")}catch(e){}render()};render()})();
 </script></body></html>
