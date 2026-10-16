@@ -128,9 +128,12 @@ def state():
     F_, SL_, O_ = (jread(f"{OUT}/数字.json"), sanlan(), jread(f"{OUT}/选项.json")) if has else (None, None, None)
     MP = FIELDS.Mapper(ROOT, P); acts = [dict(r) for r in c.execute("SELECT * FROM action ORDER BY version DESC, no")]
     for a in acts: a["f"] = MP.enrich(a)
+    HIST = jread(f"{ROOT}/历史回放.json")                                   # 历史回放（模拟，只读），由 _脚本/history_sim.py 生成
+    for r in (HIST or {}).get("圈", []):
+        for x in r["动作"]: x["f"] = MP.camp(x["campaign"])
     return {"meta": {"店铺": P["显示店铺"], "产品": P["显示产品"], "数据标记": P.get("数据标记", ""), "周期": f"{P['窗口前'][0]} ～ {P['窗口近'][1]}", "复盘日": P["复盘日"], "今天": P["今天"], "归因未满": P.get("归因未满", "")},
             "roles": ROLES, "can": {k: sorted(v) for k, v in CAN.items()}, "task": t, "hasRun": has, "facts": F_, "sanlan": SL_, "options": O_, "tree": TREE.build(F_, SL_, O_) if has else None, "checks": jread(f"{OUT}/验证器.json") if has else None, "inventory": inv if has else [],
-            "actions": acts, "names": {k: v["Campaign"] for k, v in MP.C.items()}, "parentAsin": MP.parent, "mapped": MP.on, "products": MP.P, "card": ({**dict(card), "fields": json.loads(card["fields"])} if card else None),
+            "actions": acts, "names": {k: v["Campaign"] for k, v in MP.C.items()}, "history": HIST, "parentAsin": MP.parent, "mapped": MP.on, "products": MP.P, "card": ({**dict(card), "fields": json.loads(card["fields"])} if card else None),
             "runs": runs, "events": [dict(r) for r in c.execute("SELECT * FROM event ORDER BY id DESC LIMIT 80")], "calls": calls, "progress": PROG}
 
 # ------------------------------------------------------------------ HTTP
