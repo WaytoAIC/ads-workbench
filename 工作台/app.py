@@ -19,6 +19,7 @@ NEXT = {"待确认": {"已确认", "驳回"}, "已确认": {"已执行", "待确
 now = lambda: datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 jread = lambda p, d=None: json.load(open(p, encoding="utf-8")) if os.path.exists(p) else d
 for _d in (OUT, CARD_DIR, f"{ROOT}/广告闭环/输入"): os.makedirs(_d, exist_ok=True)
+sys.path.insert(0, SCRIPTS); import tree as TREE, fields as FIELDS   # 诊断树连线、动作→广告后台字段（只用标准库）
 LOCK = threading.Lock(); PROG = {"running": False, "steps": [], "started": None}
 
 def db():
@@ -124,10 +125,12 @@ def state():
     if os.path.exists(f"{RAW}/调用记录.jsonl"):
         for l in open(f"{RAW}/调用记录.jsonl", encoding="utf-8"): k = json.loads(l)["path"]; calls[k] = calls.get(k, 0) + 1
     inv = sorted(jread(f"{RAW}/库存与动销-按SKU.json", []), key=lambda r: -(r[5] or 0))
+    F_, SL_, O_ = (jread(f"{OUT}/数字.json"), sanlan(), jread(f"{OUT}/选项.json")) if has else (None, None, None)
+    MP = FIELDS.Mapper(ROOT, P); acts = [dict(r) for r in c.execute("SELECT * FROM action ORDER BY version DESC, no")]
+    for a in acts: a["f"] = MP.enrich(a)
     return {"meta": {"店铺": P["显示店铺"], "产品": P["显示产品"], "数据标记": P.get("数据标记", ""), "周期": f"{P['窗口前'][0]} ～ {P['窗口近'][1]}", "复盘日": P["复盘日"], "今天": P["今天"], "归因未满": P.get("归因未满", "")},
-            "roles": ROLES, "can": {k: sorted(v) for k, v in CAN.items()}, "task": t, "hasRun": has, "facts": jread(f"{OUT}/数字.json") if has else None, "sanlan": sanlan() if has else None,
-            "options": jread(f"{OUT}/选项.json") if has else None, "checks": jread(f"{OUT}/验证器.json") if has else None, "inventory": inv if has else [],
-            "actions": [dict(r) for r in c.execute("SELECT * FROM action ORDER BY version DESC, no")], "card": ({**dict(card), "fields": json.loads(card["fields"])} if card else None),
+            "roles": ROLES, "can": {k: sorted(v) for k, v in CAN.items()}, "task": t, "hasRun": has, "facts": F_, "sanlan": SL_, "options": O_, "tree": TREE.build(F_, SL_, O_) if has else None, "checks": jread(f"{OUT}/验证器.json") if has else None, "inventory": inv if has else [],
+            "actions": acts, "names": {k: v["Campaign"] for k, v in MP.C.items()}, "parentAsin": MP.parent, "mapped": MP.on, "products": MP.P, "card": ({**dict(card), "fields": json.loads(card["fields"])} if card else None),
             "runs": runs, "events": [dict(r) for r in c.execute("SELECT * FROM event ORDER BY id DESC LIMIT 80")], "calls": calls, "progress": PROG}
 
 # ------------------------------------------------------------------ HTTP
@@ -153,8 +156,14 @@ class H(BaseHTTPRequestHandler):
             fs = sorted(f for f in os.listdir(ROOT) if f.startswith("运行报告-") and f.endswith(".html"))
             return self.send(200, open(f"{ROOT}/{fs[-1]}", "rb").read(), "text/html; charset=utf-8") if fs else self.send(404, {"error": "还没有报告"})
         if u.path == "/api/export.csv":
-            st = parse_qs(u.query).get("status", ["已确认"])[0]; buf = io.StringIO(); w = csv.writer(buf); w.writerow(["动作编号", "类型", "广告活动", "对象", "现值", "新值", "依据", "确认人", "状态"])
-            for r in db().execute("SELECT * FROM action WHERE status=? ORDER BY no", (st,)): w.writerow([r["no"], r["type"], r["campaign"], r["object"], r["old"], r["new"], r["why"], r["by"], r["status"]])
+            q = parse_qs(u.query); st = q.get("status", ["已确认"])[0]; ty = [x for x in q.get("types", [""])[0].split(",") if x]; buf = io.StringIO(); w = csv.writer(buf)
+            bulk = bool(ty) and all(x in FIELDS.ADS_TYPES for x in ty); MP = FIELDS.Mapper(ROOT, jread(PARAMS))   # 全是广告动作 → 按广告后台批量上传表出
+            w.writerow(FIELDS.BULK_COLS if bulk else ["动作编号", "类型", "Campaign", "广告组", "SKU", "ASIN", "关键词", "匹配", "改什么", "现值", "新值", "依据", "确认人", "状态"])
+            for r in db().execute("SELECT * FROM action WHERE status=? ORDER BY no", (st,)):
+                if ty and r["type"] not in ty: continue
+                f = MP.enrich(dict(r))
+                w.writerow(FIELDS.bulk_row(dict(r), f) if bulk else [r["no"], r["type"], f.get("Campaign", ""), f.get("广告组", ""), f.get("SKU", ""), f.get("ASIN", ""), f.get("关键词", ""), f.get("匹配", ""),
+                           f.get("改什么", ""), f.get("现值", r["old"]), f.get("新值", r["new"]), r["why"], r["by"], r["status"]])
             return self.send(200, ("﻿" + buf.getvalue()).encode(), "text/csv; charset=utf-8", {"Content-Disposition": "attachment; filename*=UTF-8''" + "%E5%B7%B2%E7%A1%AE%E8%AE%A4%E6%B8%85%E5%8D%95.csv"})
         self.send(404, {"error": "not found"})
     def do_POST(self):
