@@ -1,0 +1,100 @@
+[
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "name": "ASIN定位-3",
+  "defaultBid": 0.34,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "groupId": "AG06",
+  "name": "类目定位",
+  "defaultBid": 0.36,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP10",
+  "groupId": "AG10",
+  "name": "属性-吸盘款",
+  "defaultBid": 0.34,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "name": "ASIN定位-1",
+  "defaultBid": 0.36,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP05",
+  "groupId": "AG05",
+  "name": "词组主干",
+  "defaultBid": 0.36,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP11",
+  "groupId": "AG11",
+  "name": "ASIN定位-2",
+  "defaultBid": 0.34,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP09",
+  "groupId": "AG09",
+  "name": "属性-防霉款",
+  "defaultBid": 0.34,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP14",
+  "groupId": "AG14",
+  "name": "品类主题",
+  "defaultBid": 0.34,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP01",
+  "groupId": "AG01",
+  "name": "自动-主",
+  "defaultBid": 0.66,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP03",
+  "groupId": "AG03",
+  "name": "广泛大词",
+  "defaultBid": 0.36,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "groupId": "AG07",
+  "name": "自动-低价",
+  "defaultBid": 0.31,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP02",
+  "groupId": "AG02",
+  "name": "精确主干",
+  "defaultBid": 0.36,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP13",
+  "groupId": "AG13",
+  "name": "属性-吸盘款2",
+  "defaultBid": 0.34,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP04",
+  "groupId": "AG04",
+  "name": "词组拓词",
+  "defaultBid": 0.36,
+  "state": "enabled"
+ }
+]

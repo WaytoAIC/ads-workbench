@@ -1,0 +1,585 @@
+[
+ {
+  "campaignId": "CAMP01",
+  "groupId": "AG01",
+  "targetId": "TG001",
+  "expressionType": "auto",
+  "expression": [
+   {
+    "type": "ASIN_ACCESSORY_RELATED",
+    "value": null,
+    "名称": "关联商品"
+   }
+  ],
+  "bid": 0.31,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP01",
+  "groupId": "AG01",
+  "targetId": "TG002",
+  "expressionType": "auto",
+  "expression": [
+   {
+    "type": "ASIN_SUBSTITUTE_RELATED",
+    "value": null,
+    "名称": "同类产品"
+   }
+  ],
+  "bid": 0.31,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP01",
+  "groupId": "AG01",
+  "targetId": "TG003",
+  "expressionType": "auto",
+  "expression": [
+   {
+    "type": "QUERY_BROAD_REL_MATCHES",
+    "value": null,
+    "名称": "宽泛匹配"
+   }
+  ],
+  "bid": 0.31,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP01",
+  "groupId": "AG01",
+  "targetId": "TG004",
+  "expressionType": "auto",
+  "expression": [
+   {
+    "type": "QUERY_HIGH_REL_MATCHES",
+    "value": null,
+    "名称": "紧密匹配"
+   }
+  ],
+  "bid": 0.82,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP06",
+  "groupId": "AG06",
+  "targetId": "TG005",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_CATEGORY_SAME_AS",
+    "value": "CAT01",
+    "名称": "bathtub & shower mats"
+   }
+  ],
+  "bid": 0.46,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "groupId": "AG07",
+  "targetId": "TG006",
+  "expressionType": "auto",
+  "expression": [
+   {
+    "type": "ASIN_ACCESSORY_RELATED",
+    "value": null,
+    "名称": "关联商品"
+   }
+  ],
+  "bid": 0.31,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP07",
+  "groupId": "AG07",
+  "targetId": "TG007",
+  "expressionType": "auto",
+  "expression": [
+   {
+    "type": "ASIN_SUBSTITUTE_RELATED",
+    "value": null,
+    "名称": "同类产品"
+   }
+  ],
+  "bid": 0.31,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP07",
+  "groupId": "AG07",
+  "targetId": "TG008",
+  "expressionType": "auto",
+  "expression": [
+   {
+    "type": "QUERY_BROAD_REL_MATCHES",
+    "value": null,
+    "名称": "宽泛匹配"
+   }
+  ],
+  "bid": 0.31,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP07",
+  "groupId": "AG07",
+  "targetId": "TG009",
+  "expressionType": "auto",
+  "expression": [
+   {
+    "type": "QUERY_HIGH_REL_MATCHES",
+    "value": null,
+    "名称": "紧密匹配"
+   }
+  ],
+  "bid": 0.31,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG010",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0145"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG011",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0029"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG012",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0003"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG013",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0146"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG014",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0147"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG015",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0151"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG016",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0002"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG017",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0007"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG018",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0006"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG019",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0010"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG020",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0154"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP08",
+  "groupId": "AG08",
+  "targetId": "TG021",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0030"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP11",
+  "groupId": "AG11",
+  "targetId": "TG022",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0148"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP11",
+  "groupId": "AG11",
+  "targetId": "TG023",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0149"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP11",
+  "groupId": "AG11",
+  "targetId": "TG024",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0019"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP11",
+  "groupId": "AG11",
+  "targetId": "TG025",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0150"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP11",
+  "groupId": "AG11",
+  "targetId": "TG026",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0011"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP11",
+  "groupId": "AG11",
+  "targetId": "TG027",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0141"
+   }
+  ],
+  "bid": 0.77,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP11",
+  "groupId": "AG11",
+  "targetId": "TG028",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0006"
+   }
+  ],
+  "bid": 0.77,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG029",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0017"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG030",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0144"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG031",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0016"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG032",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0145"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG033",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0003"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG034",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0004"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG035",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0147"
+   }
+  ],
+  "bid": 0.77,
+  "state": "paused"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG036",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0152"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG037",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0005"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG038",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0002"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG039",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0153"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG040",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0007"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ },
+ {
+  "campaignId": "CAMP12",
+  "groupId": "AG12",
+  "targetId": "TG041",
+  "expressionType": "manual",
+  "expression": [
+   {
+    "type": "ASIN_SAME_AS",
+    "value": "b0demo0001"
+   }
+  ],
+  "bid": 0.77,
+  "state": "enabled"
+ }
+]
