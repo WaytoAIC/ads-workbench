@@ -450,7 +450,8 @@ function campCell(a){const f=a.f||{};if(!f.Campaign)return `<span class="hint">$
 function objCell(a){const f=a.f||{};let o="";
   if(f.SKU)o=`<div class="cn">${h(f.SKU)}</div><div class="idl">ASIN ${h(f.ASIN)}</div>`;
   else if(f.关键词)o=`<span class="kw">${h(f.关键词)}</span><span class="mt">${h(f.匹配)}</span>${f["关键词 ID"]?`<div class="idl">关键词 ID ${h(f["关键词 ID"])}</div>`:""}`;
-  else if(f.实体==="Campaign")o=`<span class="kw">日预算</span>`;
+  else if(f.定位)o=`<span class="kw">${h(f.定位)}</span>${f["定位 ID"]?`<div class="idl">定位 ID ${h(f["定位 ID"])}</div>`:""}`;
+  else if(f.实体==="Campaign"||f.实体==="Ad Group")o=`<span class="kw">${h(a.object)}</span>`;
   else o=`${h(a.object)}${f.ASIN?`<div class="idl">ASIN ${h(f.ASIN)}</div>`:""}`;
   return `${f.实体?`<span class="ent">${h(f.实体)}${f.操作?` · ${h(f.操作)}`:""}</span><br>`:""}${o}`}
 function chgCell(a){const f=a.f||{};const o=f.现值??a.old,n=f.新值??a.new;return `<div class="sub2">${h(f.改什么||"")}</div><span>${h(o)}</span><span class="arrow">→</span><span class="nv">${h(n)}</span>`}

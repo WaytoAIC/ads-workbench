@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """广告周检流水线（通用版，不含任何真实标识）：原始报表 + 参数.json → 分组账/事实 → 动作清单 → 三栏表/行动卡 → 运行报告。
 脚本管确定性（算数、规则、验证器）；语义分组表在 group() 里，明细留给人纠错；取舍来自 参数.json（人定）。"""
-import json, os, re, html, collections, warnings
+import json, os, re, html, math, collections, warnings
 import pandas as pd
 warnings.filterwarnings("ignore")
 ROOT = os.environ.get("ADS_ROOT") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,6 +22,20 @@ JO = lambda name, default: J(name) if os.path.exists(f"{RAW}/{name}") else defau
 kids, camps_l, kws, ne, adprod = J("在线产品-本父体.json"), J("本父体-活动.json"), JO("本父体-spKeyword.json", []), JO("本父体-spNeKeyword.json", []), JO("基础-spAdProduct-全店.json", [])
 camps = {str(c["campaignId"]): c for c in camps_l}; cname = {i: c["name"] for i, c in camps.items()}
 adprod = [r for r in adprod if str(r["campaignId"]) in camps]
+# 广告结构（可选）：活动设置（竞价策略、广告位加价）、广告组（默认竞价）、商品定位与自动四组（各自竞价）、否定 ASIN。缺哪张，对应的动作就不出或按 CPC 估
+camp_set = {str(c["campaignId"]): c for c in JO("本父体-spCampaign.json", [])}
+groups = {str(g["campaignId"]): g for g in JO("本父体-spGroup.json", []) if str(g["campaignId"]) in camps}
+targets, ne_tg = [x for x in JO("本父体-spTarget.json", []) if str(x["campaignId"]) in camps], JO("本父体-spNeTarget.json", [])
+STRATEGY = {"fixed": "固定竞价", "down_only": "动态竞价-只降低", "up_and_down": "动态竞价-提高和降低"}
+AUTO_NAME = {"QUERY_HIGH_REL_MATCHES": "紧密匹配", "QUERY_BROAD_REL_MATCHES": "宽泛匹配", "ASIN_SUBSTITUTE_RELATED": "同类产品", "ASIN_ACCESSORY_RELATED": "关联商品"}
+def target_key(x):
+    """定位 → (类别, 对象写法, 报表里「投放」的写法)。对象写法与历史回放一致：asin="…"、category="…"、自动四组用中文名。"""
+    e = (x.get("expression") or [{}])[0]; t_ = e.get("type", "")
+    if t_ in AUTO_NAME: return "自动投放组", AUTO_NAME[t_], AUTO_NAME[t_]
+    if t_ == "ASIN_CATEGORY_SAME_AS": return "类目定位", f'category="{e.get("名称") or e.get("value")}"', str(e.get("名称") or e.get("value")).lower()
+    return "ASIN 定位", f'asin="{str(e.get("value")).upper()}"', str(e.get("value")).lower()
+neg_asin = collections.defaultdict(set)
+for x in ne_tg: neg_asin[cname.get(str(x["campaignId"]), "")].update(str(e.get("value")).lower() for e in x.get("expression", []) if e.get("value"))
 inv = {r[0]: r for r in J("库存与动销-按SKU.json")}
 prof = {k_: v[0] for k_, v in J("利润-父体-四周.json").items()}
 ret = JO("FBA退货-本父体.json", [])
@@ -140,6 +154,7 @@ def actions(F):
         if k_ in REJ: skipped_rej.append({"动作编号": REJ[k_]["动作编号"], "类型": typ, "广告活动": str(camp), "对象": str(obj), "驳回理由": REJ[k_].get("驳回理由")}); return   # 人驳回过：不再原样提
         if k_ in DONE: seen_done.add(k_); return                                                                                                   # 人确认过：沿用，不重复派
         rows.append({"取舍项": item, "类型": typ, "广告活动": camp, "对象": obj, "现值": old, "新值": new, "依据": why, "近14天涉及花费": spend, "可逆": rev})
+        return True
     # A 保主力规格
     enabled = collections.defaultdict(set)
     for r in adprod:
@@ -161,13 +176,15 @@ def actions(F):
                 c_st, c_pk, c_sz = parse_sku(cand)
                 if c_pk == pk and c_sz == sz and c_st != st_ and i[6] is not None and i[6] >= R and cand not in enabled[camp]:
                     add("A", "补挂广告产品", camp, cand, "未投放", "投放", f"同规格的 {sku} 将断货；{cand} 可售 {i[1]} 件＝{i[6]} 周，撑得到补货到仓")
+    risk_camps = set()                                                # 这轮要降预算的活动：后面不同时给它加预算、提价（到仓慢时断货 SKU 已暂停，不受影响）
     if T == 0:                                                        # 到仓很快：不暂停，只降预算
         for camp, skus in enabled.items():
             risk = [x for x in skus if inv.get(x) and inv[x][6] is not None and inv[x][6] < 1]
             if risk:
+                risk_camps.add(camp)
                 bud = float(next(c_["budget"] for c_ in camps.values() if c_["name"] == camp) or 0)
                 if not bud: add("E", "查证", camp, "日预算", "未提供", "填进 活动.csv 后重跑", f"组内 {len(risk)} 个 SKU 一周内会断货，本该降预算，但没有预算数"); continue
-                add("A", "下调预算", camp, "日预算", bud, round(bud * 0.7), f"组内 {len(risk)} 个 SKU 一周内会断货；补货 {R:g} 周就到，不暂停，预算先降 30%，到仓后恢复")
+                add("A", "下调预算", camp, "日预算", bud, math.ceil(bud * 70 - 1e-6) / 100, f"组内 {len(risk)} 个 SKU 一周内会断货；补货 {R:g} 周就到，不暂停，预算先降 30%，到仓后恢复")
     pd.DataFrame(tabA).to_csv(f"{OUT}/广告产品调整表.csv", index=False, encoding="utf-8-sig")
     # B 结构去重：换道否定 + 竞价分层
     negs = []
@@ -195,6 +212,61 @@ def actions(F):
         key = (camp, k_["keywordText"]); sp = float(t14["广告花费"].get(key, 0)); ck = int(t14["广告点击量"].get(key, 0))
         bidrows.append({"广告活动": camp, "关键词": k_["keywordText"], "匹配": k_["matchType"], "现竞价": old, "新竞价": new, "调幅": f"{new/old-1:.0%}", "近14天花费": round(sp, 2), "近14天点击": ck, "状态": "待确认"})
         add("B", "降竞价", camp, f"{k_['keywordText']}（{k_['matchType']}）", old, new, why, round(sp, 2))
+    # B 续：按表现调投放（与历史回放同一套阈值）——关键词、ASIN／类目定位、自动四组、广告组默认竞价、竞价策略、预算、搜索词收割
+    BE, CAP, UP = F["四周"]["盈亏线"], 0.15, 0.10
+    cut = lambda b_: max(0.2, math.ceil(b_ * (1 - CAP) * 100 - 1e-6) / 100); raise_ = lambda b_: math.floor(b_ * (1 + UP) * 100 + 1e-6) / 100   # 取整到分时往安全的一侧取，保证单次调幅不超线
+    touched = {(x["广告活动"], f"{x['关键词']}（{x['匹配']}）") for x in bidrows}   # 一个投放一轮只动一次：结构降价已经管了的，表现规则不再叠
+    perf = lambda r: (int(r["广告点击量"]), int(r["广告订单量"]), float(r["广告花费"]), (r["广告花费"] / r["广告销售额"] if r["广告销售额"] else None))
+    MT = {"精确匹配": "exact", "词组匹配": "phrase", "广泛匹配": "broad"}; kw_bid = {(cname[str(k_["campaignId"])], k_["keywordText"].lower(), k_["matchType"]): float(k_["bid"]) for k_ in kws if k_["state"] == "enabled" and k_["matchType"] != "theme"}
+    tk = win(t[t["匹配类型"].isin(MT)], B).groupby(["广告活动", "投放", "匹配类型"])[NUM].sum()
+    for (camp, kw, mt), r in tk.iterrows():
+        b_ = kw_bid.get((camp, str(kw).lower(), MT[mt])); obj = f"{kw}（{MT[mt]}）"
+        if b_ is None or (camp, obj) in touched: continue
+        ck, od, sp, ac = perf(r)
+        if od == 0 and ck >= 15: add("B", "暂停关键词", camp, obj, "enabled", "paused", f"近 14 天 {ck} 次点击 0 单，花 {usd(sp)}", round(sp, 2))
+        elif ac and ac > BE and ck >= 10 and cut(b_) < b_: add("B", "关键词降竞价", camp, obj, b_, cut(b_), f"ACOS {pct(ac,0)} 超盈亏线 {pct(BE)}；单次降 15%", round(sp, 2))
+        elif ac and ac < TARGET * 0.6 and od >= 3 and camp not in risk_camps: add("B", "关键词提竞价", camp, obj, b_, raise_(b_), f"ACOS {pct(ac,0)} 远低于目标 {pct(TARGET,0)}、{od} 单；提 10% 抢量", round(sp, 2))
+    # 商品定位与自动四组：ASIN 定位看投放报告；类目定位、自动四组在投放报告里没有行，看搜索词报告的「投放」列
+    tp = win(t[~t["匹配类型"].isin(MT) & (t["匹配类型"] != "主题匹配")], B).groupby(["广告活动", "投放"])[NUM].sum()
+    sp_ = win(s, B).assign(投放=lambda d: d["投放"].astype(str)).groupby(["广告活动", "投放"])[NUM].sum()
+    for x in targets:
+        if x["state"] != "enabled": continue
+        camp = cname[str(x["campaignId"])]; kind, obj, rep = target_key(x)
+        src = tp if kind == "ASIN 定位" else sp_
+        hit = [i for i in src.index if i[0] == camp and str(i[1]).lower() == rep]
+        if not hit or (camp, obj) in touched: continue
+        ck, od, sp, ac = perf(src.loc[hit[0]]); b_ = float(x["bid"]); auto = kind == "自动投放组"
+        if od == 0 and ck >= (15 if auto else 8): add("B", "关闭自动投放组" if auto else f"暂停 {kind}", camp, obj, "enabled", "paused", f"近 14 天 {ck} 次点击 0 单，花 {usd(sp)}", round(sp, 2))
+        elif ac and ac > BE and ck >= 8 and cut(b_) < b_: add("B", f"{kind}降竞价", camp, obj, b_, cut(b_), f"ACOS {pct(ac,0)} 超盈亏线 {pct(BE)}；单次降 15%", round(sp, 2))
+        elif ac and ac < TARGET * 0.6 and od >= 3 and camp not in risk_camps: add("B", f"{kind}提竞价", camp, obj, b_, raise_(b_), f"ACOS {pct(ac,0)}、{od} 单；提 10% 抢量", round(sp, 2))
+    # 活动与广告组：预算上调、竞价策略、默认竞价（看整个活动）
+    cr, _ = derived("报表-adCampaignReport-0.pkl", ["日期", "广告活动", "广告活动ID"]); cr = cr[cr["广告活动ID"].astype(str).isin(camps)].copy(); cr["日期"] = pd.to_datetime(cr["日期"])
+    for n in NUM: cr[n] = pd.to_numeric(cr[n], errors="coerce").fillna(0)
+    c14, c7 = win(cr, B).groupby("广告活动")[NUM].sum(), cr[cr["日期"] > pd.Timestamp(B[1]) - pd.Timedelta(days=7)].groupby("广告活动")[NUM].sum()
+    for cid_, c_ in camps.items():
+        camp = c_["name"]
+        if camp not in c14.index or c_.get("state") != "enabled": continue
+        ck, od, sp, ac = perf(c14.loc[camp]); bud = float(c_.get("budget") or 0); per_day = float(c7["广告花费"].get(camp, 0)) / 7
+        if bud and per_day >= 0.9 * bud and ac and ac <= TARGET and camp not in risk_camps:
+            add("B", "预算上调", camp, "日预算", bud, math.floor(bud * 120 + 1e-6) / 100, f"近 7 天日均花 {usd(per_day)}＝预算的 {pct(per_day/bud,0)}，ACOS {pct(ac,0)} 在目标内；加 20%", round(sp, 2))
+        if ac and ac > BE and ck >= 30:
+            stg = (camp_set.get(cid_) or {}).get("biddingStrategy")
+            if stg == "up_and_down": add("B", "改竞价策略", camp, "竞价策略", STRATEGY[stg], STRATEGY["down_only"], f"整个活动 ACOS {pct(ac,0)} 超盈亏线，先不让系统往上加价", round(sp, 2))
+            g_ = groups.get(cid_)
+            if g_ and cut(float(g_["defaultBid"])) < float(g_["defaultBid"]): add("B", "下调默认竞价", camp, "默认竞价", float(g_["defaultBid"]), cut(float(g_["defaultBid"])), f"整个活动 ACOS {pct(ac,0)} 超盈亏线；默认竞价同步降 15%，之后新加的投放不从高价起步", round(sp, 2))
+    # 搜索词收割（成对：精确组新建 + 来源组精确否定；任一条被驳回，两条都不再提）
+    exact_kw = {k_["keywordText"].lower() for k_ in kws if k_["matchType"] == "exact"}
+    for (term_, camp), r in b.groupby(["用户搜索词", "广告活动"])[NUM].sum().iterrows():
+        ck, od, sp, _ = perf(r); g0 = group(term_)
+        if od < 3 or camp in P["主干活动"] or term_.lower() in exact_kw or g0[0] in "05" or term_.lower() in ne_by_camp[camp]: continue
+        pair = [("B", "搜索词收割", P["精确活动"], term_), ("B", "来源组否定", camp, term_)]
+        if any(n_["广告活动"] == camp and n_["否定词"].lower() == term_.lower() for n_ in negs): continue          # 换道否定已经在这个组否它了
+        if any((t_, c__, o_) in REJ for _, t_, c__, o_ in pair):
+            skipped_rej.extend({"动作编号": REJ.get((t_, c__, o_), {}).get("动作编号", ""), "类型": t_, "广告活动": c__, "对象": o_, "驳回理由": REJ.get((t_, c__, o_), {}).get("驳回理由") or "成对的另一条被驳回"} for _, t_, c__, o_ in pair); continue
+        exact_kw.add(term_.lower()); cpc = sp / ck if ck else 0.8
+        add("B", "搜索词收割", P["精确活动"], term_, "—", round(cpc, 2), f"在「{camp}」近 14 天 {od} 单；收进精确组单独出价（起价＝该词实际 CPC）", round(sp, 2))
+        add("B", "来源组否定", camp, term_, "出词", "精确否定", "收割后在来源组精确否定，避免两个组抢同一个词", round(sp, 2))
+        negs.append({"广告活动": camp, "否定词": term_, "匹配方式": "精确否定", "来由": "B 收割", "近14天该组花费": round(sp, 2), "近14天该组订单": od, "状态": "待确认"})
     pd.DataFrame(bidrows).to_csv(f"{OUT}/竞价调整表.csv", index=False, encoding="utf-8-sig")
     # C 竞品品牌词分拣（四周全量，样本更大）
     allp = agg(s, "用户搜索词"); allp["分组"] = [group(i) for i in allp.index]; comp = allp[allp["分组"] == "3-竞品品牌词"].sort_values("广告花费", ascending=False)
@@ -214,6 +286,13 @@ def actions(F):
                 if term_.lower() not in ne_by_camp[camp]:
                     negs.append({"广告活动": camp, "否定词": term_, "匹配方式": "精确否定", "来由": "C 零单且样本足够", "近14天该组花费": "", "近14天该组订单": 0, "状态": "待确认"}); add("C", "竞品词否定", camp, term_, "出词", "精确否定", f"{ck} 次点击 0 单，偶然的概率 {pct(p0,0)}", round(sp, 2))
         if where != "—" and od > 0: add("C", "交回运营判断", where, term_, "只在一个活动里否了", "全活动补否，还是撤回否定？", f"它在别的活动出过 {od} 单（花 {usd(sp)}，ACOS {pct(acos,0)}）", round(sp, 2))
+    # C 续：否定 ASIN——自动组、类目定位里匹配到的别家商品页，四周全量点击 ≥8 且从没出过单（自家子体和明确定位的 ASIN 不在此列）
+    explicit = {(cname[str(x["campaignId"])], target_key(x)[2]) for x in targets}
+    for (term_, camp), r in s.groupby(["用户搜索词", "广告活动"])[NUM].sum().iterrows():
+        a_ = str(term_).lower(); ck, od, sp, _ = perf(r)
+        if not group(a_).startswith("5") or re.match(r"^c\d\d$", a_) or (camp, a_) in explicit or a_ in neg_asin[camp] or a_ in ever or od or ck < 8: continue
+        negs.append({"广告活动": camp, "否定词": a_.upper(), "匹配方式": "否定 ASIN", "来由": "C 否定 ASIN", "近14天该组花费": "", "近14天该组订单": 0, "状态": "待确认"})
+        add("C", "否定 ASIN", camp, f'asin="{a_.upper()}"', "出现在搜索词里", "否定商品定位", f"四周 {ck} 次点击 0 单（花 {usd(sp)}）；按基准转化率，纯属偶然的概率 {pct((1-cvr0)**ck,0)}", round(sp, 2))
     pd.DataFrame(tabC).to_csv(f"{OUT}/竞品品牌词分拣表.csv", index=False, encoding="utf-8-sig")
     pd.DataFrame(negs or [{"广告活动": "", "否定词": "", "匹配方式": "", "来由": "", "近14天该组花费": "", "近14天该组订单": "", "状态": "待确认"}][:len(negs) or 0]).to_csv(f"{OUT}/否词清单.csv", index=False, encoding="utf-8-sig")
     # D 只做否词（课堂原套路的粗规则）：近 14 天 点击≥8 且 0 单 的泛词、跑偏词
@@ -227,15 +306,22 @@ def actions(F):
     # E 查证
     if F["逐周"][-1]["退款率"] > 0.05 and ret:
         top, n_ = F["退货原因"][0]; add("E", "Listing 建议稿", "—", f"退货首因：{top}", f"退款率 {pct(F['逐周'][-1]['退款率'])}", "规格表与主图加选码提示，出建议稿走 A/B，不直接替换", f"已退回 {F['已退回件']} 件里 {n_} 件是这个原因", "", "可逆")
+    adj = {c_["name"]: (camp_set.get(i_) or {}).get("placementAdjustments") for i_, c_ in camps.items() if (camp_set.get(i_) or {}).get("placementAdjustments")}
+    if adj and not os.path.exists(f"{RAW}/报表-adPlacementReport-0.pkl"):                                 # 没有广告位报表：只标缺数据，不编规则
+        now_ = "；".join(f"{k_}：" + "、".join(f"{ {'placementTop': '搜索顶部', 'placementProductPage': '商品页', 'placementRestOfSearch': '搜索其余位置'}.get(a['placement'], a['placement'])} +{a['percentage']}%" for a in v) for k_, v in adj.items())
+        add("E", "广告位待补数据", "、".join(adj), "广告位加价", now_, "补广告位报表后再定", f"{len(adj)} 个活动设了广告位加价，但没有按广告位拆开的花费和订单，看不出加价值不值；不出调整动作", "", "—")
     add("E", "查证", "—", "补货到仓日期", f"按 {R:g} 周估", "供应链回填实际到仓日", "到仓周数决定 A 的力度；改了这个数，动作清单要重算", "", "—")
     for i, r in enumerate(rows, 1):
         r.update({"动作编号": f"{RUN}{'' if VER == 1 else f'v{VER}'}-{i:03d}", "周检任务": RUN, "版本": VER, "状态": "待确认"})
     # ---- 验证器（底线）：逐项留痕；任何一项不过，整轮作废、不写入 ----
     neg_cd = {n_["否定词"].lower() for n_ in negs if n_["来由"][0] in "CD"}
+    pair_of = lambda typ: {r["对象"].lower() for r in rows if r["类型"] == typ} | {o_.lower() for t_, _, o_ in seen_done if t_ == typ}   # 上轮已确认、本轮沿用的也算在内
     checks = [("否词清单里没有自家品牌词", not any(BRAND and BRAND in n_["否定词"].lower() for n_ in negs)),
               ("C、D 类否词里没有出过单的词", not (neg_cd & ever)),
               ("没有重复否定已经否过的词", all(n_["否定词"].lower() not in ne_by_camp[n_["广告活动"]] for n_ in negs)),
-              ("竞价单次调幅不超过 15%", all(abs(float(x["调幅"].strip("%"))) <= 15 for x in bidrows)),
+              ("竞价单次调幅不超过 15%（关键词、商品定位、自动组、默认竞价）", all(abs(float(x["调幅"].strip("%"))) <= 15 for x in bidrows) and all(abs(float(r["新值"]) / float(r["现值"]) - 1) <= 0.15 + 1e-9 for r in rows if "竞价" in r["类型"] and isinstance(r["现值"], (int, float)))),
+              ("预算单次调整不超过 30%", all(abs(float(r["新值"]) / float(r["现值"]) - 1) <= 0.30 + 1e-9 for r in rows if r["类型"] in ("下调预算", "预算上调"))),
+              ("搜索词收割与来源组否定成对出现", pair_of("搜索词收割") == pair_of("来源组否定")),
               ("所有动作都停在「待确认」", all(r["状态"] == "待确认" for r in rows)),
               (("搜索词报告与活动报告花费相差 <1%" if not F["口径核对"]["活动报告缺失_由搜索词报告聚合"] else "口径核对：活动报告缺失，跳过"), abs(F["口径核对"]["活动报告花费"] - F["口径核对"]["搜索词报告花费"]) / F["口径核对"]["活动报告花费"] < 0.01),
               ("只生成了人选中的取舍项", all(r["取舍项"] in CHOSEN for r in rows))]
