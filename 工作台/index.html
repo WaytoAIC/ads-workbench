@@ -224,6 +224,7 @@ tr.void td{color:var(--muted);text-decoration:line-through}tr.void td:last-child
 .lvl{display:inline-block;font-size:10.5px;font-weight:700;border-radius:4px;padding:0 5px;line-height:17px;background:var(--surface2);border:1px solid var(--line);color:var(--ink2);margin-right:4px}
 @media(max-width:1100px){.runs{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.run{margin-right:0}.run:after{display:none}}
 #hist .acts td:nth-child(2){min-width:150px}#hist .acts td:nth-child(3){min-width:200px}#hist .acts td:nth-child(4){min-width:180px}#hist .acts td:nth-child(6){min-width:230px}#hist .acts td:nth-child(8){min-width:170px}
+body.shot .side,body.shot .top{display:none}body.shot .shell{display:block}body.shot main{max-width:1300px;padding:14px 14px 18px}body.shot .panel{margin-bottom:0}
 /* 演示模式：投屏放大 */
 body.demo{font-size:17px}body.demo table{font-size:15.5px}body.demo th,body.demo td{padding:10px 12px}body.demo .tile .v{font-size:32px}body.demo .tile .l,body.demo .tile .s{font-size:14px}
 body.demo .lstep .d{font-size:14px;-webkit-line-clamp:unset}body.demo .lstep .t{font-size:15px}body.demo .ph h2{font-size:20px}body.demo .evi ol,body.demo .evi ul{font-size:15px}body.demo .opt p,body.demo .opt .c{font-size:14px}
@@ -326,7 +327,7 @@ function render(){chrome();const t=S.task;let out="";
   if(!S.hasRun){out+=loopHtml()+`<div class="panel"><div class="empty"><div class="ic">${ic("bolt")}</div><h2>任务 ${h(t.id)} 已建好，状态「${h(t.status)}」</h2><p>目标 ACOS ${pct(t.target_acos,0)}、补货到仓 ${t.arrive_weeks} 周、${h(t.stage)}。点「跑第一圈」：Agent 抓广告数据、对着目标找异常、做分析和诊断、出动作清单，然后停下来等人审批。</p>${B({label:"跑第一圈",icon:"play",cls:"primary lg",on:"runLoop()",perm:"跑一圈"})}</div></div>`;$("#app").innerHTML=out;spy();return}
   const F=S.facts,concl=S.runs[0]&&S.runs[0].conclusion;if(!UI.opts)UI.opts=new Set(S.task.options);
   out+=(concl?`<div class="banner"><span class="ic">${ic("bolt")}</span><div><div class="k">本周结论 · v${t.version}</div>${h(concl)}</div></div>`:"")+loopHtml()+histHtml()+s1(F)+treeHtml()+s5()+s6(F);
-  $("#app").innerHTML=out;requestAnimationFrame(drawEdges);spy()}
+  $("#app").innerHTML=out;shotMode();requestAnimationFrame(drawEdges);spy()}
 
 /* ───────── 总览：Agent 运行 ───────── */
 const LOOP=["读取状态","判断下一步","执行","验证","写入状态","判断停止条件"];
@@ -521,9 +522,11 @@ async function runLoop(){try{await api("/api/run",{trigger:S.hasRun?"改输入�
   const tick=async()=>{const p=await (await fetch("/api/progress")).json();S.progress=p;if(UI.shown<p.steps.length){UI.shown++;const nx=p.steps[UI.shown];UI.cur=nx?nx.i:(p.running?Math.min(6,(p.steps.at(-1)?.i||0)+1):0);render();return setTimeout(tick,isDemo()?1400:650)}
     if(p.running){UI.cur=Math.min(6,(p.steps.at(-1)?.i||0)+1);render();return setTimeout(tick,350)}UI.playing=false;UI.cur=0;UI.opts=null;UI.sel=null;await load();toast(p.steps.every(s=>s.ok)?"这一圈跑完了，停下来等人审批":"这一圈停在了异常：看红色那一格")};setTimeout(tick,300)}
 $("#run").onclick=runLoop;$("#reset").onclick=async()=>{if(!confirm("重置：清空工作台的状态库，回到还没跑过的样子。确定？"))return;try{await api("/api/reset",{});UI.opts=null;UI.sel=null;UI.openGroups.clear();toast("已重置");await load()}catch(e){}};
-const Q=new URLSearchParams(location.search);if(Q.get("void"))UI.showVoid=true;if(Q.get("sel"))UI.sel=Q.get("sel");
+const Q=new URLSearchParams(location.search);if(Q.get("void"))UI.showVoid=true;if(Q.get("sel"))UI.sel=Q.get("sel");if(Q.get("ap"))UI.apStatus=Q.get("ap");if(Q.get("hk"))UI.hk=+Q.get("hk");
+const ONLY=Q.get("only")?Q.get("only").split(","):null;   // 截图用：只留这些区块
+function shotMode(){if(!ONLY)return;document.body.classList.add("shot");document.querySelectorAll("#app > *").forEach(el=>{el.style.display=ONLY.includes(el.id)?"":"none"})}
 (async()=>{S=await (await fetch("/api/state")).json();
-  if(S.hasRun){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];(Q.get("open")==="all"?ts:ts.slice(0,1)).forEach(t=>UI.openGroups.add(t))}
+  if(S.hasRun){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];const o=Q.get("open");(o==="all"?ts:o==="first"?ts.slice(0,1):o.split(",")).forEach(t=>UI.openGroups.add(t))}
   try{const w=localStorage.getItem("who");if(w&&S.roles.includes(w))UI.who=w}catch(e){}
   const dm=$("#demo");try{dm.checked=localStorage.getItem("demo")==="1"||Q.get("demo")==="1"}catch(e){}document.body.classList.toggle("demo",dm.checked);dm.onchange=()=>{document.body.classList.toggle("demo",dm.checked);try{localStorage.setItem("demo",dm.checked?"1":"0")}catch(e){}render()};render()})();
 </script></body></html>

@@ -1,0 +1,25 @@
+﻿广告活动,广告组,定位,竞价,状态
+自动-主,自动-主 组,紧密匹配,0.82,enabled
+自动-主,自动-主 组,宽泛匹配,0.31,paused
+自动-主,自动-主 组,同类产品,0.31,paused
+自动-主,自动-主 组,关联商品,0.31,paused
+自动-低价,自动-低价 组,紧密匹配,0.28,paused
+自动-低价,自动-低价 组,宽泛匹配,0.28,paused
+自动-低价,自动-低价 组,同类产品,0.28,enabled
+自动-低价,自动-低价 组,关联商品,0.28,paused
+类目定位,类目定位 组,Bathtub & Shower Mats,0.46,enabled
+ASIN定位-1,ASIN定位-1 组,B0DEMO0003,0.55,enabled
+ASIN定位-1,ASIN定位-1 组,B0DEMO0006,0.68,enabled
+ASIN定位-1,ASIN定位-1 组,B0DEMO0010,0.55,enabled
+ASIN定位-1,ASIN定位-1 组,B0DEMO0029,0.55,enabled
+ASIN定位-1,ASIN定位-1 组,B0DEMO0030,0.55,enabled
+ASIN定位-1,ASIN定位-1 组,B0DEMO0147,0.55,enabled
+ASIN定位-2,ASIN定位-2 组,B0DEMO0006,0.60,enabled
+ASIN定位-2,ASIN定位-2 组,B0DEMO0011,0.40,enabled
+ASIN定位-2,ASIN定位-2 组,B0DEMO0148,0.40,enabled
+ASIN定位-3,ASIN定位-3 组,B0DEMO0001,0.34,enabled
+ASIN定位-3,ASIN定位-3 组,B0DEMO0002,0.34,enabled
+ASIN定位-3,ASIN定位-3 组,B0DEMO0003,0.34,enabled
+ASIN定位-3,ASIN定位-3 组,B0DEMO0004,0.34,enabled
+ASIN定位-3,ASIN定位-3 组,B0DEMO0007,0.34,enabled
+ASIN定位-3,ASIN定位-3 组,B0DEMO0016,0.34,enabled

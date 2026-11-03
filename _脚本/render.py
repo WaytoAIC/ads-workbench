@@ -146,14 +146,14 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 <section><h2>一句话</h2><div class="key">问题不在跑偏词：泛词加跑偏词只占 SP 花费 {pct(F['泛词加跑偏']['占比'])}。真正的异常是<b>将断货的 SKU 占上周件数 {pct(I['将断货占上周件数'],0)}、补货要 {float(P['补货到仓周数']):g} 周，广告还主要挂在这条线上</b>；其次是 {pct(F['同词多活动']['占比'],0)} 的花费被多个活动重复买、竞价一刀切；退款率四周升到 {pct(W[-1]['退款率'])}，已退回件里 {pct(F['退货首因占比'],0)} 是「{E(F['退货原因'][0][0])}」。</div>
 <div class="tiles"><div class="tile"><b>{usd(Y['销售额'])}</b><span>四周销售额（{Y['件数']:,} 件）</span></div><div class="tile"><b>{usd(Y['广告费'])}</b><span>广告费：SP {pct(Y['SP占比'],0)}／SB {pct(Y['SB占比'],0)}／SBV {pct(Y['SBV占比'],0)}</span></div><div class="tile"><b>{pct(Y['TACOS'])}</b><span>TACOS（盈亏线 {pct(Y['盈亏线'])}）</span></div><div class="tile"><b>{pct(Y['广告后毛利率'])}</b><span>广告后毛利率</span></div><div class="tile"><b>{I['整体可售周数']:.1f} 周</b><span>整体可售；占销量 {pct(I['两周内断货占上周件数'],0)} 的 {len(I['两周内断货SKU'])} 个 SKU 只有 {(f"{I['两周内断货可售周数']:.2f}" if I['两周内断货可售周数'] is not None else "—")} 周</span></div><div class="tile"><b>{pct(W[-1]['退款率'])}</b><span>末周退款率（首周 {pct(W[0]['退款率'])}）</span></div></div></section>
 <section><h2><span class="step">1</span>发现异常：没有目标，就没有异常</h2><p>目标 ACOS {pct(float(P['目标ACOS']),0)}、盈亏线 {pct(Y['盈亏线'])}。SP 的 ACOS {pct(F['SP-近14天']['ACOS'])} 并不流血；异常出在末周广告费 {F['末周环比']['广告费']:+.0%}、件数只 {F['末周环比']['件数']:+.0%}，以及库存。</p>{table(wk)}</section>
-<section><h2><span class="step">2</span>判断原因：事实、推断、未知分开</h2><h3>近 14 天搜索词分组账（分组是 AI 按语义做的，报表里没有这一列；明细留给人纠错）</h3>{table(grp)}
+<section><h2><span class="step">2</span>分析：事实、推断、未知分开</h2><h3>近 14 天搜索词分组账（分组是 AI 按语义做的，报表里没有这一列；明细留给人纠错）</h3>{table(grp)}
 <h3>头部 4 个词花在哪些活动（精确组只占 {pct(F['精确组占头部词花费'])}）</h3>{table(lane)}<h3>库存与动销（按上周销量排，前 8）</h3>{table(invd)}
 <h3>已退回 {F['已退回件']} 件的原因</h3><p>{"｜".join(f"{E(k)} {v} 件" for k, v in F['退货原因'])}</p>
 <details><summary>完整三栏表</summary><pre>{E(open(f"{OUT}/诊断-三栏表.md", encoding="utf-8").read())}</pre></details></section>
-<section><h2><span class="step">3</span>制定动作：AI 摆选项和代价，人取舍</h2><pre>{E(open(f"{OUT}/选项比较.md", encoding="utf-8").read())}</pre></section>
-<section><h2><span class="step">4</span>调用工具执行：只出清单，停在「待确认」</h2><p>本轮 <b>{summ['合计']} 条动作</b>，每条一个编号，写进工作台的动作清单；人在表里改状态，下一轮读回。</p>{table(by)}<h3>每类前两条样例</h3>{table(sample)}
+<section><h2><span class="step">3</span>诊断：AI 摆对策和代价，人取舍</h2><pre>{E(open(f"{OUT}/选项比较.md", encoding="utf-8").read())}</pre></section>
+<section><h2><span class="step">4</span>输出动作 → 5 分类审批：只出清单，全部停在「待审批」</h2><p>本轮 <b>{summ['合计']} 条动作</b>，每条一个编号，写进工作台的动作清单；人在表里改状态，下一轮读回。</p>{table(by)}<h3>每类前两条样例</h3>{table(sample)}
 <h3>竞品品牌词分拣</h3><p>{E(summ['竞品词分拣'])}。零单的词样本不够就先观察，不直接否。</p><h3>这一轮调过的数据接口</h3>{table(calls_df)}</section>
-<section><h2><span class="step">5</span>复盘学习：先回测，再约 {E(P['复盘日'])}</h2><p>动作还没执行，所以这是<b>回测</b>：站在 {pl.A[1]} 用粗规则标词，看这些词后 14 天自己怎样。</p>{table(pd.DataFrame(F['回测']))}
+<section><h2><span class="step">6</span>执行·下周看结果：先回测，再约 {E(P['复盘日'])}</h2><p>动作还没执行，所以这是<b>回测</b>：站在 {pl.A[1]} 用粗规则标词，看这些词后 14 天自己怎样。</p>{table(pd.DataFrame(F['回测']))}
 <div class="key">转化率 {pct(F['SP-近14天']['CVR'],0)} 的品，几次点击不出单很正常；靠粗规则否词省不出钱，还会误伤。真 Loop 的第一圈：行动卡第 9 格约定 <b>{E(P['复盘日'])}</b> 复盘，同一套脚本重跑。</div></section>
 {CMP}<section><h2>照实说</h2><ul><li>手动触发，定时没接；AI 全程只读，没碰广告后台，动作全部「待确认」。</li><li>没做：SB 和 SBV 明细、关键词自然排名、评论。{E(P['归因未满'])} 归因未满。</li><li>「断货后每周约 {usd(F['断货每周白花上限'])} 广告费白花」是推断的上限，前提是顾客不会自己换款。</li></ul></section></main></body></html>"""
     fn = f"{ROOT}/运行报告-{P['任务编号']}.html"; open(fn, "w", encoding="utf-8").write(H); return fn

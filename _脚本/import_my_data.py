@@ -40,6 +40,13 @@ d["日期"] = pd.to_datetime(d["日期"], errors="coerce"); bad_dates = int(d["�
 for k in ("广告曝光量", "广告点击量", "广告订单量", "广告销量"): d[k] = d[k].map(money).astype(int)
 for k in ("广告花费", "广告销售额"): d[k] = d[k].map(money).round(2)
 d["匹配类型"] = d["匹配类型"].str.strip().str.lower().map(lambda x: {"broad": "广泛匹配", "phrase": "词组匹配", "exact": "精确匹配", "": "—"}.get(x, x))
+AUTO_CN = {"close-match": "紧密匹配", "loose-match": "宽泛匹配", "substitutes": "同类产品", "complements": "关联商品"}   # 后台导出的自动投放四组写法 → 流水线用的中文名
+def norm_tgt(v):
+    """「投放」列统一成流水线能对上的写法：asin="B0…" → B0…；category="…" → 类目名；close-match 等 → 中文四组名；其余原样。"""
+    v = str(v).strip(); m_ = re.match(r'^(asin|category)\s*=\s*"?(.*?)"?$', v, re.I)
+    if m_: return m_.group(2).strip()
+    return AUTO_CN.get(re.sub(r"[\s_]+", "-", v.lower()), v)
+d["投放"] = d["投放"].map(norm_tgt)
 d["广告活动"] = d["广告活动"].str.strip(); camps = sorted(d["广告活动"].unique()); cid = {c: f"C{i+1:02d}" for i, c in enumerate(camps)}; d["广告活动ID"] = d["广告活动"].map(cid)
 span = (d["日期"].max() - d["日期"].min()).days + 1
 if span < 21: sys.exit(f"搜索词报告只覆盖 {span} 天（{d['日期'].min().date()}～{d['日期'].max().date()}），至少要 3 周，建议 4 周。")
@@ -78,6 +85,25 @@ json.dump(P, open(f"{DST}/参数.json", "w", encoding="utf-8"), ensure_ascii=Fal
 act = read(opt("活动.csv")) if opt("活动.csv") else pd.DataFrame(); bud = {r["广告活动"].strip(): money(r.get("日预算", 0)) for _, r in act.iterrows()} if len(act) else {}
 tt = {r["广告活动"].strip(): ("auto" if str(r.get("投放类型", "")).lower().startswith(("auto", "自动")) else "manual") for _, r in act.iterrows()} if len(act) else {}
 json.dump([{"campaignId": cid[c], "name": c, "state": "enabled", "targetingType": tt.get(c, "manual"), "budget": bud.get(c, 0), "creationDate": ""} for c in camps], open(f"{RAW}/本父体-活动.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+# 3a. 活动设置（竞价策略、广告位加价）→ spCampaign.json：活动.csv 里有这几列才填，没有就留空；没有 活动.csv 就写空列表
+ST = lambda x: "paused" if str(x).strip().lower().startswith(("pause", "暂停")) else "enabled"
+col = lambda df, *keys: next((h for h in df.columns if any(k in norm(h) for k in keys)), None)           # 按关键词模糊找列名
+def strategy(v):
+    """固定/只降低/提高和降低、fixed/down_only/up_and_down、后台英文 Dynamic bids - down only、接口名 legacyForSales/autoForSales/manual 都认；认不出留空。"""
+    v = str(v).strip().lower()
+    if not v: return ""
+    if any(k in v for k in ("up", "提高", "autoforsales")): return "up_and_down"
+    if any(k in v for k in ("down", "降低", "只降", "legacy")): return "down_only"
+    if any(k in v for k in ("fix", "固定", "manual")): return "fixed"
+    return ""
+pctv = lambda v: (lambda x: int(x) if x == int(x) else x)(money(v))                                           # 20 / 20% / 20.5% 都行
+c_stg, c_pl = (col(act, "竞价策略", "biddingstrategy", "strategy"), {"placementTop": col(act, "搜索顶部", "topofsearch", "placementtop"), "placementProductPage": col(act, "商品页面", "productpage"), "placementRestOfSearch": col(act, "其余位置", "restofsearch")}) if len(act) else ("", {})
+act_by = {r["广告活动"].strip(): r for _, r in act.iterrows()} if len(act) else {}
+camp_set = []
+for c in camps if len(act) else []:
+    r = act_by.get(c); pl_ = [{"placement": k, "percentage": pctv(r[h])} for k, h in c_pl.items() if r is not None and h and money(r[h])]
+    camp_set.append({"campaignId": cid[c], "name": c, "state": "enabled", "targetingType": tt.get(c, "manual"), "budget": bud.get(c, 0), "biddingStrategy": (strategy(r[c_stg]) if r is not None and c_stg else ""), "placementAdjustments": pl_, "startDate": ""})
+n_set = sum(1 for x in camp_set if x["biddingStrategy"] or x["placementAdjustments"])
 def rows_of(f, fn):
     if not opt(f): return []
     out = []
@@ -89,11 +115,32 @@ MT = lambda x: {"broad": "broad", "phrase": "phrase", "exact": "exact", "广泛"
 kws = rows_of("关键词竞价.csv", lambda r, c: {"campaignId": c, "keywordText": r["关键词"].strip(), "matchType": MT(r.get("匹配类型", "")), "bid": money(r["竞价"]), "state": ("paused" if str(r.get("状态", "")).lower().startswith(("pause", "暂停")) else "enabled")})
 ne = rows_of("否定词.csv", lambda r, c: {"campaignId": c, "keywordText": r["否定词"].strip(), "matchType": ("negativePhrase" if "phrase" in str(r.get("匹配类型", "")).lower() or "词组" in str(r.get("匹配类型", "")) else "negativeExact"), "state": "enabled"})
 ap = rows_of("广告产品.csv", lambda r, c: {"campaignId": c, "sku": r["SKU"].strip(), "asin": r.get("ASIN", ""), "state": ("paused" if str(r.get("状态", "")).lower().startswith(("pause", "暂停")) else "enabled")})
-for name, obj in (("本父体-spKeyword.json", kws), ("本父体-spNeKeyword.json", ne), ("基础-spAdProduct-全店.json", ap)):
+# 3b. 广告组（默认竞价）→ spGroup.json：groupId＝AG+活动序号；同一活动第二个组起加 -2、-3（流水线每个活动只认一个组，取最后一个）
+groups = rows_of("广告组.csv", lambda r, c: {"campaignId": c, "groupId": "", "name": str(r.get("广告组", "")).strip() or r["广告活动"].strip(), "defaultBid": money(r["默认竞价"]), "state": ST(r.get("状态", ""))})
+n_g = {}
+for g_ in groups: n_g[g_["campaignId"]] = n_g.get(g_["campaignId"], 0) + 1; g_["groupId"] = f"AG{g_['campaignId'][1:]}" + (f"-{n_g[g_['campaignId']]}" if n_g[g_["campaignId"]] > 1 else "")
+gid_of = {(g_["campaignId"], g_["name"].lower()): g_["groupId"] for g_ in groups}
+# 3c. 商品定位 / 自动四组 → spTarget.json：「定位」列 B0 开头 10 位＝ASIN 定位；紧密匹配/宽泛匹配/同类产品/关联商品（或 close-match 等）＝自动四组；其余当类目，名称＝原文
+AUTO_T = {"紧密匹配": "QUERY_HIGH_REL_MATCHES", "宽泛匹配": "QUERY_BROAD_REL_MATCHES", "同类产品": "ASIN_SUBSTITUTE_RELATED", "关联商品": "ASIN_ACCESSORY_RELATED"}
+def expr(v):
+    v = norm_tgt(v)
+    if re.fullmatch(r"b0[a-z0-9]{8}", v.lower()): return "manual", {"type": "ASIN_SAME_AS", "value": v.upper(), "名称": None}
+    if v in AUTO_T: return "auto", {"type": AUTO_T[v], "value": None, "名称": v}
+    return "manual", {"type": "ASIN_CATEGORY_SAME_AS", "value": None, "名称": v}
+def tgt_row(r, c):
+    et, e = expr(r["定位"]); gname = str(r.get("广告组", "")).strip().lower()
+    return {"campaignId": c, "groupId": gid_of.get((c, gname)) or gid_of.get((c, cid_name[c].lower())) or f"AG{c[1:]}", "targetId": "", "expressionType": et, "expression": [e], "bid": money(r["竞价"]), "state": ST(r.get("状态", ""))}
+cid_name = {v: k for k, v in cid.items()}                                                                       # 活动ID → 活动名（广告组.csv 没填广告组名时按活动名对）
+targets = rows_of("商品定位.csv", tgt_row)
+for i, x in enumerate(targets, 1): x["targetId"] = f"TG{i:03d}"
+# 3d. 否定 ASIN → spNeTarget.json
+ne_tg = rows_of("否定ASIN.csv", lambda r, c: {"campaignId": c, "expression": [{"type": "ASIN_SAME_AS", "value": str(r["ASIN"]).strip().upper()}]})
+for name, obj in (("本父体-spKeyword.json", kws), ("本父体-spNeKeyword.json", ne), ("基础-spAdProduct-全店.json", ap), ("本父体-spCampaign.json", camp_set), ("本父体-spGroup.json", groups), ("本父体-spTarget.json", targets), ("本父体-spNeTarget.json", ne_tg)):
     json.dump(obj, open(f"{RAW}/{name}", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 ret = []
 if opt("退货.csv"):
     for _, r in read(opt("退货.csv")).iterrows(): ret += [{"reasonStr": r["原因"].strip()}] * max(1, int(money(r.get("件数", 1)) or 1))
 json.dump(ret, open(f"{RAW}/FBA退货-本父体.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 open(f"{RAW}/调用记录.jsonl", "w", encoding="utf-8").write(json.dumps({"path": "本地文件：搜索词报告.csv 等，未调任何接口"}) + "\n")
-print(f"导入完成 → {DST}\n  搜索词报告 {len(d)} 行｜{d['日期'].min().date()}～{end.date()}（{span} 天）｜广告活动 {len(camps)} 个｜日期无法解析被丢弃 {bad_dates} 行\n  列对应：{m}\n  周度经营 {len(prof)} 周｜库存 {len(rows)} 个 SKU｜活动预算 {len(bud)}｜关键词竞价 {len(kws)}｜否定词 {len(ne)}｜广告产品 {len(ap)}｜退货 {len(ret)} 件\n  窗口：前 {P['窗口前']}，近 {P['窗口近']}；复盘日 {P['复盘日']}\n下一步：python3 工作台/app.py --root {DST} --port 8811")
+unused = [h for h in st.columns if h not in m.values()]
+print(f"导入完成 → {DST}\n  搜索词报告 {len(d)} 行｜{d['日期'].min().date()}～{end.date()}（{span} 天）｜广告活动 {len(camps)} 个｜日期无法解析被丢弃 {bad_dates} 行\n  列对应：{m}\n  没用上的列（{len(unused)}）：{unused}\n  周度经营 {len(prof)} 周｜库存 {len(rows)} 个 SKU｜活动预算 {len(bud)}｜关键词竞价 {len(kws)}｜否定词 {len(ne)}｜广告产品 {len(ap)}｜退货 {len(ret)} 件\n  活动设置（竞价策略/广告位加价）{n_set}｜广告组 {len(groups)}｜商品定位 {len(targets)}｜否定ASIN {len(ne_tg)}\n  窗口：前 {P['窗口前']}，近 {P['窗口近']}；复盘日 {P['复盘日']}\n下一步：python3 工作台/app.py --root {DST} --port 8811")
