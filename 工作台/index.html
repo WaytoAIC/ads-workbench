@@ -526,7 +526,7 @@ const Q=new URLSearchParams(location.search);if(Q.get("void"))UI.showVoid=true;i
 const ONLY=Q.get("only")?Q.get("only").split(","):null;   // 截图用：只留这些区块
 function shotMode(){if(!ONLY)return;document.body.classList.add("shot");document.querySelectorAll("#app > *").forEach(el=>{el.style.display=ONLY.includes(el.id)?"":"none"})}
 (async()=>{S=await (await fetch("/api/state")).json();
-  if(S.hasRun){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];const o=Q.get("open");(o==="all"?ts:o==="first"?ts.slice(0,1):o.split(",")).forEach(t=>UI.openGroups.add(t))}
+  if(S.hasRun){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];const o=Q.get("open");(o==="all"?ts:(o==null||o==="first")?ts.slice(0,1):o.split(",")).forEach(t=>UI.openGroups.add(t))}
   try{const w=localStorage.getItem("who");if(w&&S.roles.includes(w))UI.who=w}catch(e){}
   const dm=$("#demo");try{dm.checked=localStorage.getItem("demo")==="1"||Q.get("demo")==="1"}catch(e){}document.body.classList.toggle("demo",dm.checked);dm.onchange=()=>{document.body.classList.toggle("demo",dm.checked);try{localStorage.setItem("demo",dm.checked?"1":"0")}catch(e){}render()};render()})();
 </script></body></html>
