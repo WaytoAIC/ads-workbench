@@ -2,7 +2,8 @@
 """给实操手册截图：无头 Chrome 开页面 → PIL 裁掉空白。
 用法：python3 _脚本/shoot.py <url> <输出.png> [--w 1440] [--h 900] [--full]
   --full：高窗口整页截，再按内容裁边（配合页面的 ?only=区块id 只留一块）；不带 --full 就是 w×h 首屏。
-页面参数：only=s1,tree 只显示这些区块并隐藏侧栏顶栏；open=first|all 展开审批分组；ap=全部 审批筛选；sel=H:H1 选中诊断树节点；hk=2 历史回放第几圈。"""
+页面参数（写在 # 前面）：shot=1 隐藏侧栏顶栏；only=todo,band 只留这些块；tab=待执行 行动页签；grp=暂停广告产品 选中哪一类；camp=词组主干 打开哪个活动；sel=H:H1 原因页选中节点；hk=2 历史回放第几圈；goal=1 展开改目标。
+例：python3 _脚本/shoot.py 'http://localhost:8810/?shot=1&tab=待执行#actions' 出.png --full"""
 import os, subprocess, sys, tempfile
 from PIL import Image, ImageChops
 CHROME = next((p for p in ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/google-chrome", "/usr/bin/chromium"] if os.path.exists(p)), None)

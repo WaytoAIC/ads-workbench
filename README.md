@@ -83,30 +83,25 @@ Open http://localhost:8810 and click “跑第一圈”.
 ## 里面有什么 / What's inside
 
 - **Loop 六动作**：读取状态 → 判断下一步 → 执行 → 验证 → 写入状态 → 判断停止条件（`流程图/`，另有项目架构图）
-- **六层页面**（左侧导航）：
-  1. **总览 · Agent 运行**：这一圈的六格，每格可展开细节
-  2. **持续运行 · 历史**：前三圈模拟回放 ＋ 本周真实一圈 ＋ 下一圈，看它是每周跑的，不是一次性的
-  3. **① 发现异常**：对照目标，三个人各填自己的输入（目标 ACOS／到仓周数／取舍）＋ 六张指标卡 ＋ 逐项判定表，每行带「引出的分析」
-  4. **②分析 ③诊断 ④输出动作**：一张可点的诊断树——异常 → 分析 H1–H6 → 对策 A–E → 动作类型；点节点高亮上下游，下方左结论右证据；对策卡打勾＝选进本轮，变了才出现「按这个取舍重新生成」
-  5. **⑤ 分类审批**：按类型分组，通过／驳回必填理由／整类全部通过；状态分段筛选；v1 → v2 对比条；输入变了之后旧确认标「请复核」
-  6. **⑥ 执行 · 下周看结果**：四个执行通道卡（Amazon Ads API／SP-API Listing／领星 ERP／人工判断），审批通过的按通道导出批量上传表；标已执行／已验证；复盘日倒计时；行动卡九格；驳回记录、回测、运行历史、操作记录
-- 持续运行历史回放（`历史回放.json`）、诊断树（`_脚本/tree.py` 连线）、按通道导出（`_脚本/fields.py` 把动作翻成广告后台字段）
+- **六页**（左侧导航，按「人来干什么」分）：**首页**（今天要处理什么 ＋ 这周的结论）｜**行动**（列表 → 详情，带五步进度线；通过／驳回必填理由／导出上传表）｜**广告活动**（14 个活动 → 各自的构成）｜**原因**（问题 → 分析 H1–H6 → 对策 A–E → 动作）｜**Agent 运行**（六格、持续运行、历史与操作记录）｜**设置**（目标、数据源、执行通道、权限、演示模式、重置）
+- 持续运行历史回放（`历史回放.json`）、原因树（`_脚本/tree.py` 连线）、活动构成（`_脚本/structure.py`）、按通道导出（`_脚本/fields.py` 把动作翻成广告后台字段）
 - 权限与状态流转在服务端强制；改一个输入再跑，输出跟着变；人驳回过的下一圈不再提
 - `实操手册.html`：学员两轮 18 步｜`学员材料/任务卡.md`：交三样、热身题、三层验收｜`台上操作卡-业务工作台.md`：讲师 7 步｜`数据说明.md`
 - 换成自己的数据：`数据格式.md` ＋ 模板 `我的数据-示例/` ＋ `python3 _脚本/import_my_data.py 我的数据 ~/ads-lab-mine`
 - 装进 Agent：`python3 _脚本/agent_run.py` 不起网页跑一圈、打印摘要、可推飞书 → `装进Agent.md`
 
-Six-step loop, six-layer review page (overview, history replay, anomalies, a clickable diagnosis tree, grouped approval, execution by channel), server-enforced roles and state transitions, a student handbook with a task card, an instructor card, and a headless agent runner. UI and docs are in Chinese.
+Six-step loop, a six-page workbench organised by what the human is there to do (Home, Actions, Campaigns, Causes, Agent runs, Settings), server-enforced roles and state transitions, a student handbook with a task card, an instructor card, and a headless agent runner. UI and docs are in Chinese.
 
 ## 文件地图 / File map
 
 | 文件 | 干什么 |
 |---|---|
 | `工作台/app.py` | 后端：Loop 六格、权限、状态流转、导出（标准库＋SQLite） |
-| `工作台/index.html` | 页面：六层结构，离线可用 |
+| `工作台/index.html` | 页面：六页（首页／行动／广告活动／原因／Agent 运行／设置），离线可用 |
 | `_脚本/pipeline.py` | 算数、分组、异常、全类型动作规则、验证器（需要 pandas） |
 | `_脚本/render.py` | 三栏表、行动卡、运行报告 |
-| `_脚本/tree.py` | 诊断树连线：异常 → 分析 → 对策 → 动作类型，以及动作类型 → 执行通道 |
+| `_脚本/tree.py` | 「原因」页那棵树的连线：问题 → 分析 → 对策 → 动作类型，以及动作类型 → 执行通道 |
+| `_脚本/structure.py` | 一个活动由什么构成（广告产品／关键词或商品定位／否定），给「广告活动」页用 |
 | `_脚本/fields.py` | 动作 → 广告后台字段（Campaign／广告组／关键词／定位／改哪一栏），批量上传表 |
 | `_脚本/history_sim.py` | 历史回放：同一套规则对前三圈历史数据跑，生成 `历史回放.json` |
 | `_脚本/agent_run.py` | Agent 入口：不起网页跑一圈，打印摘要，`FEISHU_WEBHOOK` 推飞书，失败退出码 2 |

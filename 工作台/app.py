@@ -19,7 +19,7 @@ NEXT = {"待确认": {"已确认", "驳回"}, "已确认": {"已执行", "待确
 now = lambda: datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 jread = lambda p, d=None: json.load(open(p, encoding="utf-8")) if os.path.exists(p) else d
 for _d in (OUT, CARD_DIR, f"{ROOT}/广告闭环/输入"): os.makedirs(_d, exist_ok=True)
-sys.path.insert(0, SCRIPTS); import tree as TREE, fields as FIELDS   # 诊断树连线、动作→广告后台字段（只用标准库）
+sys.path.insert(0, SCRIPTS); import tree as TREE, fields as FIELDS, structure as STRUCT   # 诊断树连线、动作→广告后台字段、活动构成（只用标准库）
 LOCK = threading.Lock(); PROG = {"running": False, "steps": [], "started": None}
 
 def db():
@@ -133,7 +133,7 @@ def state():
         for x in r["动作"]: x["f"] = MP.camp(x["campaign"])
     return {"meta": {"店铺": P["显示店铺"], "产品": P["显示产品"], "数据标记": P.get("数据标记", ""), "周期": f"{P['窗口前'][0]} ～ {P['窗口近'][1]}", "复盘日": P["复盘日"], "今天": P["今天"], "归因未满": P.get("归因未满", "")},
             "roles": ROLES, "can": {k: sorted(v) for k, v in CAN.items()}, "task": t, "hasRun": has, "facts": F_, "sanlan": SL_, "options": O_, "tree": TREE.build(F_, SL_, O_) if has else None, "checks": jread(f"{OUT}/验证器.json") if has else None, "inventory": inv if has else [],
-            "actions": acts, "names": {k: v["Campaign"] for k, v in MP.C.items()}, "history": HIST, "parentAsin": MP.parent, "mapped": MP.on, "products": MP.P, "card": ({**dict(card), "fields": json.loads(card["fields"])} if card else None),
+            "actions": acts, "names": {k: v["Campaign"] for k, v in MP.C.items()}, "history": HIST, "campaigns": STRUCT.build(RAW, MP, ((F_ or {}).get("活动表") or {}).get("近14天")), "parentAsin": MP.parent, "mapped": MP.on, "products": MP.P, "card": ({**dict(card), "fields": json.loads(card["fields"])} if card else None),
             "runs": runs, "events": [dict(r) for r in c.execute("SELECT * FROM event ORDER BY id DESC LIMIT 80")], "calls": calls, "progress": PROG}
 
 # ------------------------------------------------------------------ HTTP

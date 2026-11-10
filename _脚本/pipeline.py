@@ -79,6 +79,11 @@ def facts():
     c, c_derived = derived("报表-adCampaignReport-0.pkl", ["日期", "广告活动", "广告活动ID"]); c = c[c["广告活动ID"].astype(str).isin(camps)].copy(); c["日期"] = pd.to_datetime(c["日期"])
     for n in NUM: c[n] = pd.to_numeric(c[n], errors="coerce").fillna(0)
     F["口径核对"] = {"活动报告花费": round(c["广告花费"].sum(), 2), "搜索词报告花费": round(s["广告花费"].sum(), 2), "活动报告缺失_由搜索词报告聚合": c_derived}
+    def _perf(df):                                                    # 每个活动一行：花费 / 点击 / 订单 / 销售额 / ACOS
+        g = df.groupby("广告活动")[NUM].sum()
+        return {k_: {"花费": round(float(r["广告花费"]), 2), "点击": int(r["广告点击量"]), "订单": int(r["广告订单量"]), "销售额": round(float(r["广告销售额"]), 2),
+                     "ACOS": (float(r["广告花费"] / r["广告销售额"]) if r["广告销售额"] else None)} for k_, r in g.iterrows()}
+    F["活动表"] = {"近14天": _perf(win(c, B)), "前14天": _perf(win(c, A))}
     assert abs(c["广告花费"].sum() - s["广告花费"].sum()) / c["广告花费"].sum() < 0.01, "搜索词报告与活动报告花费相差超过 1%：先查两份报告的日期范围是否一致"
     assert len(prof) >= 2, "周度经营至少要 2 周（建议 4 周）"
     wk = []

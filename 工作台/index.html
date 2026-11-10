@@ -236,29 +236,120 @@ body.demo #s4 .grp table th:first-child,body.demo #s4 .grp table td:first-child{
  .tcard,.glabel,.side .foot .dmark{display:none}.snav{flex-direction:row;overflow-x:auto;width:100%}.side .grp2{width:100%}.side .foot{margin:0;border:0;padding:0;flex-direction:row;width:100%;justify-content:space-between}
  .topin,main{padding-left:16px;padding-right:16px}.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.top .flabel,.tsep{display:none}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.opts,.loop{grid-template-columns:1fr}.lstep:after{display:none}.log div{grid-template-columns:1fr 1fr}.ph,.pb,.toolbar{padding-left:14px;padding-right:14px}}
+
+/* ═════════ v2：按「人来干什么」分页，视觉与 VOC 工作台同一套 ═════════ */
+:root{--page:#F3F6FB;--surface:#FFFFFF;--surface2:#F7F9FD;--ink:#101B31;--ink2:#56657D;--muted:#8C98AD;--line:#DFE6F1;--line2:#EBF0F7;--axis:#C3CEDF;
+--accent:#2257E5;--accent-h:#1B49C7;--accent-soft:#E8EEFF;--accent-ink:#1B45B8;--good:#17895B;--good-soft:#E3F5EC;--warn-soft:#FBF1D9;--warn-ink:#8A5A00;--critical:#C93A31;--crit-soft:#FCE7E5;--up-good:#17895B;
+--st-ok:#2257E5;--side:#151B28;--side2:#1D2536;--side-ink:#E8EDF7;--side-muted:#8F9BB1;--side-line:#273045;--side-active:#28324A;--navy:#16264A;
+--font-body:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;--font-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;--r:10px}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--navy:#101827;--warn-ink:#E3B34A;--side-active:#232B3D}}
+body{font-family:var(--font-body);font-size:14px;line-height:1.6}
+h1,h2,h3{margin:0;text-wrap:balance}
+.tile .v,.mono,.cn,.idl,.num,td.num,.kv b.n{font-family:var(--font-num)}
+.shell{grid-template-columns:212px minmax(0,1fr)}
+.side{padding:16px 14px;gap:16px}
+.logo small{letter-spacing:0;font-size:11.5px}
+.snav a{font-weight:600;font-size:13.5px;padding:8px 10px;color:var(--side-muted)}
+.snav a.on{background:var(--side-active);color:#fff}.snav a.on svg{stroke:#fff}
+.snav .ct{background:#2F3A52;font-size:11px;font-weight:700}.snav .ct.hot{background:#E5484D;color:#fff}
+.side .foot{gap:12px}
+.sched{font-size:11.5px;color:var(--side-muted);padding:0 6px;line-height:1.6}.sched i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#34C17B;margin-right:6px;vertical-align:middle}
+.top{background:color-mix(in srgb,var(--page) 84%,transparent)}
+.topin{max-width:none;padding:10px 28px;gap:12px}
+.crumb2{font-weight:700;font-size:13.5px}
+.topin .sp{flex:1}
+main{max-width:1320px;padding:26px 28px 90px}
+.btn{border-radius:8px;font-weight:600}.btn:hover{border-color:var(--accent);color:var(--accent);background:var(--surface)}
+.btn.primary:hover{color:#fff}.btn.success:hover,.btn.danger.solid:hover{color:#fff}.btn.ghost:hover{background:var(--surface2);border-color:transparent}.btn.soft:hover{color:var(--accent-ink)}.btn.danger:hover{color:var(--critical);border-color:var(--critical)}
+.panel{border-radius:var(--r);box-shadow:none}.tile{border-radius:8px;box-shadow:none}
+/* 页头 */
+.pagehead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:0 0 18px}
+.pagehead h1{font-size:clamp(22px,2.6vw,28px);font-weight:700;letter-spacing:-.01em}.pagehead p{margin:4px 0 0;color:var(--ink2)}
+.pagehead .r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:0 0 18px}
+.card>h3{font-size:15px}.card>.sub{font-size:12.5px;color:var(--ink2);margin:1px 0 6px}
+.sec-t{display:flex;align-items:baseline;gap:10px;margin:22px 0 10px}.sec-t h3{font-size:15px}.sec-t span{font-size:12.5px;color:var(--muted)}.sec-t .r{margin-left:auto}
+/* 首页待办 */
+.todo-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:14px 8px;border-top:1px solid var(--line);border-radius:8px;cursor:pointer;transition:background .12s}
+.todo-item:first-child{border-top:0}.todo-item:hover{background:var(--surface2)}
+.todo-item .t{font-weight:700;font-size:15px}.todo-item p{margin:2px 0 0;color:var(--ink2);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.todo-item .pri{font-family:var(--font-num);font-size:13px;text-align:right;white-space:nowrap;font-weight:600}.todo-item .pri small{display:block;font-family:var(--font-body);font-size:11px;color:var(--muted);font-weight:400}
+.tg{display:inline-flex;align-items:center;border-radius:6px;padding:1px 8px;font-size:12px;font-weight:600;white-space:nowrap;background:var(--accent-soft);color:var(--accent-ink)}
+.tg.warn{background:var(--warn-soft);color:var(--warn-ink)}.tg.bad{background:var(--crit-soft);color:var(--critical)}.tg.good{background:var(--good-soft);color:var(--good)}.tg.muted{background:var(--surface2);color:var(--ink2);border:1px solid var(--line)}
+.alldone{display:flex;gap:10px;align-items:center;padding:14px 8px;color:var(--ink2)}.alldone svg{stroke:var(--good)}
+/* 深色数据带 */
+.band{background:var(--navy);color:#fff;border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 14px}
+.band h2{font-size:17px}.band p{margin:1px 0 0;font-size:12px;color:#AEBBD3}
+.band .r{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.band .bp{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:4px 12px;font-size:12.5px;background:rgba(255,255,255,.1);color:#fff;white-space:nowrap}.band .bp b{font-family:var(--font-num)}
+.band .btn{background:#fff;color:var(--ink);border-color:#fff;height:30px;border-radius:999px;font-size:12.5px}
+.goal{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}.goal .fld{width:160px}
+/* 结论与异常 */
+.concl{font-size:15px;line-height:1.7}
+.arow{display:grid;grid-template-columns:76px 190px 150px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 4px;border-top:1px solid var(--line2);font-size:13.5px}
+.arow:first-of-type{border-top:0}.arow .v{font-family:var(--font-num);font-weight:600}.arow .v small{display:block;font-family:var(--font-body);font-weight:400;color:var(--muted);font-size:11.5px}.arow .d{color:var(--ink2)}
+details.more>summary{cursor:pointer;color:var(--accent-ink);font-size:13px;font-weight:600;padding:8px 4px;list-style:none}details.more>summary::-webkit-details-marker{display:none}details.more>summary:before{content:"▸ "}details.more[open]>summary:before{content:"▾ "}
+/* 页签 */
+.tabs2{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px;overflow-x:auto}
+.tab2{border:0;background:transparent;padding:9px 14px;font-size:14px;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+.tab2:hover{color:var(--ink)}.tab2.on{color:var(--ink);border-bottom-color:var(--accent)}.tab2 .n{font-family:var(--font-num);font-size:11.5px;color:var(--muted);font-weight:500}.tab2.on .n{color:var(--accent)}
+/* 列表 → 详情 */
+.md2{display:grid;grid-template-columns:268px minmax(0,1fr);gap:18px;align-items:start}
+.mlist{display:flex;flex-direction:column;gap:8px;position:sticky;top:70px;max-height:calc(100vh - 90px);overflow-y:auto;padding:2px}
+.mitem{border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;background:var(--surface);cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;transition:border-color .12s,box-shadow .12s}
+.mitem:hover{border-color:var(--axis)}.mitem.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.mitem b{font-size:14px}.mitem small{grid-column:1;color:var(--ink2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem .n{grid-row:1/3;grid-column:2;align-self:center;font-family:var(--font-num);font-weight:700;font-size:16px}
+.mgl{font-size:11.5px;color:var(--muted);font-weight:600;padding:8px 4px 0}
+.dcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;min-width:0}
+.dhead{display:flex;align-items:flex-start;gap:12px}.dhead h2{font-size:20px;margin:6px 0 2px}.dhead .sub{font-size:13px;color:var(--ink2)}
+.dhead .big{margin-left:auto;text-align:right;font-family:var(--font-num);font-size:26px;font-weight:700;line-height:1.1}.dhead .big small{display:block;font-family:var(--font-body);font-size:11.5px;color:var(--muted);font-weight:400}
+.stp{display:grid;grid-template-columns:repeat(5,1fr);margin:18px 0 6px;position:relative}
+.stp-i{position:relative;padding-top:18px;font-size:13px}.stp-i:before{content:"";position:absolute;left:0;right:0;top:5px;height:2px;background:var(--line)}.stp-i:last-child:before{right:auto;width:12px}
+.stp-i i{position:absolute;left:0;top:0;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--axis);z-index:1}
+.stp-i.done:before{background:var(--good)}.stp-i.done i{background:var(--good);border-color:var(--good)}
+.stp-i.now i{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}.stp-i.now b{color:var(--accent-ink)}
+.stp-i b{display:block}.stp-i small{display:block;color:var(--muted);font-size:11.5px;padding-right:10px}
+.dsec{margin-top:18px}.dsec>h4{margin:0 0 8px;font-size:14px;display:flex;gap:8px;align-items:center}
+.by{font-size:11px;font-weight:600;border-radius:5px;padding:0 6px;line-height:18px;background:var(--accent-soft);color:var(--accent-ink)}
+.rec{border:1px solid var(--accent);background:var(--accent-soft);border-radius:8px;padding:12px 14px}.rec b{font-size:14.5px}.rec p{margin:4px 0 0;font-size:12.5px;color:var(--ink2)}
+.okbox{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:11px 14px;font-size:13.5px}
+.whyl{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}.whyl li{border-left:3px solid var(--line);padding:1px 0 1px 10px;font-size:13px}.whyl li small{display:block;color:var(--muted);font-size:12px}
+.abar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0 4px}.abar .hint{flex:1;min-width:200px}
+.warnbox{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--warn-ink);margin-top:14px}
+.src-line{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);margin-top:14px}.src-line i{width:6px;height:6px;border-radius:50%;background:var(--good)}
+/* 广告活动 */
+.ctab tbody tr{cursor:pointer}.ctab td{vertical-align:middle}
+.acos{font-family:var(--font-num);font-weight:600}.acos.bad{color:var(--critical)}.acos.warn{color:var(--warn-ink)}.acos.ok{color:var(--good)}
+.kv4{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:14px 0 4px}.kv4>div{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}.kv4 span{display:block;font-size:12px;color:var(--ink2)}.kv4 b{font-family:var(--font-num);font-size:18px}
+.sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.sbox{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:0}.sbox>.h{display:flex;gap:8px;align-items:center;padding:9px 14px;background:var(--surface2);border-bottom:1px solid var(--line2);font-weight:700;font-size:13.5px}.sbox>.h span{margin-left:auto;font-weight:400;color:var(--muted);font-size:12px}
+.sbox .scroll{max-height:300px;overflow:auto}.sbox table th{position:sticky;top:0}.sbox .none{padding:14px;color:var(--muted);font-size:13px}
+.st2{display:inline-flex;align-items:center;gap:5px;font-size:12px}.st2 i{width:7px;height:7px;border-radius:50%;background:var(--good)}.st2.off i{background:var(--axis)}.st2.off{color:var(--muted)}
+.backl{display:inline-flex;gap:4px;align-items:center;color:var(--accent-ink);font-weight:600;font-size:13px;cursor:pointer;margin-bottom:10px}
+/* Agent 运行、设置 */
+.job{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 18px}.job>div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}.job h4{margin:0 0 6px;font-size:14px}.job ul{margin:0;padding-left:18px;font-size:13px;color:var(--ink2)}.job li{margin:2px 0}
+.links{display:flex;gap:10px;flex-wrap:wrap}
+.swl{display:flex;align-items:center;gap:10px;font-size:13.5px;cursor:pointer}.swl input{display:none}.swl .tr{width:36px;height:21px;border-radius:999px;background:var(--axis);position:relative;transition:background .2s;flex:none}.swl .tr:after{content:"";position:absolute;left:3px;top:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:transform .2s}.swl input:checked+.tr{background:var(--accent)}.swl input:checked+.tr:after{transform:translateX(15px)}
+body.demo .todo-item .t{font-size:18px}body.demo .pagehead h1{font-size:32px}body.demo .concl{font-size:18px}body.demo .mitem b{font-size:16px}body.demo .rec b{font-size:17px}
+@media(max-width:1180px){.md2{grid-template-columns:1fr}.mlist{position:static;max-height:none;flex-direction:row;flex-wrap:wrap}.mitem{flex:1 1 220px}.mgl{flex-basis:100%}.kv4{grid-template-columns:repeat(3,minmax(0,1fr))}.sgrid,.job{grid-template-columns:1fr}.arow{grid-template-columns:76px 1fr auto}.arow .d,.arow .v small{display:none}}
+@media(max-width:960px){.topin,main{padding-left:16px;padding-right:16px}.side .foot .sched{display:none}.todo-item{grid-template-columns:auto 1fr}.todo-item .pri{display:none}.todo-item .btn{grid-column:1/-1;justify-self:start}}
+.a2 td:first-child{min-width:225px}.a2 td:nth-child(3){min-width:180px}.a2 th:last-child,.a2 td:last-child{min-width:245px}.a2 .ops{flex-wrap:nowrap}.a2 .btn.sm{padding:0 8px}
+.kv4 b .acos{font-size:18px}.mlist{scrollbar-width:thin}
+.band .btn,.band .btn:hover{color:#101B31;background:#fff;border-color:#fff}
+.grid2>*,.stack,.stack>*{min-width:0}
+.a3 td:first-child,.a3 td:nth-child(2),.a3 td:last-child{white-space:nowrap}.a3 td:nth-child(3){min-width:210px}.a3 td:nth-child(4){min-width:170px;max-width:300px}.a3 td:nth-child(5){min-width:260px}
 </style></head><body>
 <div class="shell">
 <aside class="side">
-  <div class="logo"><span class="mk"><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/></svg></span><div><b>广告周检工作台</b><small>ADS OPS CONSOLE</small></div></div>
-  <div class="tcard" id="tcard"></div>
-  <div class="grp2"><div class="glabel">工作流</div><nav class="snav" id="snav"></nav></div>
-  <div class="grp2"><div class="glabel">资料</div><nav class="snav">
-    <a href="/arch" target="_blank"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="8.5" y="14" width="7" height="7" rx="1.5"/><path d="M6.5 10v2h11v-2M12 12v2"/></svg>架构图<svg class="i" viewBox="0 0 24 24" style="margin-left:auto;width:13px;height:13px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
-    <a href="/flow" target="_blank"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H15a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6.5"/></svg>流程图<svg class="i" viewBox="0 0 24 24" style="margin-left:auto;width:13px;height:13px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
-    <a href="/report" target="_blank"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>运行报告<svg class="i" viewBox="0 0 24 24" style="margin-left:auto;width:13px;height:13px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
-  </nav></div>
-  <div class="foot">
-    <label class="sw" title="投屏用：字号加大、六格慢放、拦截提示改成弹层"><input type="checkbox" id="demo"><span class="tr"></span><span>演示模式<small>投屏放大 · 六格慢放</small></span></label>
-    <div class="dmark" id="dmark"></div>
-  </div>
+  <div class="logo"><span class="mk"><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/></svg></span><div><b>广告周检工作台</b><small>每周一张动作清单</small></div></div>
+  <nav class="snav" id="snav"></nav>
+  <div class="foot"><div class="sched" id="sched"></div><div class="dmark" id="dmark"></div></div>
 </aside>
 <div class="mainw">
 <header class="top"><div class="topin">
-  <div class="ttl"><div class="crumb">工作台 <span>/</span> 广告周检</div><h1><span>本周广告周检</span><span class="spill" id="tstatus" style="--c:var(--muted)"><i></i><span>加载中</span></span></h1><div class="meta" id="meta">加载中…</div></div>
+  <span class="crumb2" id="crumb"></span><span class="spill" id="tstatus" style="--c:var(--muted)"><i></i><span>加载中</span></span><span class="sp"></span>
   <span class="flabel">当前身份</span><div class="seg" id="roles" role="group" aria-label="切换身份"></div>
-  <span class="tsep"></span>
-  <button class="btn ghost" id="reset" title="清空状态库，回到还没跑过的样子（只有老板能做）"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>重置</button>
-  <button class="btn primary lg" id="run"></button>
+  <button class="btn primary" id="run"></button>
 </div></header>
 <main id="app"><div class="loading">加载中…</div></main>
 </div></div>
@@ -305,30 +396,7 @@ function spark(vals,fmt,labels){const w=120,hh=28,p=4,mn=Math.min(...vals),mx=Ma
 function delta(cur,prev,upGood,asPt){const d=asPt?(cur-prev)*100:(cur/prev-1)*100, good=(d>=0)===upGood;return `<span class="delta ${Math.abs(d)<0.05?"":(good?"good":"bad")}">${d>=0?"▲":"▼"} ${Math.abs(d).toFixed(asPt?1:0)}${asPt?" 个点":"%"}</span><span>较上周</span>`}
 const panel=(id,no,title,sub,tools,body,extra="")=>`<section class="panel" id="${id}"><div class="ph"><span class="no">${no}</span><div><h2>${title}</h2><div class="sub">${sub}</div></div>${tools?`<div class="tools">${tools}</div>`:""}</div>${extra}<div class="pb">${body}</div></section>`;
 
-/* ───────── 外壳：顶栏、侧栏 ───────── */
-const TCOL={"待处理":"--warning","处理中":"--accent","待核对":"--st-ok","已完成":"--good","遇到问题":"--critical"};
 const curActs=()=>S.actions.filter(a=>a.status!=="作废");   // 本版新出的 + 上一版人处理过、沿用下来的
-function chrome(){const m=S.meta,t=S.task,running=S.progress.running||UI.playing,col=TCOL[t.status]||"--muted";
-  $("#meta").textContent=`${m.店铺}｜${m.产品}${S.parentAsin?`｜父 ASIN ${S.parentAsin}`:""}｜数据 ${m.周期}`;$("#dmark").textContent=m.数据标记||"";
-  const ts=$("#tstatus");ts.style.setProperty("--c",`var(${running?"--accent":col})`);ts.classList.toggle("live",running);ts.querySelector("span").textContent=running?"Agent 运行中":t.status;
-  const days=Math.ceil((new Date(m.复盘日)-new Date(m.今天))/864e5);
-  $("#tcard").innerHTML=`<div class="r"><span class="id">${h(t.id)}</span><span class="spill" style="--c:var(${col});color:var(--side-ink)"><i></i>${h(t.status)}</span></div><div class="r"><span>当前版本</span><b>v${t.version||"—"}</b></div><div class="r"><span>目标 ACOS · 到仓</span><b>${t.target_acos==null?"—":pct(t.target_acos,0)} · ${t.arrive_weeks??"—"} 周</b></div><div class="r"><span>下周看结果</span><b>${h(m.复盘日)}（${days} 天后）</b></div>`;
-  $("#roles").innerHTML=S.roles.map(r=>`<button class="${r===UI.who?"on":""}" onclick="setWho('${r}')">${h(r)}</button>`).join("");
-  $("#reset").classList.toggle("locked",!can("重置"));
-  const rb=$("#run");rb.disabled=running;rb.classList.toggle("locked",!can("跑一圈"));rb.title=can("跑一圈")?"让 Agent 抓数据→比目标→分析→出动作→写回，然后停下等人审批":`当前身份「${UI.who}」不能跑一圈，点了会被服务端拦下`;
-  rb.innerHTML=running?`<span class="spin"></span>Agent 正在跑…`:`${ic("play")}${S.hasRun?"跑一圈":"跑第一圈"}${can("跑一圈")?"":`<span class="lk">${ic("lock")}</span>`}`;
-  const F=S.facts,T=S.tree,anom=F?F.异常.filter(a=>a.级别!=="good").length:0,crit=F?F.异常.some(a=>a.级别==="critical"):false,cur=S.hasRun?curActs():[];
-  const pend=S.actions.filter(a=>a.status==="待确认").length,toEx=S.actions.filter(a=>a.status==="已确认").length,hs=T?T.分析.filter(a=>a.判定!=="未触发").length:0;
-  const NAV=[["loop","grid","总览 · Agent 运行",null],...(S.history?[["hist","cal","持续运行 · 历史",[S.history.圈.length+1,""]]]:[]),["s1",1,"发现异常",anom?[anom,crit?"hot":"warn"]:null],["tree",2,"分析",hs?[hs,""]:null],["tree",3,"诊断",S.hasRun?[S.task.options.length,""]:null],["tree",4,"输出动作",cur.length?[cur.length,""]:null],["s5",5,"分类审批",pend?[pend,"warn"]:null],["s6",6,"执行 · 下周看结果",toEx?[toEx,""]:null]];
-  $("#snav").innerHTML=NAV.map(([id,i,l,c])=>`<a href="#${id}" data-s="${id}" class="${UI.sec===id?"on":""}">${typeof i==="number"?`<span class="sn">${i}</span>`:ic(i)}${l}${c?`<span class="ct ${c[1]}">${c[0]}</span>`:""}</a>`).join("")}
-function setWho(r){UI.who=r;try{localStorage.setItem("who",r)}catch(e){}render();toast(`已切换为「${r}」`)}
-
-function render(){chrome();const t=S.task;let out="";
-  if(!S.hasRun){out+=loopHtml()+`<div class="panel"><div class="empty"><div class="ic">${ic("bolt")}</div><h2>任务 ${h(t.id)} 已建好，状态「${h(t.status)}」</h2><p>目标 ACOS ${pct(t.target_acos,0)}、补货到仓 ${t.arrive_weeks} 周、${h(t.stage)}。点「跑第一圈」：Agent 抓广告数据、对着目标找异常、做分析和诊断、出动作清单，然后停下来等人审批。</p>${B({label:"跑第一圈",icon:"play",cls:"primary lg",on:"runLoop()",perm:"跑一圈"})}</div></div>`;$("#app").innerHTML=out;spy();return}
-  const F=S.facts,concl=S.runs[0]&&S.runs[0].conclusion;if(!UI.opts)UI.opts=new Set(S.task.options);
-  out+=(concl?`<div class="banner"><span class="ic">${ic("bolt")}</span><div><div class="k">本周结论 · v${t.version}</div>${h(concl)}</div></div>`:"")+loopHtml()+histHtml()+s1(F)+treeHtml()+s5()+s6(F);
-  $("#app").innerHTML=out;shotMode();requestAnimationFrame(drawEdges);spy()}
-
 /* ───────── 总览：Agent 运行 ───────── */
 const LOOP=["读取状态","判断下一步","执行","验证","写入状态","判断停止条件"];
 function loopHtml(){const steps=S.progress.steps||[],by={};steps.forEach(s=>by[s.i]=s);const shown=UI.playing?UI.shown:99,cur=UI.playing?UI.cur:0;
@@ -349,9 +417,9 @@ function histHtml(){const H=S.history;if(!H||!H.圈||!H.圈.length)return "";if(
     <div style="color:var(--muted)">下周：${["好转","省下","变差"].filter(k=>res[k]).map(k=>`${k} ${res[k]}`).join(" · ")||"—"}</div>
     ${Object.keys(r.读回||{}).length?`<div class="mem">${Object.entries(r.读回).map(([k,v])=>`<span>${h(k)} ${v}</span>`).join("")}</div>`:`<div class="mem"><span>第一圈，没有上次可读</span></div>`}</div>`};
   const w4=W.at(-1),days=Math.ceil((new Date(S.meta.复盘日)-new Date(S.meta.今天))/864e5);
-  const now=`<div class="run now" onclick="document.getElementById('s5').scrollIntoView({behavior:'smooth'})"><div class="t">第 ${H.圈.length+1} 圈 <small>本周</small><span class="chip on" style="margin-left:auto;line-height:18px">真实 v${S.task.version}</span></div><div class="w">看 ${h(S.meta.周期)}</div>
+  const now=`<div class="run now" onclick="goActions('待你决定')"><div class="t">第 ${H.圈.length+1} 圈 <small>本周</small><span class="chip on" style="margin-left:auto;line-height:18px">真实 v${S.task.version}</span></div><div class="w">看 ${h(S.meta.周期)}</div>
     <div class="k4"><span>销售额</span><b>${usd(w4.销售额)}</b><span>广告费</span><b>${usd(w4.广告费)}</b><span>TACOS</span><b>${pct(w4.TACOS)}</b><span>SP ACOS</span><b>${pct(w4.SP_ACOS)}</b></div>
-    <div><b>${ca.length}</b> 条动作 · 通过 ${(cc["已确认"]||0)+(cc["已执行"]||0)+(cc["已验证"]||0)} · 驳回 ${cc["驳回"]||0} · 待审批 ${cc["待确认"]||0}</div><div style="color:var(--accent-ink);margin-top:8px">点这里看下面的审批与执行 ↓</div></div>`;
+    <div><b>${ca.length}</b> 条动作 · 通过 ${(cc["已确认"]||0)+(cc["已执行"]||0)+(cc["已验证"]||0)} · 驳回 ${cc["驳回"]||0} · 待审批 ${cc["待确认"]||0}</div><div style="color:var(--accent-ink);margin-top:8px">去「行动」里拍板 →</div></div>`;
   const next=`<div class="run next"><div class="t">下一圈 <small>${h(S.meta.复盘日)}</small></div><div class="w">${days} 天后到点自动触发</div><div style="color:var(--ink2)">先读回本周的通过、驳回、执行，再拉新一周数据；没数据就停下来找人。</div><div class="mem"><span>行动卡第 9 格＝它醒来的地方</span></div></div>`;
   const r=H.圈.find(x=>x.圈===UI.hk)||H.圈.at(-1);
   const tb=`<div class="tw"><table class="acts"><thead><tr><th>编号</th><th>改什么（层级 · 类型）</th><th>Campaign / 广告组</th><th>对象</th><th>现值 → 新值</th><th>依据</th><th>人审批</th><th>下周真实表现</th></tr></thead><tbody>${r.动作.map(a=>{const f=a.f||{},v=a.下周结果;
@@ -370,17 +438,6 @@ function kpiHtml(F){const W=F.逐周,Y=F.四周,I=F.库存,lab=W.map(w=>w.周),L
   return `<div class="kpis">${T("上周销售额",usd(L.销售额),delta(L.销售额,Pv.销售额,true),spark(W.map(w=>w.销售额),usd,lab))}${T("上周广告费",usd(L.广告费),delta(L.广告费,Pv.广告费,false),spark(W.map(w=>w.广告费),usd,lab))}
   ${T("TACOS（四周）",pct(Y.TACOS),`${stat(lv("TACOS"))}<span>盈亏线 ${pct(Y.盈亏线)}</span>`,spark(W.map(w=>w.TACOS),v=>pct(v),lab),lv("TACOS"))}${T("SP 的 ACOS（近 14 天）",pct(F["SP-近14天"].ACOS),`${stat(lv("SP 的 ACOS"))}<span>目标 ${pct(S.task.target_acos,0)}</span>`,spark(W.map(w=>w.SP_ACOS),v=>pct(v),lab),lv("SP 的 ACOS"))}
   ${T("库存够卖",I.整体可售周数.toFixed(1)+" 周",`${stat(lv("库存够卖几周"))}<span>${R==null?"补货周数没填":"补货要 "+R+" 周"}</span>`,`<div class="meter" style="--mc:var(${mc})" title="可售周数 ÷ 到仓周数"><i style="width:${Math.min(100,I.整体可售周数/Math.max(R,.1)*100).toFixed(0)}%"></i></div>`,lv("库存够卖几周"))}${T("上周退款率",pct(L.退款率),`${stat(lv("退款率"))}${delta(L.退款率,Pv.退款率,false,true)}`,spark(W.map(w=>w.退款率),v=>pct(v),lab),lv("退款率"))}</div>`}
-function s1(F){const t=S.task,n=F.异常.filter(a=>a.级别!=="good").length,A=S.tree.分析;
-  const goal=`<div class="box" style="margin-bottom:16px"><div class="bh">${ic("save")}对照目标<span class="r hint">没有目标就没有异常：改了目标，哪些算异常会跟着变</span></div><div class="bb"><div class="frow" style="align-items:flex-end;gap:12px">
-  <label class="fld" style="width:150px"><span>目标 ACOS<em>老板</em></span><div class="ipt"><input id="in_acos" type="number" min="1" max="100" step="1" value="${t.target_acos==null?"":Math.round(t.target_acos*100)}"><span class="u">%</span></div></label>
-  <label class="fld" style="width:170px"><span>补货到仓还要<em>老板、供应链</em></span><div class="ipt"><input id="in_weeks" type="number" min="0" max="26" step="1" value="${t.arrive_weeks??""}"><span class="u">周</span></div></label>
-  <label class="fld" style="width:150px"><span>产品阶段<em>老板</em></span><div class="ipt"><select id="in_stage">${["新品期","成长期","成熟期"].map(x=>`<option ${x===t.stage?"selected":""}>${x}</option>`).join("")}</select></div></label>
-  <div class="frow">${B({label:"保存目标",icon:"save",cls:"soft",on:"saveInputs()"})}${B({label:"原样再触发",icon:"refresh",cls:"ghost sm",on:"retrigger()",title:"目标不动，只重新触发，看它会不会重复跑"})}</div></div>
-  <div class="tip" style="margin-top:10px">${ic("info")}<span>保存后任务回到「待处理」，点右上角「跑一圈」重算。到仓周数改成 1 试试：「暂停广告产品」会变成「下调预算」。</span></div></div></div>`;
-  const tbl=`<div class="tw"><table class="an"><thead><tr><th>判定</th><th>指标</th><th class="num">现值</th><th>对着什么比</th><th>说明</th><th>引出的分析</th></tr></thead><tbody>${F.异常.map(a=>{const hs=A.filter(x=>x.来自.includes(a.指标));
-    return `<tr><td>${stat(a.级别)}</td><td><b>${h(a.指标)}</b></td><td class="num">${h(a.现值)}</td><td>${h(a.参照)}</td><td>${h(a.说明)}</td><td style="white-space:nowrap">${hs.length?hs.map(x=>`<button class="btn sm ghost" style="height:24px;padding:0 6px" onclick="pickNode('H:${x.id}',1)">${x.id}</button>`).join(""):`<span class="hint">—</span>`}</td></tr>`}).join("")}</tbody></table></div>`;
-  return panel("s1","1","发现异常","抓广告、利润、库存、退货数据，对着人定的目标比；超出的才算异常",`<span class="chip ${n?"warn":"on"}">${n} 项异常</span><span class="chip">${F.异常.length-n} 项正常</span>`,goal+`<div class="sub-h">本周数据</div>`+kpiHtml(F)+`<div class="sub-h">逐项判定</div>`+tbl)}
-
 /* ───────── ②③④ 诊断树：异常 → 分析 → 诊断 → 动作 ───────── */
 function graph(){const F=S.facts,T=S.tree,G={nodes:[],edges:[],by:{}};const add=(col,id,d)=>{const n={col,id,...d};G.nodes.push(n);G.by[id]=n};
   F.异常.forEach(a=>add(0,"X:"+a.指标,{k:"X",a}));
@@ -399,12 +456,12 @@ function nodeHtml(n,G,path){const on=UI.sel===n.id,inp=path.has(n.id),cls=`node 
   if(n.k==="O"){const o=n.o,sel=UI.opts.has(o.key);return `<div class="${cls}${sel?" sel":" off"}" data-id="${h(n.id)}" onclick="pickNode('${jsq(n.id)}')"><div class="t"><span class="key">${o.key}</span><span>${h(o.名称)}</span><span class="ck" title="选进本轮" onclick="event.stopPropagation();pick('${o.key}')">${ic("check")}</span></div><div class="r"><span>综合 ${n.d.数据源.length} 个数据源</span><span>·</span><span>${o.已选?`本轮 ${o.动作条数} 条`:"本轮没选"}</span></div></div>`}
   const pend=n.list.filter(a=>a.status==="待确认").length;return `<div class="${cls}" data-id="${h(n.id)}" onclick="pickNode('${jsq(n.id)}')"><div class="t"><span>${h(n.type)}</span><span class="v" style="margin-left:auto">${n.list.length}</span></div><div class="r"><span class="chn">${h(chOf(n.type).通道)}</span>${pend?`<span class="chip warn" style="line-height:17px">${pend} 待审批</span>`:`<span>已处理</span>`}</div></div>`}
 function treeHtml(){const G=graph();if(!UI.sel||!G.by[UI.sel])UI.sel=defaultSel();const path=pathOf(G,UI.sel);
-  const H=[["异常","对着目标比出来的"],["分析","一个异常可拆成多个问题，一个问题也可来自多个异常"],["诊断","综合多方数据下结论，定对策（人取舍）"],["输出动作","按对策生成，分类后进审批"]];
+  const H=[["发现的问题","拿数据对着目标比出来的"],["分析","一个问题可以拆成几问，一问也可以来自几个问题"],["对策","综合几方数据定怎么办；做不做由人定"],["动作","按对策生成，去「行动」里拍板"]];
   const cols=[0,1,2,3].map(c=>`<div class="tcol"><div class="tch"><span class="st">${c+1}</span><b>${H[c][0]}</b><small>${H[c][1]}</small></div>${G.nodes.filter(n=>n.col===c).map(n=>nodeHtml(n,G,path)).join("")||`<p class="hint">本轮没有生成动作</p>`}</div>`).join("");
   const changed=[...UI.opts].sort().join()!==[...S.task.options].sort().join();
   const tools=changed?`<span class="hint">取舍改成 <b style="color:var(--ink)">${[...UI.opts].sort().join(" · ")||"无"}</b></span>${B({label:"按这个取舍重新生成",icon:"refresh",cls:"primary sm",on:"saveOpts()",perm:"改取舍"})}${B({label:"放弃",cls:"ghost sm",on:"UI.opts=null;render()"})}`:`<span class="chip">对策打勾＝选进本轮 · 只有老板能改</span>`;
   const miss=S.tree.未知.length?`<div class="miss">${ic("help")}<div><b style="color:var(--ink)">分析时还缺的数据（缺什么、去哪取）</b><ul>${S.tree.未知.map(x=>`<li>${md(x)}</li>`).join("")}</ul></div></div>`:"";
-  return `<section class="panel" id="tree"><div class="ph"><span class="no">${ic("tree")}</span><div><h2>分析 → 诊断 → 输出动作</h2><div class="sub">点任意一个节点，看它从哪个异常来、用了哪些数据、最后落成哪些动作</div></div><div class="tools">${tools}</div></div>
+  return `<section class="panel" id="tree"><div class="ph"><span class="no">${ic("tree")}</span><div><h2>问题 → 分析 → 对策 → 动作</h2><div class="sub">点任意一个节点，看它从哪个异常来、用了哪些数据、最后落成哪些动作</div></div><div class="tools">${tools}</div></div>
   <div class="pb"><div class="tree" id="tree-g"><svg id="edges"></svg>${cols}</div>${detailHtml(G)}${miss}</div></section>`}
 function drawEdges(){const g=document.getElementById("tree-g"),svg=document.getElementById("edges");if(!g||!svg)return;const G=graph(),path=pathOf(G,UI.sel),R=g.getBoundingClientRect();
   const el={};g.querySelectorAll(".node").forEach(n=>el[n.dataset.id]=n);
@@ -412,7 +469,6 @@ function drawEdges(){const g=document.getElementById("tree-g"),svg=document.getE
     const x1=ra.right-R.left,y1=ra.top+ra.height/2-R.top,x2=rb.left-R.left,y2=rb.top+rb.height/2-R.top,dx=(x2-x1)/2,hot=path.has(a)&&path.has(b);
     return `<path class="${hot?"hot":"faint"}" d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}"/>`}).join("")}
 addEventListener("resize",()=>requestAnimationFrame(drawEdges));
-function pickNode(id,go){UI.sel=id;render();if(go)document.getElementById("tree")?.scrollIntoView({behavior:"smooth"})}
 function pick(k){UI.opts.has(k)?UI.opts.delete(k):UI.opts.add(k);render()}
 
 /* 证据表（各数据源的原始口径） */
@@ -441,8 +497,8 @@ function detailHtml(G){const n=G.by[UI.sel];if(!n)return "";const T=S.tree;let h
   if(n.k==="T"){const ch=chOf(n.type),cnt={};n.list.forEach(a=>cnt[a.status]=(cnt[a.status]||0)+1);const pend=cnt["待确认"]||0;
     head=`<span>④ 输出动作</span><b>${h(n.type)}</b><span class="chip">${n.list.length} 条</span><span class="chn">${h(ch.通道)}</span>`;
     L=`<div class="kv"><span>来自对策</span><div>${chips(up)}</div><span>执行通道</span><div>${h(ch.通道)}${ch.接通===false?` <span class="tag off">未接通</span>`:""}<div class="hint">${h(ch.现在怎么做||"")}</div></div><span>状态</span><div style="display:flex;gap:8px;flex-wrap:wrap">${Object.entries(cnt).map(([s,v])=>`${stHtml(s)} <b>${v}</b>`).join("　")}</div></div>
-    <div class="frow" style="margin-top:12px">${pend?B({label:`去审批这一类（${pend} 条）`,icon:"arrow",cls:"primary sm",on:`goApprove('${jsq(n.type)}')`}):`<span class="hint">这一类都审批过了</span>`}</div>`;
-    R=`<div class="tw"><table class="acts"><thead><tr><th>Campaign / 广告组</th><th>对象</th><th>改什么</th></tr></thead><tbody>${n.list.slice(0,6).map(a=>`<tr><td>${campCell(a)}</td><td>${objCell(a)}</td><td>${chgCell(a)}</td></tr>`).join("")}</tbody></table></div>${n.list.length>6?`<div class="hint" style="margin-top:6px">还有 ${n.list.length-6} 条，在「分类审批」里看全部</div>`:""}`}
+    <div class="frow" style="margin-top:12px">${pend?B({label:`去拍板这一类（${pend} 条）`,icon:"arrow",cls:"primary sm",on:`goApprove('${jsq(n.type)}')`}):`<span class="hint">这一类都审批过了</span>`}</div>`;
+    R=`<div class="tw"><table class="acts"><thead><tr><th>Campaign / 广告组</th><th>对象</th><th>改什么</th></tr></thead><tbody>${n.list.slice(0,6).map(a=>`<tr><td>${campCell(a)}</td><td>${objCell(a)}</td><td>${chgCell(a)}</td></tr>`).join("")}</tbody></table></div>${n.list.length>6?`<div class="hint" style="margin-top:6px">还有 ${n.list.length-6} 条，在「行动」里看全部</div>`:""}`}
   return `<div class="detail"><div class="dh">${head}<span class="r">${ic("info","width:14px;height:14px")}<span>高亮的是这个节点的上下游</span></span></div><div class="db"><div>${L}</div><div>${R}</div></div></div>`}
 
 /* ───────── 广告字段单元格 ───────── */
@@ -457,25 +513,6 @@ function objCell(a){const f=a.f||{};let o="";
   return `${f.实体?`<span class="ent">${h(f.实体)}${f.操作?` · ${h(f.操作)}`:""}</span><br>`:""}${o}`}
 function chgCell(a){const f=a.f||{};const o=f.现值??a.old,n=f.新值??a.new;return `<div class="sub2">${h(f.改什么||"")}</div><span>${h(o)}</span><span class="arrow">→</span><span class="nv">${h(n)}</span>`}
 
-/* ───────── ⑤ 分类审批 ───────── */
-function goApprove(type){UI.apType=type;UI.apStatus="待审批";UI.apOpt="全部";UI.openGroups.add(type);render();document.getElementById("s5")?.scrollIntoView({behavior:"smooth"})}
-function s5(){const ver=S.task.version,all=S.actions;const base=all.filter(a=>UI.showVoid||a.status!=="作废");
-  const stOk=a=>UI.apStatus==="全部"||(UI.apStatus==="待审批"?a.status==="待确认":a.status==="驳回");
-  const optOk=a=>UI.apOpt==="全部"||a.item===UI.apOpt, tyOk=a=>!UI.apType||a.type===UI.apType;
-  const fc={待审批:base.filter(a=>a.status==="待确认").length,已驳回:base.filter(a=>a.status==="驳回").length,全部:base.length};
-  const oc={全部:base.filter(stOk).length};base.filter(stOk).forEach(a=>oc[a.item]=(oc[a.item]||0)+1);
-  const rows=base.filter(a=>stOk(a)&&optOk(a)&&tyOk(a)),groups={};rows.forEach(a=>{const g=a.version===ver?a.type:`${a.type} · 上一版 v${a.version}`;(groups[g]=groups[g]||{type:a.type,item:a.item,cur:a.version===ver,list:[]}).list.push(a)});
-  const gh=Object.entries(groups).map(([g,G])=>{const pend=G.list.filter(a=>a.status==="待确认").length,ch=chOf(G.type);
-    return `<details class="grp" ${UI.openGroups.has(g)?"open":""} ontoggle="UI.openGroups[this.open?'add':'delete']('${h(jsq(g))}')"><summary>${ic("chev").replace('class="i"','class="i chev"')}<span class="key" style="width:20px;height:20px;border-radius:5px;border:1.5px solid var(--axis);display:inline-flex;align-items:center;justify-content:center;font-size:11px">${h(G.item)}</span>${h(g)} <span class="chip">${G.list.length} 条</span><span class="chn">${h(ch.通道)}</span><span class="sp">${pend?`<span class="chip warn">${pend} 条待审批</span>`:""}${pend&&G.cur?B({label:"这一类全部通过",icon:"done2",cls:"success sm",on:`event.preventDefault();bulk('${jsq(G.type)}')`,perm:"点动作"}):""}</span></summary>
-    <div class="tw" style="border:0;border-radius:0"><table class="acts"><thead><tr><th>编号</th><th>Campaign / 广告组</th><th>对象</th><th>改什么</th><th>依据</th><th>审批</th></tr></thead><tbody>${G.list.map(a=>rowHtml(a,"ap")).join("")}</tbody></table></div></details>`}).join("");
-  const seg=(cur,opts,set)=>`<div class="seg">${opts.map(([v,n])=>`<button class="${v===cur?"on":""}" onclick="${set}='${v}';render()">${v}<span class="n">${n}</span></button>`).join("")}</div>`;
-  const bar=`<span class="flabel" style="margin:0">状态</span>${seg(UI.apStatus,[["待审批",fc.待审批],["已驳回",fc.已驳回],["全部",fc.全部]],"UI.apStatus")}<span class="flabel" style="margin:0 0 0 6px">对策</span>${seg(UI.apOpt,[["全部",oc.全部],...["A","B","C","D","E"].filter(k=>oc[k]).map(k=>[k,oc[k]])],"UI.apOpt")}
-    ${UI.apType?`<span class="chip on" style="line-height:24px">类型：${h(UI.apType)} <a href="javascript:void 0" onclick="UI.apType=null;render()" style="text-decoration:none;margin-left:4px">✕</a></span>`:""}
-    <div class="r"><label class="hint" style="display:inline-flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" ${UI.showVoid?"checked":""} onchange="UI.showVoid=this.checked;render()"> 显示作废</label></div>`;
-  const cnt={};all.forEach(a=>cnt[a.status]=(cnt[a.status]||0)+1);const vis=ST_ORDER.filter(s=>cnt[s]&&s!=="作废");
-  return panel("s5","5","分类审批","动作按类型分好，人逐条或整类审批；驳回要写理由，下一轮 Agent 会读",`<span class="chip">当前 v${ver}</span><span class="chip ${S.checks.every(c=>c.通过)?"on":"warn"}">验证器 ${S.checks.filter(c=>c.通过).length}/${S.checks.length} 通过</span>`,
-    `${cmpHtml()}<div class="sbar" role="img" aria-label="动作状态分布">${vis.map(s=>`<i style="flex:${cnt[s]};background:var(${ST[s]})" title="${s} ${cnt[s]} 条"></i>`).join("")}</div><div class="legend">${ST_ORDER.filter(s=>cnt[s]).map(s=>`<span><i style="background:var(${ST[s]})"></i>${s==="待确认"?"待审批":s} <b>${cnt[s]}</b></span>`).join("")}</div>${gh||`<p class="hint" style="padding:20px 0;text-align:center">${UI.apStatus==="待审批"?"没有待审批的动作了。审批通过的在下面「执行」里。":"这个筛选下没有动作。"}</p>`}`,
-    `<div class="toolbar">${bar}</div>`)}
 function cmpHtml(){const v=S.task.version;if(v<2)return "";const prev=S.actions.filter(a=>a.version===v-1),cur=S.actions.filter(a=>a.version===v);if(!prev.length)return "";
   const cnt=l=>{const c={};l.forEach(a=>c[a.type]=(c[a.type]||0)+1);return c};const pc=cnt(prev),cc=cnt(cur);const types=[...new Set([...Object.keys(pc),...Object.keys(cc)])].filter(t=>(pc[t]||0)!==(cc[t]||0));
   const st={};prev.forEach(a=>st[a.status]=(st[a.status]||0)+1);const rev=prev.filter(a=>a.note&&a.status==="已确认").length,last=S.runs.find(r=>r.version===v),pl=S.runs.find(r=>r.version===v-1);
@@ -488,45 +525,206 @@ function rowHtml(a,mode){let ops="";const b=(txt,st,cls,icon)=>B({label:txt,icon
   const rj=UI.rejecting===a.no?`<div class="rej"><div class="ipt"><input id="rj" type="text" placeholder="驳回理由（必填，下一轮 Agent 要读）" onkeydown="if((event.key==='Enter'||event.keyCode===13)&&!event.isComposing)act('${a.no}','驳回',this.value)"></div><button class="btn sm danger solid" onclick="act('${a.no}','驳回',document.getElementById('rj').value)">提交驳回</button><button class="btn sm ghost" onclick="UI.rejecting=null;render()">取消</button></div>`:"";
   return `<tr class="${a.status==="作废"?"void":""}"><td class="mono" style="white-space:nowrap">${h(a.no)}</td><td>${campCell(a)}</td><td>${objCell(a)}</td><td style="white-space:nowrap">${chgCell(a)}</td><td>${h(a.why)}${a.spend!=null?`<div class="note">近 14 天涉及 ${usd(a.spend)}</div>`:""}</td><td><div class="ops">${stHtml(a.status)}${ops}</div>${a.by?`<div class="note">${h(a.by)} · ${h((a.updated_at||"").slice(5,16))}</div>`:""}${a.reason?`<div class="note">理由：${h(a.reason)}</div>`:""}${a.note?`<div class="note warn">${h(a.note)}</div>`:""}${rj}</td></tr>`}
 
-/* ───────── ⑥ 调用工具执行 · 下周看结果 ───────── */
-function s6(F){const c=S.card,days=Math.ceil((new Date(S.meta.复盘日)-new Date(S.meta.今天))/864e5),rej=S.actions.filter(a=>a.status==="驳回"),EX=["已确认","已执行","已验证"];
-  const names=["1 业务问题","2 已知事实","3 判断与待证假设","4 具体动作","5 接手岗位","6 执行条件","7 完成时间","8 成本条件","9 复核证据与观察期（＝下一次运行的触发）"],chev=ic("chev").replace('class="i"','class="i chev"');
-  const chs=S.tree.通道.map(ch=>{const L=S.actions.filter(a=>ch.类型.includes(a.type)),n=s=>L.filter(a=>a.status===s).length,ready=n("已确认");
-    return `<div class="ch"><div class="h">${ic("plug")}${h(ch.通道)}<span class="tag ${ch.接通?"on":"off"}">${ch.接通?"人工直接定":"未接通"}</span></div><p>管：${h(ch.管什么)}</p><p style="color:var(--ink)">${h(ch.现在怎么做)}</p>
-    <div class="nums"><span><b>${ready}</b>待执行</span><span><b>${n("已执行")}</b>已执行</span><span><b>${n("已验证")}</b>已验证</span></div>
-    ${ready?`<a class="btn sm ${ch.id==="ads"?"primary":""}" href="/api/export.csv?status=已确认&types=${encodeURIComponent(ch.类型.join(","))}">${ic("dl")}${ch.id==="ads"?"导出批量上传表":"导出清单"}</a>`:`<span class="hint">审批通过的会出现在这里</span>`}</div>`}).join("");
-  const exGroups=S.tree.通道.map(ch=>{const L=S.actions.filter(a=>ch.类型.includes(a.type)&&EX.includes(a.status));if(!L.length)return "";const k="ex:"+ch.id;
-    return `<details class="grp" ${UI.exOpen.has(k)||UI.exOpen.size===0?"open":""} ontoggle="UI.exOpen[this.open?'add':'delete']('${k}')"><summary>${chev}${h(ch.通道)} <span class="chip">${L.length} 条</span></summary><div class="tw" style="border:0;border-radius:0"><table class="acts"><thead><tr><th>编号</th><th>Campaign / 广告组</th><th>对象</th><th>改什么</th><th>依据</th><th>执行</th></tr></thead><tbody>${L.map(a=>rowHtml(a,"ex")).join("")}</tbody></table></div></details>`}).join("");
-  const watch=`<div class="watch"><div class="big">${days}<small> 天后</small></div><div><b>${h(S.meta.复盘日)} 看结果</b>（下一次运行的触发）<div style="margin-top:4px">${md(c.fields[8]||"")}</div></div></div>`;
-  const right=`<div class="box"><div class="bh">行动卡 ${h(c.no)}<span class="r chip on">${h(c.status)}</span></div><div class="bb" style="padding-top:4px">${c.fields.map((f,i)=>`<details class="cardf ${i===8?"key":""}" ${i===0?"open":""}><summary>${chev}${names[i]}</summary><div>${md(f)}</div></details>`).join("")}</div></div>`;
-  const left=`<div class="stack"><div class="box"><div class="bh">人驳回过的<span class="r hint">下一圈不再原样提</span></div>${rej.length?`<div class="tw" style="border:0"><table><tbody>${rej.map(a=>`<tr><td class="mono" style="white-space:nowrap">${h(a.no)}</td><td>${h(a.type)}｜${h((a.f&&(a.f.SKU||a.f.关键词))||a.object)}</td><td>${h(a.reason)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="bb hint">还没有驳回。驳回理由会留在这里，下一圈 Agent 先读它。</div>`}</div>
-  <div class="box"><div class="bh">回测<span class="r hint">如果当初照粗规则否词，这些词后来怎样</span></div><div class="tw" style="border:0;border-radius:0 0 11px 11px"><table><thead><tr>${Object.keys(F.回测[0]).map(k=>`<th class="num">${h(k)}</th>`).join("")}</tr></thead><tbody>${F.回测.map(r=>`<tr>${Object.values(r).map(v=>`<td class="num">${h(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
-  <div class="box"><div class="bh">运行历史<span class="r chip">${S.runs.length} 次</span></div><div class="tw" style="border:0;border-radius:0 0 11px 11px"><table><thead><tr><th>版本</th><th>时间</th><th>触发</th><th>输入</th><th class="num">动作</th><th class="num">用时</th></tr></thead><tbody>${S.runs.map(r=>`<tr><td><span class="vtag">v${r.version}</span></td><td style="white-space:nowrap">${h(r.at.slice(5,16))}</td><td>${h(r.trigger)}</td><td>目标 ${pct(r.inputs.目标ACOS,0)}｜到仓 ${r.inputs.补货到仓周数} 周｜${h(r.inputs.产品阶段)}｜取舍 ${r.inputs.取舍项.join("")}</td><td class="num">${r.summary.合计}</td><td class="num">${r.seconds} 秒</td></tr>`).join("")}</tbody></table></div></div></div>`;
-  return panel("s6","6","调用工具执行 · 下周看结果","审批通过的动作按通道交给工具；工具没接通时导出给人上传。执行后到复盘日看结果",`<span class="chip warn">${ic("cal","width:12px;height:12px")}复盘日 ${h(S.meta.复盘日)}</span>`,
-  `<div class="chs">${chs}</div>${exGroups?`<div class="sub-h">执行清单</div>${exGroups}`:""}<div class="sub-h" style="margin-top:20px">下周看结果</div>${watch}<div class="grid2">${left}${right}</div>
-  <div class="box" style="margin-top:16px"><div class="bh">操作记录<span class="r hint">谁、什么时候、做了什么</span></div><div class="log">${S.events.map(e=>`<div><span>${h(e.at.slice(5))}</span><b>${h(e.who)}</b><span>${h(e.kind)}</span><span style="color:var(--ink)">${h(e.ref)}　${h(e.detail)}</span></div>`).join("")}</div></div>
-  <div class="prov">${ic("db")}<span><b style="color:var(--ink)">数据怎么来的：</b>全部是只读查询：${Object.entries(S.calls).map(([k,v])=>`<code>${h(k.split("/").slice(-2).join("/"))}</code>×${v}`).join("　")}。${h(S.meta.数据标记)}${S.mapped?"。Campaign、广告组、ASIN、SKU、各类 ID 都是脱敏生成的，格式与广告后台一致，不对应任何真实对象":""}。${h(S.meta.归因未满)} 归因未满。</span></div>`)}
 
-// 侧栏高亮当前所在分区
-function spy(){const ids=["loop","hist","s1","tree","s5","s6"];let cur=ids[0];for(const id of ids){const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<220)cur=id}
-  if(cur!==UI.sec){UI.sec=cur}document.querySelectorAll("#snav a").forEach(a=>a.classList.toggle("on",a.dataset.s===cur))}
-addEventListener("scroll",()=>{cancelAnimationFrame(spy.f);spy.f=requestAnimationFrame(spy)},{passive:true});
+/* ═════════ v2：按「人来干什么」分页（首页 / 行动 / 广告活动 / 原因 / Agent 运行 / 设置） ═════════
+   六层逻辑（发现 → 分析 → 决定 → 执行 → 验证）不再是页面骨架，而是每组行动上的进度线，和「原因」页的那张树。 */
+Object.assign(P,{home:'<path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/>',todo:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',back:'<path d="M15 6l-6 6 6 6"/>'});
+Object.assign(UI,{page:"home",atab:"待你决定",agrp:null,camp:null,goalOpen:false});
+const PAGES=[["home","home","首页"],["actions","todo","行动"],["campaigns","layers","广告活动"],["why","tree","原因"],["agent","loop","Agent 运行"],["settings","gear","设置"]];
+const ATAB={"待你决定":"待确认","待执行":"已确认","等验证":"已执行","已验证":"已验证","已驳回":"驳回","已作废":"作废"};
+const TCOL={"待处理":"--warning","处理中":"--accent","待核对":"--st-ok","已完成":"--good","遇到问题":"--critical"};
+const SEV={critical:0,serious:1,warning:2,good:3};
+const SUCCESS={A:"将断货规格的广告是否已停或已降；整体可售周数是否回到补货周期以上；补挂款的转化对比原款",B:"头部词在别的活动里的花费是否归零、精确组占比是否升上来；CPC 是否降了、ACOS 是否在目标内、单量掉了多少",
+  C:"单独降价跑的竞品词，ACOS 是否回到盈亏线以内；交回运营的词定了没有",D:"被否掉的词后来在别处有没有出单（对照回测）",E:"退款率是否回落；到仓日是否回填"};
+const daysLeft=()=>Math.ceil((new Date(S.meta.复盘日)-new Date(S.meta.今天))/864e5);
+function route(){const p=(location.hash||"#home").slice(1).split("/")[0];UI.page=PAGES.some(x=>x[0]===p)?p:"home"}
+function go(p){if(location.hash==="#"+p){render();scrollTo(0,0)}else location.hash=p}
+addEventListener("hashchange",()=>{if(!S)return;render();scrollTo(0,0)});
+function goActions(tab,type){UI.atab=tab;UI.agrp=type||null;UI.rejecting=null;go("actions")}
+function goApprove(type){goActions("待你决定",type)}
+function goWhy(id){UI.sel=id;go("why")}
+function pickNode(id){UI.sel=id;if(UI.page!=="why")go("why");else render()}
+function goCamp(name){UI.camp=name;go("campaigns")}
+function setWho(r){UI.who=r;try{localStorage.setItem("who",r)}catch(e){}render();toast(`已切换为「${r}」`)}
+function setDemo(on){document.body.classList.toggle("demo",on);try{localStorage.setItem("demo",on?"1":"0")}catch(e){}render()}
 
+/* ───────── 外壳 ───────── */
+function chrome(){const m=S.meta,t=S.task,running=S.progress.running||UI.playing,col=TCOL[t.status]||"--muted";
+  $("#crumb").textContent=PAGES.find(p=>p[0]===UI.page)[2];$("#dmark").textContent=m.数据标记||"";
+  const ts=$("#tstatus");ts.style.setProperty("--c",`var(${running?"--accent":col})`);ts.classList.toggle("live",running);ts.querySelector("span").textContent=running?"Agent 运行中":`${t.id} · ${t.status}${t.version?` · v${t.version}`:""}`;
+  $("#roles").innerHTML=S.roles.map(r=>`<button class="${r===UI.who?"on":""}" onclick="setWho('${r}')">${h(r)}</button>`).join("");
+  const rb=$("#run");rb.disabled=running;rb.classList.toggle("locked",!can("跑一圈"));rb.title=can("跑一圈")?"让 Agent 读状态、拉数、出动作、写回，然后停下等你":`当前身份「${UI.who}」不能跑一圈，点了会被拦下`;
+  rb.innerHTML=running?`<span class="spin"></span>Agent 正在跑…`:`${ic("play")}${S.hasRun?"跑一圈":"跑第一圈"}${can("跑一圈")?"":`<span class="lk">${ic("lock")}</span>`}`;
+  const nTodo=todos().length,pend=S.actions.filter(a=>a.status==="待确认").length,badge={home:nTodo?[nTodo,"hot"]:null,actions:pend?[pend,""]:null,campaigns:S.campaigns?[S.campaigns.活动.length,""]:null};
+  $("#snav").innerHTML=PAGES.map(([id,i,l])=>`<a href="#${id}" class="${UI.page===id?"on":""}">${ic(i)}${l}${badge[id]?`<span class="ct ${badge[id][1]}">${badge[id][0]}</span>`:""}</a>`).join("");
+  $("#sched").innerHTML=`<i></i>每周一自动运转<br>上次 ${S.runs[0]?h(S.runs[0].at.slice(5,16)):"还没跑过"} · 下次 ${h(m.复盘日.slice(5))}`}
+function emptyHtml(){const t=S.task;return `<div class="card"><div class="empty"><div class="ic">${ic("bolt")}</div><h2>任务 ${h(t.id)} 已建好，还没跑过</h2><p>目标 ACOS ${pct(t.target_acos,0)}、补货到仓 ${t.arrive_weeks} 周、${h(t.stage)}。点「跑第一圈」：Agent 读报表、对着目标找问题、起草动作，然后停下来等你拍板。</p>${B({label:"跑第一圈",icon:"play",cls:"primary lg",on:"runLoop()",perm:"跑一圈"})}</div></div>`}
+function render(){route();chrome();if(S.hasRun&&!UI.opts)UI.opts=new Set(S.task.options);
+  const pg={home:homePage,actions:actionsPage,campaigns:campaignsPage,why:whyPage,agent:agentPage,settings:settingsPage}[UI.page];
+  $("#app").innerHTML=(!S.hasRun&&["home","actions","why"].includes(UI.page))?emptyHtml():pg();shotMode();if(UI.page==="why")requestAnimationFrame(drawEdges)}
+
+/* ───────── 首页：今天要我处理什么 ───────── */
+function todos(){if(!S.hasRun)return [];const t=S.task,out=[],days=daysLeft();
+  if(t.status==="遇到问题"){const bad=(S.progress.steps||[]).find(s=>!s.ok);out.push({tag:"要你补",cls:"bad",t:"这一圈没跑成",d:bad?bad.detail:"缺输入或数据：补齐后重新跑一圈。上一份结果没被改动",pri:"P0",imp:"先处理",btn:"去补",on:"UI.goalOpen=true;go('home')",sort:-2})}
+  else if(t.status==="待处理")out.push({tag:"待重跑",cls:"warn",t:"目标或取舍改过了，还没重跑",d:"点「跑一圈」，Agent 按新输入重出动作；你处理过的会保留，没点过的作废",pri:"P0",imp:"先处理",btn:"跑一圈",on:"runLoop()",sort:-1});
+  S.options.forEach(o=>{const L=S.actions.filter(a=>a.item===o.key&&a.status==="待确认");if(!L.length)return;
+    const lv=Math.min(3,...S.tree.分析.filter(x=>x.对策[0]===o.key).map(x=>SEV[(S.facts.异常.find(a=>a.指标===x.来自[0])||{}).级别||"good"]));   // 按这条对策的主要问题定优先级
+    const cnt={};L.forEach(a=>cnt[a.type]=(cnt[a.type]||0)+1);const types=Object.entries(cnt).sort((a,b)=>b[1]-a[1]),sp=L.reduce((x,a)=>x+(a.spend||0),0);
+    out.push({tag:"待你决定",cls:"",t:`${o.名称}：${L.length} 条动作`,d:types.map(([k,v])=>`${k} ${v}`).join(" · ")+"｜"+o.做什么,pri:"P"+lv,imp:sp?`近 14 天涉及 ${usd(sp)}`:"估算影响见详情",btn:"去决定",on:`goActions('待你决定','${jsq(types[0][0])}')`,sort:lv})});
+  const rev=S.actions.filter(a=>a.note&&a.status==="已确认").length;
+  if(rev)out.push({tag:"请复核",cls:"warn",t:`${rev} 条你通过过的动作，现在规则不再建议`,d:"输入变了。系统不替你撤：撤回，还是照做，你定",pri:"P1",imp:"防做错",btn:"去复核",on:"goActions('待执行')",sort:.5});
+  const ex=S.actions.filter(a=>a.status==="已确认"&&!a.note).length;
+  if(ex)out.push({tag:"待执行",cls:"good",t:`${ex} 条已通过，等人上传广告后台`,d:"按通道导出批量上传表；传完回来标「已执行」",pri:"",imp:"",btn:"去执行",on:"goActions('待执行')",sort:5});
+  const done=S.actions.filter(a=>a.status==="已执行").length;
+  if(done)out.push({tag:days<=0?"到期看结果":"等验证",cls:"muted",t:`${done} 条已执行，${days<=0?"到复盘日了":`${days} 天后看结果`}`,d:`复盘日 ${S.meta.复盘日}：重导一周数据再跑一圈，逐条对结果`,pri:"",imp:"",btn:"看结果",on:"goActions('等验证')",sort:days<=0?.2:9});
+  return out.sort((a,b)=>a.sort-b.sort)}
+function goalForm(){const t=S.task;return `<div class="goal">
+  <label class="fld"><span>目标 ACOS<em>老板</em></span><div class="ipt"><input id="in_acos" type="number" min="1" max="100" step="1" value="${t.target_acos==null?"":Math.round(t.target_acos*100)}"><span class="u">%</span></div></label>
+  <label class="fld"><span>补货到仓还要<em>老板、供应链</em></span><div class="ipt"><input id="in_weeks" type="number" min="0" max="26" step="1" value="${t.arrive_weeks??""}"><span class="u">周</span></div></label>
+  <label class="fld"><span>产品阶段<em>老板</em></span><div class="ipt"><select id="in_stage">${["新品期","成长期","成熟期"].map(x=>`<option ${x===t.stage?"selected":""}>${x}</option>`).join("")}</select></div></label>
+  ${B({label:"保存目标",icon:"save",cls:"primary",on:"saveInputs()"})}${B({label:"原样再触发",icon:"refresh",cls:"ghost",on:"retrigger()",title:"目标不动，只重新触发，看它会不会重复跑"})}</div>
+  <p class="hint" style="margin:10px 0 0">保存后回到「待重跑」，首页会提示你点「跑一圈」。问题都是拿数据对着这三个数比出来的：到仓周数从 4 改成 1，「暂停广告」会变成「只降预算」。</p>`}
+function homePage(){const F=S.facts,m=S.meta,t=S.task,T=todos(),hr=new Date().getHours(),hi=hr>=5&&hr<11?"早上好":hr>=11&&hr<18?"下午好":"晚上好",concl=S.runs[0]&&S.runs[0].conclusion;
+  const todo=T.length?T.map(x=>`<div class="todo-item" onclick="${h(x.on)}"><span class="tg ${x.cls}">${x.tag}</span><div style="min-width:0"><div class="t">${h(x.t)}</div><p>${h(x.d)}</p></div><div class="pri">${x.pri}<small>${h(x.imp)}</small></div><button class="btn ${x===T[0]?"primary":""}">${x.btn}</button></div>`).join("")
+    :`<div class="alldone">${ic("check")}<span>这一圈没有要你处理的事了。下一次：${h(m.复盘日)} 复盘日，或者你改了目标。</span></div>`;
+  const bad=F.异常.filter(a=>a.级别!=="good"),ok=F.异常.filter(a=>a.级别==="good");
+  const arow=a=>`<div class="arow">${stat(a.级别)}<b>${h(a.指标)}</b><span class="v">${h(a.现值)}<small>对比：${h(a.参照)}</small></span><span class="d">${h(a.说明)}</span><button class="btn sm" onclick="goWhy('X:${jsq(a.指标)}')">看原因</button></div>`;
+  return `<div class="pagehead" id="hd"><div><h1>${hi}</h1><p>截至 ${h(m.今天)}，数据 ${h(m.周期)}（${h(m.归因未满)}归因未满）；${T.length?`有 <b style="color:var(--ink)">${T.length}</b> 件事需要你处理。`:"没有要你处理的事。"}</p></div></div>
+  <div class="card" id="todo"><h3>需要你处理的事</h3><div class="sub">按对生意的影响从大到小排</div>${todo}</div>
+  <div class="band" id="band"><div><h2>本周广告数据</h2><p>${h(m.店铺)}｜${h(m.产品)}${S.parentAsin?`｜父 ASIN ${h(S.parentAsin)}`:""}</p></div>
+    <div class="r"><span class="bp">目标 ACOS <b>${t.target_acos==null?"—":pct(t.target_acos,0)}</b></span><span class="bp">补货到仓 <b>${t.arrive_weeks??"—"}</b> 周</span><span class="bp">${h(t.stage||"—")}</span><button class="btn" onclick="UI.goalOpen=!UI.goalOpen;render()">${UI.goalOpen?"收起":"改目标"}</button></div></div>
+  ${UI.goalOpen?`<div class="card" id="goal"><h3>对照目标</h3><div class="sub">三个数由人定；改了就要重跑</div>${goalForm()}</div>`:""}
+  <div id="kpi">${kpiHtml(F)}</div>
+  <div class="card" id="concl"><h3>这周的结论</h3><div class="sub">数字由脚本算，对着上面的目标比</div>${concl?`<p class="concl">${h(concl)}</p>`:""}
+    ${bad.map(arow).join("")}${ok.length?`<details class="more"><summary>另有 ${ok.length} 项正常</summary>${ok.map(arow).join("")}</details>`:""}</div>`}
+
+/* ───────── 行动：列表 → 详情 ───────── */
+function agroups(tab){const st=ATAB[tab],ver=S.task.version,g={};S.actions.filter(a=>a.status===st).forEach(a=>{const k=a.type+"|"+a.version;(g[k]=g[k]||{key:k,type:a.type,item:a.item,ver:a.version,cur:a.version===ver,list:[]}).list.push(a)});
+  return Object.values(g).sort((a,b)=>(b.cur-a.cur)||a.item.localeCompare(b.item)||(b.list.length-a.list.length))}
+function stepper(cur,L){return `<div class="stp">${L.map(([t,s],i)=>`<div class="stp-i ${i<cur?"done":i===cur?"now":""}"><i></i><b>${t}</b><small>${h(s||"")}</small></div>`).join("")}</div>`}
+function actionDetail(g,tab){const o=S.options.find(x=>x.key===g.item)||{},ch=chOf(g.type),m=S.meta;
+  const hs=S.tree.分析.filter(x=>x.对策.includes(g.item)&&x.判定!=="未触发"),xs=[...new Set(hs.flatMap(x=>x.来自))].map(n=>S.facts.异常.find(a=>a.指标===n)).filter(a=>a&&a.级别!=="good");
+  const who_=(g.list.find(a=>a.by)||{}).by,cur={"待你决定":2,"待执行":3,"等验证":4,"已验证":5,"已驳回":2,"已作废":2}[tab],pend=g.list.filter(a=>a.status==="待确认").length,rev=g.list.filter(a=>a.note&&a.status==="已确认").length;
+  const steps=[["发现",xs[0]?xs[0].指标:"对着目标比出来"],["分析",hs[0]?hs[0].判定:""],["决定",tab==="待你决定"?"等你拍板":tab==="已驳回"?"你驳回了":tab==="已作废"?"输入变了，已作废":`${who_||"人"}已通过`],["执行",ch.接通===false?"人上传后台":"运营直接定"],["验证",`${m.复盘日.slice(5)} 看结果`]];
+  const sp=g.list.reduce((x,a)=>x+(a.spend||0),0),ex=tab==="待执行"||tab==="等验证"||tab==="已验证";
+  let bar="";
+  if(tab==="待你决定")bar=`<div class="abar">${g.cur?B({label:`按建议全部通过（${pend} 条）`,icon:"done2",cls:"primary",on:`bulk('${jsq(g.type)}')`,perm:"点动作"}):""}<span class="hint">也可以在下面逐条通过或驳回。驳回要写一句理由，下一圈 Agent 会先读它，不再原样提。</span></div>`;
+  if(tab==="待执行")bar=`<div class="abar"><a class="btn primary" href="/api/export.csv?status=已确认&types=${encodeURIComponent(g.type)}">${ic("dl")}导出这一类的${ch.id==="ads"?"批量上传表":"清单"}</a><span class="hint">${h(ch.通道)}${ch.接通===false?"还没接通":""}：${h(ch.现在怎么做||"")}。做完回来逐条标「已执行」。</span></div>`;
+  if(tab==="等验证")bar=`<div class="abar"><span class="hint">到 ${h(m.复盘日)} 重导一周数据、再跑一圈；结果对得上的，逐条标「下周已验证」。</span></div>`;
+  return `<div class="dcard" id="adetail"><div class="dhead"><div><span class="tg ${tab==="待你决定"?"":tab==="已驳回"?"bad":tab==="已作废"?"muted":"good"}">${tab}</span><h2>${h(g.type)}${g.cur?"":` <span class="vtag">上一版 v${g.ver}</span>`}</h2><div class="sub">${o.名称?`对策 ${h(o.key)}「${h(o.名称)}」 · `:""}交给 ${h(ch.通道)}</div></div><div class="big">${g.list.length}<small>条${sp?` · 涉及 ${usd(sp)}`:""}</small></div></div>
+  ${stepper(cur,steps)}
+  ${rev?`<div class="warnbox">${ic("info")}<span>输入已变，新输入下规则不再建议这里的 <b>${rev}</b> 条。系统不替你撤：逐条「撤回」，或者照做并标「已执行」。</span></div>`:""}
+  ${o.做什么&&!rev?`<div class="dsec"><h4>建议怎么做 <span class="by">Agent 写</span></h4><div class="rec"><b>${h(o.做什么)}</b><p>代价：${h(o.代价)}</p></div>
+    <details class="more"><summary>为什么这么建议</summary><ul class="whyl">${xs.map(a=>`<li><b>${h(a.指标)}</b>　${h(a.现值)}（对比：${h(a.参照)}）<small>${h(a.说明)}</small></li>`).join("")}${hs.map(x=>`<li>${h(x.结论)}<small>不成立的情况：${h(x.不成立)}</small></li>`).join("")}</ul>
+    <button class="btn sm" style="margin-top:8px" onclick="goWhy('T:${jsq(g.item)}:${jsq(g.type)}')">看完整的原因链</button></details></div>
+  <div class="dsec"><h4>怎么算成功</h4><div class="okbox">到 <b>${h(m.复盘日)}</b> 看：${h(SUCCESS[g.item]||"对照行动卡第 9 格")}。到期没做到，下一圈会重新起草。</div></div>`:""}
+  ${bar}
+  <div class="dsec"><h4>逐条明细 <span class="hint" style="font-weight:400">改哪个 Campaign、哪个对象、从多少改到多少、依据是什么</span></h4><div class="tw"><table class="acts a2"><thead><tr><th>对象（在哪个 Campaign）</th><th>改什么</th><th>依据</th><th>${ex?"执行":"审批"}</th></tr></thead><tbody>${(MAXR?g.list.slice(0,MAXR):g.list).map(a=>rowHtml2(a,ex)).join("")}${MAXR&&g.list.length>MAXR?`<tr><td colspan="4" class="hint" style="text-align:center">… 还有 ${g.list.length-MAXR} 条</td></tr>`:""}</tbody></table></div></div>
+  <div class="src-line"><i></i>Agent 起草 · 人审批 · 状态存在本机状态库；工作台不连广告后台</div></div>`}
+function rowHtml2(a,ex){const f=a.f||{};let ops="";const b=(txt,st,cls,icon)=>B({label:txt,icon,cls:"sm "+cls,on:`act('${a.no}','${st}')`,perm:"点动作"});
+  if(a.status==="待确认")ops=b("通过","已确认","success","check")+B({label:"驳回",icon:"x",cls:"sm danger",perm:"点动作",on:`UI.rejecting='${a.no}';render();setTimeout(()=>document.getElementById('rj')?.focus(),30)`});
+  if(a.status==="已确认")ops=(ex?b("标为已执行","已执行","soft","bolt"):"")+b("撤回","待确认","ghost","undo");
+  if(a.status==="驳回")ops=b("撤回驳回","待确认","ghost","undo");if(a.status==="已执行")ops=b("下周已验证","已验证","soft","done2")+b("撤回","已确认","ghost","undo");
+  const rj=UI.rejecting===a.no?`<div class="rej"><div class="ipt"><input id="rj" type="text" placeholder="驳回理由（必填，下一圈 Agent 要读）" onkeydown="if((event.key==='Enter'||event.keyCode===13)&&!event.isComposing)act('${a.no}','驳回',this.value)"></div><button class="btn sm danger solid" onclick="act('${a.no}','驳回',document.getElementById('rj').value)">提交驳回</button><button class="btn sm ghost" onclick="UI.rejecting=null;render()">取消</button></div>`:"";
+  const camp=f.Campaign?`<div class="sub2" style="margin-top:3px"><span class="cn" style="font-weight:500">${h(f.Campaign)}</span>${f.广告组&&f.实体!=="Campaign"?` › ${h(f.广告组)}`:""}</div>`:(a.campaign&&a.campaign!=="—"?`<div class="sub2">${h(a.campaign)}</div>`:"");
+  return `<tr class="${a.status==="作废"?"void":""}"><td>${objCell(a)}${camp}<div class="idl">${h(a.no)}</div></td><td style="white-space:nowrap">${chgCell(a)}</td><td>${h(a.why)}${a.spend!=null?`<div class="note">近 14 天涉及 ${usd(a.spend)}</div>`:""}</td><td><div class="ops">${stHtml(a.status)}${ops}</div>${a.by?`<div class="note">${h(a.by)} · ${h((a.updated_at||"").slice(5,16))}</div>`:""}${a.reason?`<div class="note">理由：${h(a.reason)}</div>`:""}${a.note?`<div class="note warn">${h(a.note)}</div>`:""}${rj}</td></tr>`}
+function actionsPage(){const tabs=Object.keys(ATAB).map(k=>[k,S.actions.filter(a=>a.status===ATAB[k]).length]).filter(([k,n])=>n||["待你决定","待执行","等验证"].includes(k));
+  if(!tabs.some(x=>x[0]===UI.atab))UI.atab="待你决定";const G=agroups(UI.atab);let g=G.find(x=>x.key===UI.agrp)||G.find(x=>x.type===UI.agrp&&x.cur)||G.find(x=>x.type===UI.agrp)||G[0];
+  const O={};S.options.forEach(o=>O[o.key]=o.名称);const nEx=S.actions.filter(a=>a.status==="已确认"&&chOf(a.type).id==="ads").length;let last=null;
+  const list=G.map(x=>{const head=(x.cur?"本轮":"上一版")!==last?`<div class="mgl">${last=(x.cur?"本轮":"上一版")}${x.cur?"":"留下来的"}</div>`:"";
+    return head+`<div class="mitem ${g&&x.key===g.key?"on":""}" onclick="UI.agrp='${jsq(x.key)}';UI.rejecting=null;render()"><b>${h(x.type)}</b><span class="n">${x.list.length}</span><small>${h(O[x.item]||x.item)} · ${h(chOf(x.type).通道)}</small></div>`}).join("");
+  const none={"待你决定":"没有等你决定的动作了。通过的在「待执行」里。","待执行":"还没有通过的动作。先到「待你决定」里拍板。","等验证":"还没有标「已执行」的动作。上传后台后回来标一下。"}[UI.atab]||"这一栏是空的。";
+  return `<div class="pagehead"><div><h1>行动</h1><p>Agent 按规则起草，你来拍板；通过的导出给人上传后台。这里看每类动作走到了哪一步、依据是什么。</p></div>
+    <div class="r">${nEx?`<a class="btn" href="/api/export.csv?status=已确认&types=${encodeURIComponent(S.tree.通道.find(c=>c.id==="ads").类型.join(","))}">${ic("dl")}导出全部已通过（${nEx} 条）</a>`:""}</div></div>
+  ${cmpHtml()}
+  <div class="tabs2" id="atabs">${tabs.map(([k,n])=>`<button class="tab2 ${k===UI.atab?"on":""}" onclick="UI.atab='${k}';UI.agrp=null;UI.rejecting=null;render()">${k}<span class="n">${n}</span></button>`).join("")}</div>
+  ${g?`<div class="md2"><div class="mlist" id="alist">${list}</div>${actionDetail(g,UI.atab)}</div>`:`<div class="card"><div class="alldone">${ic("check")}<span>${none}</span></div></div>`}`}
+
+/* ───────── 广告活动：列表 → 一个活动的构成 ───────── */
+function campActs(name){return S.actions.filter(a=>a.status!=="作废"&&String(a.campaign).split("、").includes(name))}
+function acosHtml(v){if(v==null)return "—";const T=S.task.target_acos||.3,BE=(S.facts&&S.facts.四周.盈亏线)||1;return `<span class="acos ${v>BE?"bad":v>T?"warn":"ok"}">${pct(v)}</span>`}
+const st2=s=>`<span class="st2 ${s==="enabled"?"":"off"}"><i></i>${s==="enabled"?"投放中":s==="paused"?"已暂停":h(s||"—")}</span>`;
+function campaignsPage(){const C=S.campaigns;if(!C||!C.活动.length)return `<div class="pagehead"><div><h1>广告活动</h1></div></div><div class="card"><div class="alldone">数据目录里没有活动表。</div></div>`;
+  if(UI.camp&&C.活动.some(c=>c.别名===UI.camp))return campDetail(C.活动.find(c=>c.别名===UI.camp),C.有哪些表);
+  const rows=C.活动.map(c=>{const p=c.表现||{},A=campActs(c.别名),pend=A.filter(a=>a.status==="待确认").length;
+    return `<tr onclick="goCamp('${jsq(c.别名)}')"><td><div class="cn">${h(c.Campaign)}</div><div class="sub2">${h(c.别名)}${c["Campaign ID"]?` · ID ${h(c["Campaign ID"])}`:""}</div></td><td>${h(c.投放方式)}</td><td class="num">${c.日预算!=null?"$"+c.日预算:"—"}</td><td>${h(c.竞价策略||"—")}</td>
+    <td class="num">${p.花费!=null?usd(p.花费):"—"}</td><td class="num">${p.订单??"—"}</td><td class="num">${acosHtml(p.ACOS)}</td><td class="sub2">产品 ${c.广告产品.length} · 词 ${c.关键词.length} · 定位 ${c.商品定位.length} · 否定 ${c.否定关键词.length+c["否定 ASIN"].length}</td>
+    <td>${pend?`<span class="tg">待你决定 ${pend}</span>`:A.length?`<span class="tg good">已处理 ${A.length}</span>`:`<span class="hint">本轮不动</span>`}</td></tr>`}).join("");
+  return `<div class="pagehead"><div><h1>广告活动</h1><p>这个产品下的 ${C.活动.length} 个 SP 活动，按近 14 天花费排。点一行看它的构成，和这一圈要在它上面改什么。</p></div></div>
+  <div class="tw" id="clist"><table class="ctab"><thead><tr><th>Campaign</th><th>投放方式</th><th class="num">日预算</th><th>竞价策略</th><th class="num">近 14 天花费</th><th class="num">订单</th><th class="num">ACOS</th><th>构成</th><th>本轮动作</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="hint" style="margin-top:10px">ACOS 颜色：绿＝在目标内，黄＝高于目标，红＝超过盈亏线。${S.mapped?"Campaign、广告组、SKU、ASIN 和各类 ID 都是脱敏生成的，格式与广告后台一致。":""}</p>`}
+function sbox(title,n,has,body){return `<div class="sbox"><div class="h">${title}<span>${has?`${n} 条`:"没给这张表"}</span></div>${has?(n?`<div class="scroll">${body}</div>`:`<div class="none">这个活动下没有。</div>`):`<div class="none">数据目录里没有这张表；补上后这一块和对应的动作才会出现（见 数据格式.md）。</div>`}</div>`}
+function campDetail(c,has){const p=c.表现||{},A=campActs(c.别名),g=c.广告组[0]||{};
+  const tbl=(head,rows)=>`<table><thead><tr>${head.map(x=>`<th class="${/竞价|价/.test(x)?"num":""}">${x}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+  return `<div class="backl" onclick="UI.camp=null;render()">${ic("back")}全部活动</div>
+  <div class="dcard" id="cdetail"><div class="dhead"><div><span class="tg ${c.状态==="enabled"?"good":"muted"}">${c.状态==="enabled"?"投放中":"已暂停"}</span><h2 class="cn" style="font-size:19px">${h(c.Campaign)}</h2><div class="sub">${h(c.别名)} · ${h(c.投放方式)}${c["Campaign ID"]?` · Campaign ID ${h(c["Campaign ID"])}`:""}</div></div></div>
+  <div class="kv4"><div><span>近 14 天花费</span><b>${p.花费!=null?usd(p.花费):"—"}</b></div><div><span>点击</span><b>${p.点击??"—"}</b></div><div><span>订单</span><b>${p.订单??"—"}</b></div><div><span>ACOS</span><b>${acosHtml(p.ACOS)}</b></div><div><span>日预算</span><b>${c.日预算!=null?"$"+c.日预算:"—"}</b></div><div><span>广告组默认竞价</span><b>${g.默认竞价!=null?"$"+g.默认竞价:"—"}</b></div></div>
+  <div class="hint">竞价策略：<b style="color:var(--ink)">${h(c.竞价策略||"没给")}</b>　广告位加价：<b style="color:var(--ink)">${c.广告位加价.length?c.广告位加价.map(x=>`${h(x.位置)} +${x.加价}%`).join("、"):"没有"}</b>　广告组：<b style="color:var(--ink)" class="cn">${h(g.名称||"—")}</b></div>
+  <div class="sec-t"><h3>这个活动由什么构成</h3><span>活动设置 → 广告组 → 广告产品／投放／否定</span></div>
+  <div class="sgrid">
+    ${sbox("广告产品",c.广告产品.length,has.广告产品,tbl(["SKU","ASIN","状态"],c.广告产品.map(x=>`<tr><td class="cn">${h(x.SKU)}</td><td class="idl">${h(x.ASIN)}</td><td>${st2(x.状态)}</td></tr>`).join("")))}
+    ${c.商品定位.length||!c.关键词.length?sbox("商品定位（ASIN／类目／自动四组）",c.商品定位.length,has.商品定位,tbl(["类别","对象","竞价","状态"],c.商品定位.map(x=>`<tr><td>${h(x.类别)}</td><td class="cn">${h(x.对象)}</td><td class="num">${x.竞价!=null?"$"+x.竞价:"—"}</td><td>${st2(x.状态)}</td></tr>`).join(""))):""}
+    ${c.关键词.length||!c.商品定位.length?sbox("关键词",c.关键词.length,has.关键词,tbl(["关键词","匹配","竞价","状态"],c.关键词.map(x=>`<tr><td class="kw">${h(x.关键词)}</td><td><span class="mt" style="margin:0">${h(x.匹配)}</span></td><td class="num">${x.竞价!=null?"$"+x.竞价:"—"}</td><td>${st2(x.状态)}</td></tr>`).join(""))):""}
+    ${sbox("否定（关键词＋ASIN）",c.否定关键词.length+c["否定 ASIN"].length,has.否定关键词||has["否定 ASIN"],tbl(["否定对象","方式"],c.否定关键词.map(x=>`<tr><td class="kw">${h(x.关键词)}</td><td>${h(x.匹配)}</td></tr>`).join("")+c["否定 ASIN"].map(x=>`<tr><td class="cn">${h(x)}</td><td>否定 ASIN</td></tr>`).join("")))}
+  </div>
+  <div class="sec-t"><h3>这一圈要在它上面改什么</h3><span>${A.length?`${A.length} 条`:"本轮不动它"}</span></div>
+  ${A.length?`<div class="tw"><table class="acts a3"><thead><tr><th>编号</th><th>类型</th><th>对象</th><th>改什么</th><th>依据</th><th>状态</th></tr></thead><tbody>${A.map(a=>`<tr><td class="mono">${h(a.no)}</td><td><a href="javascript:void 0" onclick="goActions('${Object.keys(ATAB).find(k=>ATAB[k]===a.status)}','${jsq(a.type)}')">${h(a.type)}</a></td><td>${objCell(a)}</td><td>${chgCell(a)}</td><td>${h(a.why)}</td><td>${stHtml(a.status)}</td></tr>`).join("")}</tbody></table></div>`:""}</div>`}
+
+/* ───────── 原因：从问题一路连到动作 ───────── */
+function whyPage(){return `<div class="pagehead"><div><h1>原因</h1><p>从问题一路连到动作：点任何一个节点，看它从哪来、依据哪些数据、最后改了什么。对策卡右上角打勾＝这一圈要不要做它。</p></div></div>${treeHtml()}`}
+
+/* ───────── Agent 运行：它做了什么、哪些事必须人拍板 ───────── */
+function agentPage(){const c=S.card,F=S.facts,rej=S.actions.filter(a=>a.status==="驳回"),chev=ic("chev").replace('class="i"','class="i chev"');
+  const names=["1 业务问题","2 已知事实","3 判断与待证假设","4 具体动作","5 接手岗位","6 执行条件","7 完成时间","8 成本条件","9 复核证据与观察期（＝下一次运行的触发）"];
+  const job=`<div class="job" id="job"><div><h4>它每周做什么</h4><ul><li>读回上一圈：你通过了什么、驳回了什么、执行了什么</li><li>拉广告、利润、库存、退货数据，对着目标找问题</li><li>按规则起草动作，过验证器，写进状态库</li></ul></div>
+    <div><h4>哪些事必须人拍板</h4><ul><li>目标 ACOS、到仓周数、产品阶段</li><li>做哪几条对策</li><li>每一条动作通过还是驳回；上传广告后台</li></ul></div>
+    <div><h4>什么时候它会停</h4><ul><li>跑完一圈就停，等人</li><li>输入没变，不重复跑</li><li>缺输入或验证器不过：不拿旧数据硬跑，上一份结果不动</li></ul></div></div>`;
+  if(!S.hasRun)return `<div class="pagehead"><div><h1>Agent 运行</h1><p>它每周做什么、这一圈做了什么、哪些事必须人拍板。</p></div></div>${job}${loopHtml()}`;
+  return `<div class="pagehead"><div><h1>Agent 运行</h1><p>它每周做什么、这一圈做了什么、哪些事必须人拍板。</p></div><div class="r"><a class="btn" href="/report" target="_blank">${ic("ext")}这一圈的运行报告</a></div></div>
+  ${job}${loopHtml()}${histHtml()}
+  <div class="grid2" id="mem"><div class="stack">
+    <div class="box"><div class="bh">下一圈它会先读这些<span class="r hint">你驳回过的，不再原样提</span></div>${rej.length?`<div class="tw" style="border:0"><table><tbody>${rej.map(a=>`<tr><td class="mono" style="white-space:nowrap">${h(a.no)}</td><td>${h(a.type)}｜${h((a.f&&(a.f.SKU||a.f.关键词))||a.object)}</td><td>${h(a.reason)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="bb hint">还没有驳回。驳回时写的理由会留在这里。</div>`}</div>
+    <div class="box"><div class="bh">运行历史<span class="r chip">${S.runs.length} 次</span></div><div class="tw" style="border:0;border-radius:0 0 11px 11px"><table><thead><tr><th>版本</th><th>时间</th><th>触发</th><th>输入</th><th class="num">动作</th><th class="num">用时</th></tr></thead><tbody>${S.runs.map(r=>`<tr><td><span class="vtag">v${r.version}</span></td><td style="white-space:nowrap">${h(r.at.slice(5,16))}</td><td>${h(r.trigger)}</td><td>目标 ${pct(r.inputs.目标ACOS,0)}｜到仓 ${r.inputs.补货到仓周数} 周｜${h(r.inputs.产品阶段)}｜对策 ${r.inputs.取舍项.join("")}</td><td class="num">${r.summary.合计}</td><td class="num">${r.seconds} 秒</td></tr>`).join("")}</tbody></table></div></div>
+    <div class="box"><div class="bh">回测<span class="r hint">如果当初照粗规则否词，这些词后来怎样</span></div><div class="tw" style="border:0;border-radius:0 0 11px 11px"><table><thead><tr>${Object.keys(F.回测[0]).map(k=>`<th class="num">${h(k)}</th>`).join("")}</tr></thead><tbody>${F.回测.map(r=>`<tr>${Object.values(r).map(v=>`<td class="num">${h(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div></div>
+    <div class="box"><div class="bh">行动卡 ${h(c.no)}<span class="r chip on">${h(c.status)}</span></div><div class="bb" style="padding-top:4px">${c.fields.map((f,i)=>`<details class="cardf ${i===8?"key":""}" ${i===8||i===0?"open":""}><summary>${chev}${names[i]}</summary><div>${md(f)}</div></details>`).join("")}</div></div></div>
+  <div class="box" style="margin-top:16px" id="log"><div class="bh">操作记录<span class="r hint">谁、什么时候、做了什么</span></div><div class="log">${S.events.map(e=>`<div><span>${h(e.at.slice(5))}</span><b>${h(e.who)}</b><span>${h(e.kind)}</span><span style="color:var(--ink)">${h(e.ref)}　${h(e.detail)}</span></div>`).join("")}</div></div>`}
+
+/* ───────── 设置：大部分时候不用来 ───────── */
+function settingsPage(){const C=S.campaigns||{有哪些表:{}},m=S.meta,perms=Object.entries(S.can||{});
+  const chs=(S.tree?S.tree.通道:[]).map(ch=>`<tr><td><b>${h(ch.通道)}</b></td><td>${h(ch.管什么)}</td><td><span class="tag ${ch.接通?"on":"off"}">${ch.接通?"人直接定":"未接通"}</span></td><td>${h(ch.现在怎么做)}</td></tr>`).join("");
+  return `<div class="pagehead"><div><h1>设置</h1><p>大部分时候不用来这里。要你处理的事会出现在首页。</p></div></div>
+  <div class="card" id="set-goal"><h3>对照目标</h3><div class="sub">三个数由人定，Agent 拿数据对着它们找问题</div>${goalForm()}</div>
+  <div class="card" id="set-data"><h3>数据从哪来</h3><div class="sub">${h(m.数据标记)}。工作台只读本机文件，不连广告后台</div>
+    <div class="tw"><table><thead><tr><th>数据</th><th>状态</th><th>没有它会怎样</th></tr></thead><tbody>
+    ${[["活动设置","竞价策略、广告位加价","出不了「改竞价策略」"],["广告组","默认竞价","出不了「下调默认竞价」"],["广告产品","每个活动挂了哪些 SKU","出不了「暂停／补挂广告产品」"],["关键词","词、匹配、竞价","出不了关键词调价和暂停"],["商品定位","ASIN／类目／自动四组的竞价","出不了定位调价、暂停和关组"],["否定关键词","已经否过哪些词","换道否定可能和已有否词重复"],["否定 ASIN","已经否过哪些 ASIN","出不了「否定 ASIN」的去重"]].map(([k,what,miss])=>`<tr><td><b>${k}</b><div class="sub2">${what}</div></td><td><span class="tag ${C.有哪些表[k]?"on":"off"}">${C.有哪些表[k]?"已有":"没给"}</span></td><td class="sub2">${miss}</td></tr>`).join("")}</tbody></table></div>
+    <p class="hint" style="margin:10px 0 0">换成自己的数据：照 <code>数据格式.md</code> 准备，<code>python3 _脚本/import_my_data.py 我的数据 目录</code> 导入。这一圈调用过的只读查询：${Object.entries(S.calls).map(([k,v])=>`<code>${h(k.split("/").slice(-2).join("/"))}</code>×${v}`).join(" ")||"无"}</p></div>
+  ${chs?`<div class="card" id="set-ch"><h3>动作交给谁执行</h3><div class="sub">通道没接通时，工作台只出清单，人去后台上传</div><div class="tw"><table><thead><tr><th>通道</th><th>管什么</th><th>状态</th><th>现在怎么做</th></tr></thead><tbody>${chs}</tbody></table></div></div>`:""}
+  <div class="card" id="set-perm"><h3>谁能做什么</h3><div class="sub">右上角切换身份；权限由服务端强制，不靠页面隐藏按钮</div><div class="tw"><table><thead><tr><th>操作</th>${S.roles.map(r=>`<th>${h(r)}</th>`).join("")}</tr></thead><tbody>${perms.map(([k,v])=>`<tr><td><b>${h(k)}</b></td>${S.roles.map(r=>`<td>${v.includes(r)?ic("check","stroke:var(--good)"):`<span class="hint">—</span>`}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
+  <div class="card" id="set-misc"><h3>资料与演示</h3><div class="sub">讲解用的图和手册；投屏时开演示模式</div>
+    <div class="links"><a class="btn" href="/arch" target="_blank">${ic("ext")}架构图</a><a class="btn" href="/flow" target="_blank">${ic("ext")}流程图</a><a class="btn" href="/report" target="_blank">${ic("ext")}运行报告</a></div>
+    <label class="swl" style="margin-top:14px" title="字号加大、六格慢放、跑完停在 Agent 运行页"><input type="checkbox" ${isDemo()?"checked":""} onchange="setDemo(this.checked)"><span class="tr"></span><span>演示模式<span class="hint">　投屏放大 · 六格慢放</span></span></label>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line2);display:flex;gap:12px;align-items:center;flex-wrap:wrap">${B({label:"重置工作台",icon:"refresh",cls:"danger",on:"resetAll()",perm:"重置"})}<span class="hint">清空状态库（谁点过什么），回到还没跑过的样子；不删数据文件。只有老板能做。</span></div></div>`}
+
+/* ───────── 动作 ───────── */
 async function load(){S=await api("/api/state");render()}
 async function act(no,status,reason){try{await api("/api/action/"+encodeURIComponent(no),{status,reason});UI.rejecting=null;await load()}catch(e){}}
-async function bulk(type){try{const r=await api("/api/bulk",{type});toast(`已通过 ${r.n} 条，去「执行」里导出`);await load()}catch(e){}}
-async function saveInputs(){const a=$("#in_acos").value,w=$("#in_weeks").value;try{const r=await api("/api/inputs",{target_acos:a===""?"":a/100,arrive_weeks:w,stage:$("#in_stage").value});toast(r.changed.length?"目标已保存，任务回到「待处理」。点「跑一圈」":"目标没有变化");await load()}catch(e){}}
+async function bulk(type){try{const r=await api("/api/bulk",{type});toast(`已通过 ${r.n} 条，在「待执行」里导出`);await load()}catch(e){}}
+async function saveInputs(){const a=$("#in_acos").value,w=$("#in_weeks").value;try{const r=await api("/api/inputs",{target_acos:a===""?"":a/100,arrive_weeks:w,stage:$("#in_stage").value});toast(r.changed.length?"目标已保存。点「跑一圈」按新目标重出动作":"目标没有变化");UI.goalOpen=false;await load()}catch(e){}}
 async function retrigger(){try{await api("/api/inputs",{retrigger:true});toast("已重新触发（目标没动）。点「跑一圈」看它会不会重复跑");await load()}catch(e){}}
-async function saveOpts(){try{await api("/api/inputs",{options:[...UI.opts]});UI.opts=null;toast("取舍已改，任务回到「待处理」。点「跑一圈」");await load()}catch(e){UI.opts=null;render()}}
-async function runLoop(){try{await api("/api/run",{trigger:S.hasRun?"改输入重跑":"手动"})}catch(e){return}UI.playing=true;UI.shown=0;UI.cur=1;UI.openSteps.clear();if(isDemo())[1,2,3,4,5,6].forEach(i=>UI.openSteps.add(i));render();document.getElementById("loop")?.scrollIntoView({behavior:"auto"});
+async function saveOpts(){try{await api("/api/inputs",{options:[...UI.opts]});UI.opts=null;toast("对策已改。点「跑一圈」重出动作");await load()}catch(e){UI.opts=null;render()}}
+async function resetAll(){if(!confirm("重置：清空工作台的状态库，回到还没跑过的样子。确定？"))return;try{await api("/api/reset",{});UI.opts=null;UI.sel=null;UI.agrp=null;UI.camp=null;toast("已重置");await load();go("home")}catch(e){}}
+async function runLoop(){try{await api("/api/run",{trigger:S.hasRun?"改输入重跑":"手动"})}catch(e){return}UI.playing=true;UI.shown=0;UI.cur=1;UI.openSteps.clear();if(isDemo())[1,2,3,4,5,6].forEach(i=>UI.openSteps.add(i));
+  if(UI.page!=="agent")location.hash="agent";render();scrollTo(0,0);
   const tick=async()=>{const p=await (await fetch("/api/progress")).json();S.progress=p;if(UI.shown<p.steps.length){UI.shown++;const nx=p.steps[UI.shown];UI.cur=nx?nx.i:(p.running?Math.min(6,(p.steps.at(-1)?.i||0)+1):0);render();return setTimeout(tick,isDemo()?1400:650)}
-    if(p.running){UI.cur=Math.min(6,(p.steps.at(-1)?.i||0)+1);render();return setTimeout(tick,350)}UI.playing=false;UI.cur=0;UI.opts=null;UI.sel=null;await load();toast(p.steps.every(s=>s.ok)?"这一圈跑完了，停下来等人审批":"这一圈停在了异常：看红色那一格")};setTimeout(tick,300)}
-$("#run").onclick=runLoop;$("#reset").onclick=async()=>{if(!confirm("重置：清空工作台的状态库，回到还没跑过的样子。确定？"))return;try{await api("/api/reset",{});UI.opts=null;UI.sel=null;UI.openGroups.clear();toast("已重置");await load()}catch(e){}};
-const Q=new URLSearchParams(location.search);if(Q.get("void"))UI.showVoid=true;if(Q.get("sel"))UI.sel=Q.get("sel");if(Q.get("ap"))UI.apStatus=Q.get("ap");if(Q.get("hk"))UI.hk=+Q.get("hk");
-const ONLY=Q.get("only")?Q.get("only").split(","):null;   // 截图用：只留这些区块
-function shotMode(){if(!ONLY)return;document.body.classList.add("shot");document.querySelectorAll("#app > *").forEach(el=>{el.style.display=ONLY.includes(el.id)?"":"none"})}
+    if(p.running){UI.cur=Math.min(6,(p.steps.at(-1)?.i||0)+1);render();return setTimeout(tick,350)}UI.playing=false;UI.cur=0;UI.opts=null;UI.sel=null;UI.agrp=null;await load();const ok=p.steps.every(s=>s.ok);
+    toast(ok?"这一圈跑完了，停下来等你。首页有要你处理的事":"这一圈停下了：看红色那一格，首页有要你补的");if(!isDemo())setTimeout(()=>{if(UI.page==="agent"&&!UI.playing)go("home")},1500)};setTimeout(tick,300)}
+$("#run").onclick=runLoop;
+const Q=new URLSearchParams(location.search);if(Q.get("sel"))UI.sel=Q.get("sel");if(Q.get("hk"))UI.hk=+Q.get("hk");if(Q.get("tab"))UI.atab=Q.get("tab");if(Q.get("grp"))UI.agrp=Q.get("grp");if(Q.get("camp"))UI.camp=Q.get("camp");if(Q.get("goal"))UI.goalOpen=true;
+const MAXR=+Q.get("rows")||0;   // 截图用：明细表只留前几行
+const ONLY=Q.get("only")?Q.get("only").split(","):null;   // 截图用：?shot=1 隐藏侧栏顶栏；?only=todo,band 只留这些块
+function shotMode(){if(!ONLY&&!Q.get("shot"))return;document.body.classList.add("shot");if(ONLY)document.querySelectorAll("#app > *").forEach(el=>{el.style.display=ONLY.includes(el.id)?"":"none"})}
 (async()=>{S=await (await fetch("/api/state")).json();
-  if(S.hasRun){const v=S.task.version,ts=[...new Set(S.actions.filter(a=>a.version===v).map(a=>a.type))];const o=Q.get("open");(o==="all"?ts:(o==null||o==="first")?ts.slice(0,1):o.split(",")).forEach(t=>UI.openGroups.add(t))}
   try{const w=localStorage.getItem("who");if(w&&S.roles.includes(w))UI.who=w}catch(e){}
-  const dm=$("#demo");try{dm.checked=localStorage.getItem("demo")==="1"||Q.get("demo")==="1"}catch(e){}document.body.classList.toggle("demo",dm.checked);dm.onchange=()=>{document.body.classList.toggle("demo",dm.checked);try{localStorage.setItem("demo",dm.checked?"1":"0")}catch(e){}render()};render()})();
+  let dm=Q.get("demo")==="1";try{dm=dm||localStorage.getItem("demo")==="1"}catch(e){}document.body.classList.toggle("demo",dm);render()})();
 </script></body></html>
