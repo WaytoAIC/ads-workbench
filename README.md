@@ -64,7 +64,7 @@
 
 # ads-workbench · 广告周检本地工作台 / Local Ads Review Workbench
 
-一个能点、能跑的本地工作台：把「看到 ACOS 高」推进到「有人点头、有日期、能复盘的动作清单」。只用 Python 标准库＋SQLite＋pandas，断网可用，**不连任何广告后台**。
+一个能点、能跑的本地工作台：把「看到 ACOS 高」推进到「有人点头、有日期、能复盘的动作清单」。只用 Python 标准库＋SQLite＋pandas，断网可用，**默认不连任何广告后台**（广告接口已在真实店铺跑通，开关默认关，见下）。
 
 一套四层，可以只用第一层，也可以一层层装上去：
 
@@ -101,6 +101,7 @@ Open http://localhost:8810 and click “跑第一圈”.
 - 换成自己的数据：`数据格式.md` ＋ 模板 `我的数据-示例/` ＋ `python3 _脚本/import_my_data.py 我的数据 ~/ads-lab-mine`
 - **经营核算**（`_脚本/biz.py`，不调模型）：目标 TACOS ＝ 定价毛利率 − 要留的利润率、单品日预算、TACOS 拆到 CPC／CVR／客单价、只指一个「核心限制」、每条广告的任务（纯利型／推自然位／测词拓词／收割／防守）、四条利润路径的测算、九栏决策表
 - **归因**（`_脚本/attribution.py`，不调模型）：「原因 · 问题连线」里，每个问题拆到是谁造成的，每条分析并排摆支持和不支持的证据、最多能解释多少、把握几成、还缺什么；人对每条分析下判断，Agent 可以被叫去深挖并把结果存回节点
+- **广告接口**（`_脚本/ads_api.py`）：Amazon Ads API 统一版 v1，走本机紫鸟代理。读（广告账号、活动、广告组、投放对象、商品广告）和三类写（暂停商品广告、暂停关键词、广告组里否定 ASIN）已在真实店铺上发过并回读；其余动作能翻成请求预演。`check` 连通、`preview` 预演、`execute` 执行一条；执行开关默认关，演示数据永远不发。跑通记录见 `Ads接口跑通记录.json`
 - **技能包**（`skills/`，MIT）：`ads-router` 入口＋ 9 个专用技能＋共享口径。装进 Claude Code／Codex：`bash skills/install.sh --target claude`；装进 Hermes 见下一条
 - **Agent**（`agent/`）：`bash agent/install_hermes.sh` 一条命令装人设、技能包和每周定时；页面右下角「问 Agent」直接问这一圈的数据，要发群它只出草稿、你点了才发 → `agent/README.md`
 - **每周一圈**（`_脚本/weekly.py`）：读回状态 → 数据体检 → 跑一圈 → 经营核算 → 模型补位 → 自检 → 起草周报 → 留痕（`运行记录/`）；`--dry-run` 先空跑。`_脚本/agent_run.py` 是它的等价入口 → `装进Agent.md`
@@ -125,6 +126,7 @@ Six-step loop, a six-page workbench organised by what the human is there to do (
 | `_脚本/history_sim.py` | 历史回放：同一套规则对前三圈历史数据跑，生成 `历史回放.json` |
 | `_脚本/biz.py` | 经营核算 → `广告闭环/输出/经营.json`（算账、拆解、广告任务、利润路径、决策表） |
 | `_脚本/attribution.py` | 归因 → `广告闭环/输出/归因.json`（每个问题是谁造成的、每条分析的正反证据与把握、还缺什么） |
+| `_脚本/ads_api.py`／`Ads接口跑通记录.json` | 广告接口适配器（连通、预演、执行一条：先读现值、只提交一次、独立回读）／在真实店铺上跑通过什么（不含任何店铺信息） |
 | `_脚本/weekly.py` | 每周一圈（Harness 主循环）：八步、每步留痕、`--dry-run`；`agent_run.py` 是它的薄包装 |
 | `_脚本/llm.py` | 模型补位 → `AI补位.json`；先校验再落盘 |
 | `_脚本/eval.py`／`评测/` | 考卷与评分：确定性断言＋模型部分的一致率 |

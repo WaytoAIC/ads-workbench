@@ -330,7 +330,7 @@ def harness(root, st):
         row("触发", "页面「跑一圈」· Hermes 每周定时 · 问 Agent", True if cj else None, ("每周定时已装" if cj else "每周定时还没装（bash agent/install_hermes.sh）") + (f"；上次周跑 {last['at'][5:16]}（{last.get('trigger', '')}）" if last and last.get("at") else "；还没有周跑记录")),
         row("配方", "skills/ · 口径.json", True if (sk and kj) else None, f"技能 {len(sk)} 个（装进 Agent {sum(1 for x in sk if x['已装进Agent'])} 个）；口径.json {'在' if kj else '缺'}"),
         row("上下文", "数字.json · 经营.json · 驳回理由 · 运行记录/", True if (st.get("hasRun") and biz) else None, ("这一圈的事实和经营核算都在" if st.get("hasRun") and biz else "还没跑过，或经营核算没出") + f"；人驳回过 {st.get('rejected', 0)} 条"),
-        row("工具", "_脚本/*.py（只读数据）· Hermes 上的取数技能", True, "流水线、经营核算、周跑、评测都是本机脚本；工作台不连广告后台"),
+        row("工具", "_脚本/*.py（只读数据）· 广告接口 · Hermes 上的取数技能", True, "流水线、经营核算、归因、周跑、评测都是本机脚本；广告接口已在真实店铺跑通（读、暂停、否定），执行开关默认关，演示数据只预演"),
         row("护栏", "状态机 · 权限表 · 验证器 · 字段分工 · 群消息人闸", (all(x["通过"] for x in chk) if chk else None), (f"验证器 {sum(1 for x in chk if x['通过'])}/{len(chk)} 项通过" if chk else "还没跑过验证器") + "；动作一律停在待审批，群消息人点了才发"),
         row("状态", "工作台.db · 广告闭环/输出/", True, f"任务 {st.get('status', '')} · v{st.get('version', 0)} · 待审批 {st.get('pending', 0)} 条"),
         row("评估", "评测/ · _脚本/eval.py · 每条动作的复盘日", (not res.get("失败")) if res else None, (f"最近一次评测 {res.get('日期', '')}：{res.get('通过', '?')} 条通过、{res.get('失败', '?')} 条失败" + (f"、{res['跳过']} 条跳过" if res.get("跳过") else "")) if res else "还没跑过评测（python3 _脚本/eval.py）"),

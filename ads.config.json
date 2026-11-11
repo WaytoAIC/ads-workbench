@@ -2,5 +2,6 @@
  "agent": {"名字": "广告 Agent", "hermes": "http://127.0.0.1:8642", "profile": "ads-agent"},
  "llm": {"enabled": false, "api": "openai", "base": "", "model": "", "key_env": "ADS_LLM_KEY", "超时秒": 60, "搜索词补位上限": 60},
  "weekly": {"schedule": "0 9 * * 1", "推送": "草稿"},
+ "ads_api": {"enabled": false, "通道": "紫鸟代理", "单次最多几条": 20},
  "飞书": {"webhook_env": "FEISHU_WEBHOOK", "群名": ""}
 }

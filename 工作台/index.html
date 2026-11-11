@@ -575,7 +575,7 @@ function detailHtml(G){const n=G.by[UI.sel];if(!n)return "";const T=S.tree;let h
     R=`<div class="sub-h">诊断综合了这些数据</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${n.d.数据源.map(srcChip).join("")||`<span class="hint">—</span>`}</div><div class="sub-h">落成的动作</div><div>${chips(down)}</div>`}
   if(n.k==="T"){const ch=chOf(n.type),cnt={};n.list.forEach(a=>cnt[a.status]=(cnt[a.status]||0)+1);const pend=cnt["待确认"]||0;
     head=`<span>④ 输出动作</span><b>${h(n.type)}</b><span class="chip">${n.list.length} 条</span><span class="chn">${h(ch.通道)}</span>`;
-    L=`<div class="kv"><span>来自对策</span><div>${chips(up)}</div><span>执行通道</span><div>${h(ch.通道)}${ch.接通===false?` <span class="tag off">未接通</span>`:""}<div class="hint">${h(ch.现在怎么做||"")}</div></div><span>状态</span><div style="display:flex;gap:8px;flex-wrap:wrap">${Object.entries(cnt).map(([s,v])=>`${stHtml(s)} <b>${v}</b>`).join("　")}</div></div>
+    L=`<div class="kv"><span>来自对策</span><div>${chips(up)}</div><span>执行通道</span><div>${h(ch.通道)} ${ch.跑通?`<span class="tag on">已跑通</span>`:ch.接通===false?`<span class="tag off">未接通</span>`:""}<div class="hint">${h(ch.现在怎么做||"")}</div></div><span>状态</span><div style="display:flex;gap:8px;flex-wrap:wrap">${Object.entries(cnt).map(([s,v])=>`${stHtml(s)} <b>${v}</b>`).join("　")}</div></div>
     <div class="frow" style="margin-top:12px">${pend?B({label:`去拍板这一类（${pend} 条）`,icon:"arrow",cls:"primary sm",on:`goApprove('${jsq(n.type)}')`}):`<span class="hint">这一类都审批过了</span>`}</div>`;
     R=`<div class="tw"><table class="acts"><thead><tr><th>Campaign / 广告组</th><th>对象</th><th>改什么</th></tr></thead><tbody>${n.list.slice(0,6).map(a=>`<tr><td>${campCell(a)}</td><td>${objCell(a)}</td><td>${chgCell(a)}</td></tr>`).join("")}</tbody></table></div>${n.list.length>6?`<div class="hint" style="margin-top:6px">还有 ${n.list.length-6} 条，在「行动」里看全部</div>`:""}`}
   const full=(n.k==="X"?attrX(n.a):n.k==="H"?attrH(n.x)+verdictBox(n.id):n.k==="O"?attrO(n.o):"")+notesBox(n.id)+askRow();
@@ -695,7 +695,7 @@ function actionDetail(g,tab){const o=S.options.find(x=>x.key===g.item)||{},ch=ch
   const sp=g.list.reduce((x,a)=>x+(a.spend||0),0),ex=tab==="待执行"||tab==="等验证"||tab==="已验证";
   let bar="";
   if(tab==="待你决定")bar=`<div class="abar">${g.cur?B({label:`按建议全部通过（${pend} 条）`,icon:"done2",cls:"primary",on:`bulk('${jsq(g.type)}')`,perm:"点动作"}):""}<span class="hint">也可以在下面逐条通过或驳回。驳回要写一句理由，下一圈 Agent 会先读它，不再原样提。</span></div>`;
-  if(tab==="待执行")bar=`<div class="abar"><a class="btn primary" href="/api/export.csv?status=已确认&types=${encodeURIComponent(g.type)}">${ic("dl")}导出这一类的${ch.id==="ads"?"批量上传表":"清单"}</a><span class="hint">${h(ch.通道)}${ch.接通===false?"还没接通":""}：${h(ch.现在怎么做||"")}。做完回来逐条标「已执行」。</span></div>`;
+  if(tab==="待执行")bar=`<div class="abar"><a class="btn primary" href="/api/export.csv?status=已确认&types=${encodeURIComponent(g.type)}">${ic("dl")}导出这一类的${ch.id==="ads"?"批量上传表":"清单"}</a>${ch.id==="ads"?`<button class="btn" onclick="adsPreview('${jsq(g.type)}')">${ic("bolt")}预演接口请求</button>`:""}<span class="hint">${h(ch.通道)}${ch.跑通?"":ch.接通===false?"还没接通":""}：${h(ch.现在怎么做||"")}。做完回来逐条标「已执行」。</span></div>${ch.id==="ads"?adsPvBox(g.type):""}`;
   if(tab==="等验证")bar=`<div class="abar"><span class="hint">到 ${h(m.复盘日)} 重导一周数据、再跑一圈；结果对得上的，逐条标「下周已验证」。</span></div>`;
   return `<div class="dcard" id="adetail"><div class="dhead"><div><span class="tg ${tab==="待你决定"?"":tab==="已驳回"?"bad":tab==="已作废"?"muted":"good"}">${tab}</span><h2>${h(g.type)}${g.cur?"":` <span class="vtag">上一版 v${g.ver}</span>`}</h2><div class="sub">${o.名称?`对策 ${h(o.key)}「${h(o.名称)}」 · `:""}交给 ${h(ch.通道)}</div></div><div class="big">${g.list.length}<small>条${sp?` · 涉及 ${usd(sp)}`:""}</small></div></div>
   ${stepper(cur,steps)}
@@ -709,7 +709,7 @@ function actionDetail(g,tab){const o=S.options.find(x=>x.key===g.item)||{},ch=ch
     <div><span>多久复盘</span><p>到 <b>${h(m.复盘日)}</b> 看${bizOK()&&S.biz.决策表.复盘时间?`；${h(S.biz.决策表.复盘时间)}`:""}。到期没做到，下一圈会重新起草。</p></div></div></div>`:""}
   ${bar}
   <div class="dsec"><h4>逐条明细 <span class="hint" style="font-weight:400">改哪个 Campaign、哪个对象、从多少改到多少、依据是什么</span></h4><div class="tw"><table class="acts a2"><thead><tr><th>对象（在哪个 Campaign）</th><th>改什么</th><th>依据</th><th>${ex?"执行":"审批"}</th></tr></thead><tbody>${(MAXR?g.list.slice(0,MAXR):g.list).map(a=>rowHtml2(a,ex)).join("")}${MAXR&&g.list.length>MAXR?`<tr><td colspan="4" class="hint" style="text-align:center">… 还有 ${g.list.length-MAXR} 条</td></tr>`:""}</tbody></table></div></div>
-  <div class="src-line"><i></i>Agent 起草 · 人审批 · 状态存在本机状态库；工作台不连广告后台</div></div>`}
+  <div class="src-line"><i></i>Agent 起草 · 人审批 · 状态存在本机状态库；演示数据不发广告接口</div></div>`}
 function rowHtml2(a,ex){const f=a.f||{};let ops="";const b=(txt,st,cls,icon)=>B({label:txt,icon,cls:"sm "+cls,on:`act('${a.no}','${st}')`,perm:"点动作"});
   if(a.status==="待确认")ops=b("通过","已确认","success","check")+B({label:"驳回",icon:"x",cls:"sm danger",perm:"点动作",on:`UI.rejecting='${a.no}';render();setTimeout(()=>document.getElementById('rj')?.focus(),30)`});
   if(a.status==="已确认")ops=(ex?b("标为已执行","已执行","soft","bolt"):"")+b("撤回","待确认","ghost","undo");
@@ -784,16 +784,17 @@ function agentPage(){const c=S.card,F=S.facts,rej=S.actions.filter(a=>a.status==
 
 /* ───────── 设置：大部分时候不用来 ───────── */
 function settingsPage(){const C=S.campaigns||{有哪些表:{}},m=S.meta,perms=Object.entries(S.can||{});
-  const chs=(S.tree?S.tree.通道:[]).map(ch=>`<tr><td><b>${h(ch.通道)}</b></td><td>${h(ch.管什么)}</td><td><span class="tag ${ch.接通?"on":"off"}">${ch.接通?"人直接定":"未接通"}</span></td><td>${h(ch.现在怎么做)}</td></tr>`).join("");
+  const chs=(S.tree?S.tree.通道:[]).map(ch=>`<tr><td><b>${h(ch.通道)}</b></td><td>${h(ch.管什么)}</td><td>${chTag(ch)}</td><td>${h(ch.现在怎么做)}</td></tr>`).join("");
   return `<div class="pagehead"><div><h1>设置</h1><p>大部分时候不用来这里。要你处理的事会出现在首页。</p></div></div>
   <div class="card" id="set-goal"><h3>对照目标</h3><div class="sub">都由人定。上面三个，Agent 拿数据对着它们找问题；下面两个决定目标 TACOS 和每天能花多少</div>${goalForm()}</div>
   ${healthCard()}
-  <div class="card" id="set-data"><h3>数据从哪来</h3><div class="sub">${h(m.数据标记)}。工作台只读本机文件，不连广告后台</div>
+  <div class="card" id="set-data"><h3>数据从哪来</h3><div class="sub">${h(m.数据标记)}。这份数据只读本机文件；广告接口通不通看下面「广告接口」</div>
     <div class="tw"><table><thead><tr><th>数据</th><th>状态</th><th>没有它会怎样</th></tr></thead><tbody>
     ${[["活动设置","竞价策略、广告位加价","出不了「改竞价策略」"],["广告组","默认竞价","出不了「下调默认竞价」"],["广告产品","每个活动挂了哪些 SKU","出不了「暂停／补挂广告产品」"],["关键词","词、匹配、竞价","出不了关键词调价和暂停"],["商品定位","ASIN／类目／自动四组的竞价","出不了定位调价、暂停和关组"],["否定关键词","已经否过哪些词","换道否定可能和已有否词重复"],["否定 ASIN","已经否过哪些 ASIN","出不了「否定 ASIN」的去重"]].map(([k,what,miss])=>`<tr><td><b>${k}</b><div class="sub2">${what}</div></td><td><span class="tag ${C.有哪些表[k]?"on":"off"}">${C.有哪些表[k]?"已有":"没给"}</span></td><td class="sub2">${miss}</td></tr>`).join("")}</tbody></table></div>
     <p class="hint" style="margin:10px 0 0">换成自己的数据：照 <code>数据格式.md</code> 准备，<code>python3 _脚本/import_my_data.py 我的数据 目录</code> 导入。这一圈调用过的只读查询：${Object.entries(S.calls).map(([k,v])=>`<code>${h(k.split("/").slice(-2).join("/"))}</code>×${v}`).join(" ")||"无"}</p></div>
-  ${chs?`<div class="card" id="set-ch"><h3>动作交给谁执行</h3><div class="sub">通道没接通时，工作台只出清单，人去后台上传</div><div class="tw"><table><thead><tr><th>通道</th><th>管什么</th><th>状态</th><th>现在怎么做</th></tr></thead><tbody>${chs}</tbody></table></div></div>`:""}
+  ${chs?`<div class="card" id="set-ch"><h3>动作交给谁执行</h3><div class="sub">广告接口已经在真实店铺上跑通；演示数据的编号是生成的，所以这里只出清单和预演，人去后台上传</div><div class="tw"><table><thead><tr><th>通道</th><th>管什么</th><th>状态</th><th>现在怎么做</th></tr></thead><tbody>${chs}</tbody></table></div></div>`:""}
   ${koujingCard()}
+  ${adsCard()}
   <div class="card" id="set-perm"><h3>谁能做什么</h3><div class="sub">右上角切换身份；权限由服务端强制，不靠页面隐藏按钮</div><div class="tw"><table><thead><tr><th>操作</th>${S.roles.map(r=>`<th>${h(r)}</th>`).join("")}</tr></thead><tbody>${perms.map(([k,v])=>`<tr><td><b>${h(k)}</b></td>${S.roles.map(r=>`<td>${v.includes(r)?ic("check","stroke:var(--good)"):`<span class="hint">—</span>`}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
   <div class="card" id="set-misc"><h3>资料与演示</h3><div class="sub">讲解用的图和手册；投屏时开演示模式</div>
     <div class="links"><a class="btn" href="/arch" target="_blank">${ic("ext")}架构图</a><a class="btn" href="/flow" target="_blank">${ic("ext")}流程图</a><a class="btn" href="/report" target="_blank">${ic("ext")}运行报告</a></div>
@@ -999,6 +1000,28 @@ function hypCard(text){if(ASK.busy)return `<pre>${h(text)}</pre>`;const r=HYP[te
 async function adoptHyp(btn){const text=btn.closest(".draft").querySelector("textarea").value;try{const r=await api("/api/hypothesis",{text,confirm:true});SAVED["hyp:"+text]=`已采纳为 ${r.id}，在树的「分析」一列`;toast(SAVED["hyp:"+text]);askRender();UI.sel="H:"+r.id;UI.whyTab="tree";await load();if(UI.page!=="why")go("why")}catch(e){}}
 async function dropHyp(id){if(!confirm(`把 ${id} 从树上拿掉？你对它下的判断也会一起清掉。`))return;try{await api("/api/hypothesis",{delete:id});UI.sel=null;toast("已拿掉");await load()}catch(e){}}
 function askNew(){askOpen(true);ask("看一遍这一圈的归因材料：现有的几条分析之外，还有没有值得查的原因？挑最值得的一条写成新分析。")}
+
+/* ───────── v6：Amazon Ads API（已在真实店铺跑通；演示数据只预演） ───────── */
+const chTag=ch=>ch.跑通?`<span class="tag on">已跑通</span>`:ch.接通===false?`<span class="tag off">未接通</span>`:`<span class="tag on">人直接定</span>`;
+function adsCard(){const A=S.adsapi;if(!A||!A.跑通记录)return "";const R=A.跑通记录,L=A.上次连通,acts=Object.entries(A.动作||{}),ok=acts.filter(([k,v])=>v.跑通).length;
+  return `<div class="card" id="set-ads"><h3>广告接口（Amazon Ads API）<span class="tag on" style="margin-left:8px">已在真实店铺跑通</span></h3><div class="sub">${h(R.怎么走的)}</div>
+  <div class="grid2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);margin-top:10px"><div><div class="sub-h">能读</div>${R.读.map(x=>`<div class="hrow w"><i class="${x.跑通?"":"sk"}"></i><b>${h(x.能力)}</b><div><p><code>${h(x.接口)}</code></p>${x.备注?`<small>${h(x.备注)}</small>`:""}</div></div>`).join("")}</div>
+   <div><div class="sub-h">真实改过（每次都回读确认）</div><div class="tw"><table><thead><tr><th>时间</th><th>站点</th><th>做了什么</th><th>结果</th></tr></thead><tbody>${R.写.map(x=>`<tr><td style="white-space:nowrap">${h(x.时间)}</td><td>${h(x.站点)}</td><td><b>${h(x.做了什么)}</b><div class="sub2"><code>${h(x.接口)}</code></div></td><td class="sub2">${h(x.结果)}</td></tr>`).join("")}</tbody></table></div>
+     <p class="hint" style="margin:8px 0 0">${h(R.没跑过的)}</p></div></div>
+  <div class="sub-h" style="margin-top:14px">今天还通不通</div>
+  ${L?`<div>${L.步骤.map(x=>`<div class="hrow w"><i class="${x.ok?"":"off"}"></i><b>${h(x.名)}</b><div><p>${h(x.说明)}</p></div></div>`).join("")}<p class="hint" style="margin:6px 0 0">上次连通 ${h(L.时间)} · ${h(L.站点)} 站 · 调用 ${L.调用次数} 次。只记个数，不记名字和编号。</p></div>`:`<p class="hint">这台电脑上还没连过。</p>`}
+  <div class="aifill">${A.配了店铺?B({label:UI.adsBusy?"正在连…":"现在连一次",icon:"refresh",cls:"sm",on:"adsCheck()",perm:"连接口"})+`<span class="hint">会花紫鸟积分，大约 7 次调用；只读，不改任何广告</span>`:`<span class="hint">这台电脑没配店铺：在 <code>agent/.env.local</code> 里写 <code>ADS_STORE_NAME</code> 和 <code>ADS_COUNTRY</code>，店铺要先在紫鸟里授权 Amazon Ads。</span>`}</div>
+  <details class="more" style="margin-top:12px"><summary>工作台的每类动作，对应接口的哪一个（${acts.length} 类，其中 ${ok} 类真实发过）</summary><div class="tw" style="margin-top:8px"><table><thead><tr><th>动作</th><th>改的是什么</th><th>接口</th><th>真实发过</th></tr></thead><tbody>${acts.sort((a,b)=>b[1].跑通-a[1].跑通).map(([k,v])=>`<tr><td><b>${h(k)}</b></td><td>${h(v.改什么)}</td><td><code>${h(v.接口)}</code></td><td>${v.跑通?`<span class="tag on">发过并回读</span>`:`<span class="hint">只预演过</span>`}</td></tr>`).join("")}</tbody></table></div></details>
+  <p class="hint" style="margin:10px 0 0">执行开关：<b style="color:var(--ink)">${A.开关?"开":"关"}</b>（<code>ads.config.json</code> 的 <code>ads_api.enabled</code>）。关着的时候只能预演；开了也只对真实发过的几类开放，并且一条一条发、每条都要人写一句确认。</p></div>`}
+async function adsCheck(){if(!confirm("现在连一次广告接口？\n\n会花紫鸟积分（大约 7 次调用）。只读，不改任何广告。"))return;UI.adsBusy=true;render();try{const r=await api("/api/ads/check",{confirm:true});toast(r.ok?"连通了":"没连通，看红的那一步")}catch(e){}UI.adsBusy=false;await load()}
+async function adsPreview(type){try{const r=await (await fetch("/api/ads/preview?status="+encodeURIComponent("已确认")+"&types="+encodeURIComponent(type))).json();UI.adsPv={type,r};render();setTimeout(()=>document.getElementById("adspv")?.scrollIntoView({block:"nearest"}),40)}catch(e){modal("预演不了："+e.message)}}
+function adsPvBox(type){const p=UI.adsPv;if(!p||p.type!==type)return "";const r=p.r,on=S.adsapi&&S.adsapi.开关;
+  return `<div class="dsec" id="adspv"><h4>接口请求预演 <span class="hint" style="font-weight:400">只是把要发的内容摆出来，没有发</span><button class="btn sm ghost" style="margin-left:auto" onclick="UI.adsPv=null;render()">收起</button></h4>
+  ${r.演示数据?`<div class="warnbox" style="margin:0 0 10px">${ic("info")}<span>这是演示数据：活动、广告组、关键词的编号是按格式生成的，真实账号里没有这些对象，所以下面的请求一条都不会发。换成自己的数据、编号是真的，才会出现「通过接口执行」。</span></div>`:""}
+  <div class="tw"><table><thead><tr><th>动作</th><th>接口</th><th>要发的内容</th><th></th></tr></thead><tbody>${r.请求.slice(0,8).map(x=>`<tr><td class="mono" style="white-space:nowrap">${h(x.动作编号)}</td><td><code>${h(x.路由)}</code><div class="sub2">${x.跑通?"这一类真实发过并回读":"这一类只预演过"}</div></td><td><code style="white-space:pre-wrap;word-break:break-all;font-size:11.5px">${h(JSON.stringify(x.请求体))}</code></td>
+    <td>${x.能发&&on?B({label:"通过接口执行",icon:"bolt",cls:"sm primary",on:`adsExec('${x.动作编号}')`,perm:"点动作"}):`<span class="hint">${x.能发?"执行开关没开":"不发"}</span>`}</td></tr>`).join("")}${r.请求.length>8?`<tr><td colspan="4" class="hint" style="text-align:center">… 还有 ${r.请求.length-8} 条</td></tr>`:""}</tbody></table></div>
+  <p class="hint" style="margin:8px 0 0">真发的时候：先读一次现值，和这里记的不一样就不发；只提交一次，结果不明不重发；发完独立回读，对上了才标「已执行」。</p></div>`}
+async function adsExec(no){const t=prompt("通过广告接口执行 "+no+"。\n这会真的改广告后台。写一句确认的话（会留在记录里）：");if(!t||!t.trim())return;try{const r=await api("/api/ads/execute",{no,confirm_text:t});toast(r.结果);UI.adsPv=null;await load()}catch(e){}}
 
 /* ───────── 动作 ───────── */
 async function load(){S=await api("/api/state");render()}

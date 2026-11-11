@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """本地业务工作台 · 广告周检        启动：python3 工作台/app.py        打开：http://localhost:8810
 一条流程、明确的使用者、一处数据存储（SQLite）、一个操作入口（这个页面），Agent 处理、人检查。
-只用 Python 标准库；分析流水线在 ../_脚本/（需要 pandas）。只监听本机，不连任何广告后台。"""
+只用 Python 标准库；分析流水线在 ../_脚本/（需要 pandas）。只监听本机。默认不连广告后台：广告接口（_脚本/ads_api.py）已在真实店铺跑通，但执行开关默认关，演示数据只预演。"""
 import argparse, csv, datetime, io, json, os, shutil, sqlite3, subprocess, sys, threading, time, urllib.parse
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -14,12 +14,12 @@ ROOT = os.path.abspath(ARGS.root); SCRIPTS = os.path.join(os.path.dirname(HERE),
 OUT, CARD_DIR, RAW = f"{ROOT}/广告闭环/输出", f"{ROOT}/广告闭环/行动卡", f"{ROOT}/_原始拉取"
 DB, PARAMS = f"{ROOT}/工作台.db", f"{ROOT}/参数.json"
 ROLES = ["老板", "广告运营", "供应链"]
-CAN = {"改取舍": {"老板"}, "改目标": {"老板"}, "改到仓": {"老板", "供应链"}, "点动作": {"老板", "广告运营"}, "定任务": {"老板", "广告运营"}, "下判断": {"老板", "广告运营"}, "跑一圈": {"老板", "广告运营"}, "模型补位": {"老板", "广告运营"}, "发到群": {"老板", "广告运营"}, "重置": {"老板"}}
+CAN = {"改取舍": {"老板"}, "改目标": {"老板"}, "改到仓": {"老板", "供应链"}, "点动作": {"老板", "广告运营"}, "定任务": {"老板", "广告运营"}, "下判断": {"老板", "广告运营"}, "连接口": {"老板", "广告运营"}, "跑一圈": {"老板", "广告运营"}, "模型补位": {"老板", "广告运营"}, "发到群": {"老板", "广告运营"}, "重置": {"老板"}}
 NEXT = {"待确认": {"已确认", "驳回"}, "已确认": {"已执行", "待确认"}, "驳回": {"待确认"}, "已执行": {"已验证", "已确认"}, "已验证": set(), "作废": set()}
 now = lambda: datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 jread = lambda p, d=None: json.load(open(p, encoding="utf-8")) if os.path.exists(p) else d
 for _d in (OUT, CARD_DIR, f"{ROOT}/广告闭环/输入"): os.makedirs(_d, exist_ok=True)
-sys.path.insert(0, SCRIPTS); sys.path.insert(0, HERE); import tree as TREE, fields as FIELDS, structure as STRUCT, hub as HUB   # 诊断树连线、动作→广告后台字段、活动构成、Agent/Harness 接线（都只用标准库）
+sys.path.insert(0, SCRIPTS); sys.path.insert(0, HERE); import tree as TREE, fields as FIELDS, structure as STRUCT, hub as HUB, ads_api as ADS   # 诊断树连线、动作→广告后台字段、活动构成、Agent/Harness 接线（都只用标准库）
 LOCK = threading.Lock(); PROG = {"running": False, "steps": [], "started": None}; AIBUSY = {"on": False}
 
 def db():
@@ -195,6 +195,8 @@ def state():
              "tasks": {r["campaign"]: dict(r) for r in c.execute("SELECT * FROM campaign_task")}, "attr": jread(f"{OUT}/归因.json") if has else None,
              "verdicts": {r["node"]: dict(r) for r in c.execute("SELECT * FROM verdict")}, "verdictEnum": VERDICTS, "notes": [dict(r) for r in c.execute("SELECT * FROM note ORDER BY id DESC")], "taskEnum": HUB.TASKS, "runlog": HUB.runlog(ROOT), "weekly": HUB.weekly_draft(ROOT),
              "jobcard": jread(os.path.join(os.path.dirname(HERE), "agent", "岗位卡.json")), "skills": HUB.skills(ROOT), "harness": HUB.harness(ROOT, hs),
+             "adsapi": {"开关": ADS.settings(ROOT).get("enabled"), "配了店铺": bool(ADS.settings(ROOT).get("store")), "站点": ADS.settings(ROOT).get("country"), "跑通记录": jread(os.path.join(os.path.dirname(HERE), "Ads接口跑通记录.json")),
+                        "上次连通": jread(f"{ROOT}/运行记录/ads-api-连通.json"), "动作": {k: {"改什么": v[1], "接口": "POST /adsApi/v1/" + v[0], "跑通": v[2]} for k, v in ADS.ROUTES.items()}},
              "koujing": jread(f"{ROOT}/口径.json") or jread(os.path.join(os.path.dirname(HERE), "口径.json")), "agentCfg": {k: HUB.cfg(ROOT)[k] for k in ("agent", "weekly")}, "aiBusy": AIBUSY["on"]}
     tree_ = TREE.build(F_, SL_, O_) if has else None
     if tree_: merge_hypotheses(c, tree_, extra["attr"] if extra["attr"] and not extra["attr"].get("错误") else None)
@@ -229,6 +231,9 @@ class H(BaseHTTPRequestHandler):
         if u.path in ("/", "/index.html"): return self.send(200, open(f"{HERE}/index.html", "rb").read(), "text/html; charset=utf-8")
         if u.path == "/api/state": return self.send(200, state())
         if u.path == "/api/progress": return self.send(200, PROG)
+        if u.path == "/api/ads/preview":
+            q = parse_qs(u.query); ty = [x for x in q.get("types", [""])[0].split(",") if x]
+            return self.send(200, ADS.preview(ROOT, q.get("status", ["已确认"])[0], ty or None))
         if u.path == "/api/health": return self.send(200, HUB.health(ROOT, fresh="fresh" in u.query))
         if u.path == "/arch":
             f = os.path.join(os.path.dirname(HERE), "流程图", "项目架构.html")
@@ -273,6 +278,20 @@ class H(BaseHTTPRequestHandler):
             if v not in VERDICTS: return self.send(400, {"error": f"判断只能是：{'、'.join(VERDICTS)}"})
             if v != "认同" and not why: return self.send(400, {"error": "不认同或要先查，得写一句理由：下一圈 Agent 要读它"})
             c.execute("INSERT OR REPLACE INTO verdict VALUES(?,?,?,?,?,?)", (node, v, why, who, now(), ver)); log(c, who, "下判断", node, f"{v}" + (f"｜{why}" if why else "")); c.commit(); sync_judgements(c); return self.send(200, {"ok": True})
+        if u.path == "/api/ads/check":
+            if who not in CAN["连接口"]: return deny("连接口")
+            if body.get("confirm") is not True: return self.send(400, {"error": "这一步会花紫鸟积分（大约 7 次调用），要人点了确认才连"})
+            d = ADS.check(ROOT); log(c, who, "连广告接口", d.get("站点", ""), ("连通：" if d["ok"] else "没连通：") + "；".join(s["说明"] for s in d["步骤"])[:300]); c.commit(); return self.send(200, d)
+        if u.path == "/api/ads/execute":
+            if who not in CAN["点动作"]: return deny("点动作")
+            no = str(body.get("no") or ""); a = c.execute("SELECT * FROM action WHERE no=?", (no,)).fetchone()
+            if not a or a["status"] != "已确认": return self.send(400, {"error": "只有「已通过」的动作才能发"})
+            try: r = ADS.execute(ROOT, no, (body.get("confirm_text") or "").strip())
+            except ADS.AdsError as e: return self.send(400, {"error": str(e)})
+            if r["结果"] == "已执行并回读":
+                c.execute("UPDATE action SET status='已执行', by=?, note=?, updated_at=? WHERE no=?", (who, "通过广告接口执行，已独立回读", now(), no))
+            else: c.execute("UPDATE action SET note=?, updated_at=? WHERE no=?", ("⚠ 接口结果待核实：不要重发，先到广告后台看一眼", now(), no))
+            log(c, who, "接口执行", no, f"{a['type']}｜{r['结果']}" + (f"｜{r.get('错误')}" if r.get("错误") else "")); c.commit(); return self.send(200, r)
         if u.path == "/api/hypothesis":
             if who not in CAN["下判断"]: return deny("下判断")
             if body.get("delete"):
