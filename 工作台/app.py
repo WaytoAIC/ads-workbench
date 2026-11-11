@@ -14,7 +14,7 @@ ROOT = os.path.abspath(ARGS.root); SCRIPTS = os.path.join(os.path.dirname(HERE),
 OUT, CARD_DIR, RAW = f"{ROOT}/广告闭环/输出", f"{ROOT}/广告闭环/行动卡", f"{ROOT}/_原始拉取"
 DB, PARAMS = f"{ROOT}/工作台.db", f"{ROOT}/参数.json"
 ROLES = ["老板", "广告运营", "供应链"]
-CAN = {"改取舍": {"老板"}, "改目标": {"老板"}, "改到仓": {"老板", "供应链"}, "点动作": {"老板", "广告运营"}, "定任务": {"老板", "广告运营"}, "跑一圈": {"老板", "广告运营"}, "模型补位": {"老板", "广告运营"}, "发到群": {"老板", "广告运营"}, "重置": {"老板"}}
+CAN = {"改取舍": {"老板"}, "改目标": {"老板"}, "改到仓": {"老板", "供应链"}, "点动作": {"老板", "广告运营"}, "定任务": {"老板", "广告运营"}, "下判断": {"老板", "广告运营"}, "跑一圈": {"老板", "广告运营"}, "模型补位": {"老板", "广告运营"}, "发到群": {"老板", "广告运营"}, "重置": {"老板"}}
 NEXT = {"待确认": {"已确认", "驳回"}, "已确认": {"已执行", "待确认"}, "驳回": {"待确认"}, "已执行": {"已验证", "已确认"}, "已验证": set(), "作废": set()}
 now = lambda: datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 jread = lambda p, d=None: json.load(open(p, encoding="utf-8")) if os.path.exists(p) else d
@@ -33,7 +33,9 @@ def init_db():
                                           status TEXT, by TEXT, reason TEXT, note TEXT, updated_at TEXT);
         CREATE TABLE IF NOT EXISTS card(no TEXT PRIMARY KEY, task_id TEXT, version INT, status TEXT, fields TEXT, review_date TEXT);
         CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, who TEXT, kind TEXT, ref TEXT, detail TEXT);
-        CREATE TABLE IF NOT EXISTS campaign_task(campaign TEXT PRIMARY KEY, task TEXT, by TEXT, at TEXT);""")
+        CREATE TABLE IF NOT EXISTS campaign_task(campaign TEXT PRIMARY KEY, task TEXT, by TEXT, at TEXT);
+        CREATE TABLE IF NOT EXISTS verdict(node TEXT PRIMARY KEY, verdict TEXT, reason TEXT, by TEXT, at TEXT, version INT);
+        CREATE TABLE IF NOT EXISTS note(id INTEGER PRIMARY KEY AUTOINCREMENT, node TEXT, text TEXT, source TEXT, saved_by TEXT, at TEXT, version INT);""")
         if not c.execute("SELECT 1 FROM task").fetchone():
             P = jread(PARAMS); c.execute("INSERT INTO task VALUES(?,?,?,?,?,?,?,?,?)", (P["任务编号"], "待处理", float(P["目标ACOS"]), float(P["补货到仓周数"]), P["产品阶段"],
                       json.dumps(P.get("取舍项") or ["A", "B", "C", "E"]), 0, P.get("取舍人", "老板"), now()))
@@ -56,9 +58,12 @@ def _loop(who, trigger):
     for a in acts: dist[a["status"]] = dist.get(a["status"], 0) + 1
     rej = [a for a in acts if a["status"] == "驳回"]; done = [a for a in acts if a["status"] in ("已确认", "已执行", "已验证")]
     key = lambda a: {"动作编号": a["no"], "类型": a["type"], "广告活动": a["campaign"], "对象": a["object"], "驳回理由": a["reason"]}
-    json.dump({"读回时间": now(), "被驳回的动作": [key(a) for a in rej], "已处理的动作": [key(a) for a in done]}, open(f"{OUT}/读回状态.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    json.dump({"读回时间": now(), "被驳回的动作": [key(a) for a in rej], "已处理的动作": [key(a) for a in done],
+               "人对分析的判断": [{"分析": r["node"][2:], "判断": r["verdict"], "理由": r["reason"], "谁": r["by"]} for r in c.execute("SELECT * FROM verdict")]}, open(f"{OUT}/读回状态.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     dist_s = "、".join(f"{k} {v}" for k, v in dist.items()) or "空"
-    step(1, "读取状态", f"任务 {tid}：状态＝{t['status']}。动作库：{dist_s}。人驳回过 {len(rej)} 条、确认过 {len(done)} 条。", extra=[f"驳回理由：{a['object']} —— {a['reason']}" for a in rej])
+    vds = [dict(r) for r in c.execute("SELECT * FROM verdict")]; nn = c.execute("SELECT COUNT(*) FROM note").fetchone()[0]
+    step(1, "读取状态", f"任务 {tid}：状态＝{t['status']}。动作库：{dist_s}。人驳回过 {len(rej)} 条、确认过 {len(done)} 条" + (f"；对 {len(vds)} 条分析下过判断" if vds else "") + (f"；存了 {nn} 条备注" if nn else "") + "。",
+         extra=[f"驳回理由：{a['object']} —— {a['reason']}" for a in rej] + [f"人的判断：{v['node'][2:]} {v['verdict']}" + (f" —— {v['reason']}" if v['reason'] else "") for v in vds])
     if t["status"] != "待处理":
         step(2, "判断下一步", f"状态是「{t['status']}」，没有待处理的任务 → 本轮不跑。"); step(6, "判断停止条件", "停。等人把任务标成「待处理」，或到复盘日。"); return
     miss = [n for n, v in (("目标 ACOS", t["target_acos"]), ("补货到仓周数", t["arrive_weeks"]), ("产品阶段", t["stage"])) if v in (None, "")]
@@ -78,7 +83,7 @@ def _loop(who, trigger):
     c.execute("UPDATE task SET status='处理中', updated_at=? WHERE id=?", (now(), tid)); c.commit()
     P = dict(P0); P.update({"目标ACOS": inputs["目标ACOS"], "补货到仓周数": inputs["补货到仓周数"], "产品阶段": inputs["产品阶段"], "取舍项": inputs["取舍项"], "版本": ver, "触发方式": trigger})
     bak = f"{ROOT}/.上一份有效结果"; shutil.rmtree(bak, ignore_errors=True); shutil.copytree(f"{ROOT}/广告闭环", bak)
-    json.dump(P, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1); sync_tasks(c); t0 = time.time()
+    json.dump(P, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1); sync_tasks(c); sync_judgements(c); t0 = time.time()
     r = subprocess.run([sys.executable, os.path.join(SCRIPTS, "render.py")], capture_output=True, text=True, env=dict(os.environ, ADS_ROOT=ROOT))
     secs = round(time.time() - t0, 1); checks = jread(f"{OUT}/验证器.json", [])
     if r.returncode != 0:
@@ -119,6 +124,13 @@ def read_ai():
     a = jread(f"{OUT}/AI补位.json")
     if a and os.path.exists(STALE) and os.path.getmtime(STALE) >= os.path.getmtime(f"{OUT}/AI补位.json"): a = {**a, "过期": True}
     return a
+VERDICTS = ["认同", "不认同", "先查再说"]
+def sync_judgements(c):
+    """人对每条分析的判断、人存下来的 Agent 备注，写一份给 Agent 和下一圈读（状态库是源头）。"""
+    doc = {"说明": "人在「原因 · 问题连线」里对每条分析下的判断，和人点了才存下来的 Agent 备注。Agent 只读。",
+           "判断": {r["node"]: {"判断": r["verdict"], "理由": r["reason"], "谁": r["by"], "时间": r["at"], "版本": r["version"]} for r in c.execute("SELECT * FROM verdict")},
+           "备注": [{"节点": r["node"], "内容": r["text"], "来源": r["source"], "谁存的": r["saved_by"], "时间": r["at"], "版本": r["version"]} for r in c.execute("SELECT * FROM note ORDER BY id")]}
+    json.dump(doc, open(f"{ROOT}/广告闭环/输入/人的判断.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 def run_biz():
     """只重算经营核算（确定性、秒级）。脚本还没有或失败都不拦人：返回 (成功, 一句话)。"""
     f = os.path.join(SCRIPTS, "biz.py")
@@ -163,7 +175,8 @@ def state():
     checks_ = jread(f"{OUT}/验证器.json") if has else None
     hs = {"hasRun": has, "checks": checks_, "status": t["status"], "version": t["version"], "pending": sum(1 for a in acts if a["status"] == "待确认"), "rejected": sum(1 for a in acts if a["status"] == "驳回")}
     extra = {"biz": jread(f"{OUT}/经营.json") if has else None, "ai": read_ai() if has else None,
-             "tasks": {r["campaign"]: dict(r) for r in c.execute("SELECT * FROM campaign_task")}, "taskEnum": HUB.TASKS, "runlog": HUB.runlog(ROOT), "weekly": HUB.weekly_draft(ROOT),
+             "tasks": {r["campaign"]: dict(r) for r in c.execute("SELECT * FROM campaign_task")}, "attr": jread(f"{OUT}/归因.json") if has else None,
+             "verdicts": {r["node"]: dict(r) for r in c.execute("SELECT * FROM verdict")}, "verdictEnum": VERDICTS, "notes": [dict(r) for r in c.execute("SELECT * FROM note ORDER BY id DESC")], "taskEnum": HUB.TASKS, "runlog": HUB.runlog(ROOT), "weekly": HUB.weekly_draft(ROOT),
              "jobcard": jread(os.path.join(os.path.dirname(HERE), "agent", "岗位卡.json")), "skills": HUB.skills(ROOT), "harness": HUB.harness(ROOT, hs),
              "koujing": jread(f"{ROOT}/口径.json") or jread(os.path.join(os.path.dirname(HERE), "口径.json")), "agentCfg": {k: HUB.cfg(ROOT)[k] for k in ("agent", "weekly")}, "aiBusy": AIBUSY["on"]}
     return {**extra, "meta": {"店铺": P["显示店铺"], "产品": P["显示产品"], "数据标记": P.get("数据标记", ""), "周期": f"{P['窗口前'][0]} ～ {P['窗口近'][1]}", "复盘日": P["复盘日"], "今天": P["今天"], "归因未满": P.get("归因未满", "")},
@@ -181,7 +194,7 @@ class H(BaseHTTPRequestHandler):
         self.end_headers(); self.wfile.write(b)
     def agent(self, body):
         """问 Agent：转给本机 Hermes（没接上就走直连模型），上游的流原样转回页面。"""
-        try: up, via = HUB.open_agent(ROOT, body.get("messages") or [], (body.get("context") or "").strip())
+        try: up, via = HUB.open_agent(ROOT, body.get("messages") or [], (body.get("context") or "").strip(), body.get("object") if isinstance(body.get("object"), dict) else None)
         except RuntimeError as e: return self.send(503, {"error": str(e)})
         self.send_response(200); self.send_header("Content-Type", "text/event-stream; charset=utf-8"); self.send_header("Cache-Control", "no-store"); self.send_header("X-Accel-Buffering", "no"); self.send_header("X-Agent-Via", via); self.end_headers()
         try:
@@ -232,6 +245,24 @@ class H(BaseHTTPRequestHandler):
                 c.execute("DELETE FROM campaign_task WHERE campaign=?", (camp,)); log(c, who, "撤回任务", camp, "回到建议值"); c.commit(); sync_tasks(c); run_biz(); return self.send(200, {"ok": True})
             if task not in HUB.TASKS: return self.send(400, {"error": f"任务只能是：{'、'.join(HUB.TASKS)}"})
             c.execute("INSERT OR REPLACE INTO campaign_task VALUES(?,?,?,?)", (camp, task, who, now())); log(c, who, "定任务", camp, f"这个活动的任务＝{task}"); c.commit(); sync_tasks(c); run_biz(); return self.send(200, {"ok": True})
+        if u.path == "/api/verdict":
+            if who not in CAN["下判断"]: return deny("下判断")
+            node, v, why = str(body.get("node") or ""), body.get("verdict"), (body.get("reason") or "").strip(); ver = c.execute("SELECT version FROM task").fetchone()[0]
+            if not node.startswith("H:"): return self.send(400, {"error": "只能对「分析」下判断"})
+            if v in ("", None):
+                c.execute("DELETE FROM verdict WHERE node=?", (node,)); log(c, who, "撤回判断", node, ""); c.commit(); sync_judgements(c); return self.send(200, {"ok": True})
+            if v not in VERDICTS: return self.send(400, {"error": f"判断只能是：{'、'.join(VERDICTS)}"})
+            if v != "认同" and not why: return self.send(400, {"error": "不认同或要先查，得写一句理由：下一圈 Agent 要读它"})
+            c.execute("INSERT OR REPLACE INTO verdict VALUES(?,?,?,?,?,?)", (node, v, why, who, now(), ver)); log(c, who, "下判断", node, f"{v}" + (f"｜{why}" if why else "")); c.commit(); sync_judgements(c); return self.send(200, {"ok": True})
+        if u.path == "/api/note":
+            if who not in CAN["下判断"]: return deny("下判断")
+            if body.get("delete"):
+                c.execute("DELETE FROM note WHERE id=?", (int(body["delete"]),)); log(c, who, "删备注", str(body["delete"]), ""); c.commit(); sync_judgements(c); return self.send(200, {"ok": True})
+            node, text = str(body.get("node") or ""), (body.get("text") or "").strip()
+            if not node or not text or body.get("confirm") is not True: return self.send(400, {"error": "要有节点、有内容，并且是人点了才存"})
+            if len(text) > 4000: return self.send(400, {"error": "太长了，超过 4000 字；让它写短一点再存"})
+            c.execute("INSERT INTO note(node,text,source,saved_by,at,version) VALUES(?,?,?,?,?,?)", (node, text, "Agent", who, now(), c.execute("SELECT version FROM task").fetchone()[0]))
+            log(c, who, "存备注", node, f"Agent 写的 {len(text)} 字，{who}看过后存下"); c.commit(); sync_judgements(c); return self.send(200, {"ok": True})
         if u.path == "/api/ai-fill":
             if who not in CAN["模型补位"]: return deny("模型补位")
             if AIBUSY["on"]: return self.send(409, {"error": "模型补位正在跑"})
@@ -289,12 +320,14 @@ class H(BaseHTTPRequestHandler):
         if u.path == "/api/reset":
             if who not in CAN["重置"]: return deny("重置")
             c.close()
-            for f in (DB, DB + "-wal", DB + "-shm", f"{OUT}/读回状态.json", f"{ROOT}/广告闭环/输入/活动任务.json"):
+            for f in (DB, DB + "-wal", DB + "-shm", f"{OUT}/读回状态.json", f"{ROOT}/广告闭环/输入/活动任务.json", f"{ROOT}/广告闭环/输入/人的判断.json"):
                 if os.path.exists(f): os.remove(f)
             P = jread(PARAMS); P.update({"版本": 1, "补货到仓周数": 4, "目标ACOS": 0.30, "产品阶段": "新品期", "取舍项": ["A", "B", "C", "E"], "触发方式": "手动"}); P.pop("定价毛利率", None); P.pop("目标广告后利润率", None); json.dump(P, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             PROG.update({"running": False, "steps": [], "started": None}); init_db(); return self.send(200, {"ok": True})
         self.send(404, {"error": "not found"})
 
 if __name__ == "__main__":
-    init_db(); srv = ThreadingHTTPServer(("127.0.0.1", ARGS.port), H)
+    init_db()
+    with db() as _c: sync_tasks(_c); sync_judgements(_c)        # 给 Agent 读的两份副本，启动时就写好（哪怕还是空的）
+    srv = ThreadingHTTPServer(("127.0.0.1", ARGS.port), H)
     print(f"广告周检工作台 → http://localhost:{ARGS.port}    数据目录：{ROOT}", flush=True); srv.serve_forever()

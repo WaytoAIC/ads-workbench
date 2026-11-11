@@ -108,16 +108,31 @@ def health(root, fresh=False):
     return _H["v"]
 
 
-def system_prompt(root, context=""):
+OBJ = {"问题": ("问题", "归因.json 的「问题」里同名的那一项（是谁造成的、各占多少）"), "分析": ("分析", "归因.json 的「分析」里同编号的那一项（支持、反对、最多能解释多少、还缺什么）"),
+       "对策": ("对策", "归因.json 的「对策」里同字母的那一项，和 选项.json"), "动作": ("动作类型", "动作清单.json 里同类型的那些行")}
+
+
+def object_hint(obj):
+    """页面把「正在看的对象」结构化地带过来：是什么、编号、名字。告诉 Agent 去哪读它，不让它猜。"""
+    if not obj or obj.get("type") not in OBJ: return ""
+    kind, where = OBJ[obj["type"]]
+    return (f"\n对方点着的对象：{kind}「{str(obj.get('id', ''))[:40]} {str(obj.get('label', ''))[:80]}」。它的材料在 广告闭环/输出/{where}；"
+            "人对各条分析下过的判断和存下的备注在 广告闭环/输入/人的判断.json，人不认同的要先看他的理由。")
+
+
+def system_prompt(root, context="", obj=None):
     return ("你在「广告周检工作台」的「问 Agent」面板里回答，对面是老板或广告运营。先给结论，再给依据（带数字，说明出自哪个文件）。"
             f"数字只用工作台目录 {root} 里脚本算好的：广告闭环/输出/数字.json（事实与异常）、经营.json（算账、拆解、广告任务、利润路径、决策表）、"
-            "动作清单.json、验证器.json、读回状态.json（人驳回过什么）；阈值看 口径.json。没有的数就直说缺什么、去哪取，不估不编。"
+            "归因.json（每个问题是谁造成的、每条分析的正反证据和把握）、动作清单.json、验证器.json、读回状态.json（人驳回过什么）；阈值看 口径.json。没有的数就直说缺什么、去哪取，不估不编。"
             "判断方法按已装的 ads-* 技能，先看 ads-router。每条建议说清三件事：为什么做、预期改变什么、多久复盘。"
             "你不审批、不改目标、不改状态库、不上传广告后台、不发任何消息：动作通过还是驳回，人在「行动」页点。"
             "要花钱调用取数接口之前，先说清调什么、调几次，等对方确认。回答控制在一屏内，用简单 Markdown（加粗、列表、小表格）。"
             "对方要「发到群」「同步给团队」时：把群消息完整写在一个代码块里，第一行写 ```群消息 ，结尾 ``` ；块里只放正文；"
             "块外用一句话说明「点下面的按钮才会发出去」，不要说已经发出。数据是脱敏演示数据时，不猜原品类。"
-            + (f"\n对方当前在工作台看的是：{context}" if context else ""))
+            "对方让你「深挖」「补证据」「找反例」某条分析时：先把归因.json 里它的「还缺」逐条看，能从现有文件里查到的就去查；"
+            "然后把结果完整写在一个代码块里，第一行写 ```归因补充 ，结尾 ``` ；块里分三段，每段以「支持：」「反对：」「还缺：」开头，每条一行、带数字、括号里写出自哪个文件；"
+            "块外用一句话说你现在更信还是更不信这条分析、为什么，并说明「点下面的按钮才会存到这个节点」。你自己不改任何文件。"
+            + (f"\n对方当前在工作台看的是：{context}" if context else "") + object_hint(obj))
 
 
 def _pack(root):
@@ -127,8 +142,8 @@ def _pack(root):
     for x in A:
         cnt[x.get("类型")] = cnt.get(x.get("类型"), 0) + 1
     pack = {"异常": F.get("异常"), "四周": F.get("四周"), "逐周": F.get("逐周"), "库存": F.get("库存"), "算账": B.get("算账"), "拆解": B.get("拆解"), "广告任务": B.get("任务"),
-            "利润路径": B.get("路径"), "决策表": B.get("决策表"), "本轮动作按类型": cnt, "人驳回过": (jread(f"{out}/读回状态.json") or {}).get("被驳回的动作"), "口径": jread(f"{root}/口径.json") or jread(f"{REPO}/口径.json")}
-    return "\n你没有读文件的工具。下面是脚本这一圈算好的全部要点（JSON），只能用这里面的数：\n" + json.dumps(pack, ensure_ascii=False, default=str)[:60000]
+            "利润路径": B.get("路径"), "决策表": B.get("决策表"), "归因": jread(f"{out}/归因.json"), "人的判断": jread(f"{root}/广告闭环/输入/人的判断.json"), "本轮动作按类型": cnt, "人驳回过": (jread(f"{out}/读回状态.json") or {}).get("被驳回的动作"), "口径": jread(f"{root}/口径.json") or jread(f"{REPO}/口径.json")}
+    return "\n你没有读文件的工具。下面是脚本这一圈算好的全部要点（JSON），只能用这里面的数：\n" + json.dumps(pack, ensure_ascii=False, default=str)[:90000]
 
 
 class _Once:
@@ -139,16 +154,16 @@ class _Once:
     def close(self): pass
 
 
-def open_agent(root, messages, context=""):
+def open_agent(root, messages, context="", obj=None):
     """返回 (上游响应, 走哪条)。上游是 OpenAI 兼容的 SSE 流，原样转给页面。接不上抛 RuntimeError（话是给人看的）。"""
     hl = health(root); c = cfg(root); a = c["agent"]
     hist = [{"role": m["role"], "content": str(m.get("content", ""))} for m in messages if m.get("role") in ("user", "assistant")][-12:]
     if not hist:
         raise RuntimeError("没有问题内容")
     if hl["走哪条"] == "hermes":
-        url, key, model, sysm = f"{a['hermes']}/p/{a['profile']}/v1/chat/completions", _server_key(a["profile"]), a["profile"], system_prompt(root, context)
+        url, key, model, sysm = f"{a['hermes']}/p/{a['profile']}/v1/chat/completions", _server_key(a["profile"]), a["profile"], system_prompt(root, context, obj)
     elif hl["走哪条"] == "llm":
-        api, base, key, model = _llm(c); sysm = system_prompt(root, context) + _pack(root)
+        api, base, key, model = _llm(c); sysm = system_prompt(root, context, obj) + _pack(root)
         if api == "anthropic":                                                    # Anthropic 接口：一次取完，包成一条流式消息给页面
             try:
                 r = urllib.request.urlopen(urllib.request.Request(f"{base}/v1/messages", data=json.dumps({"model": model, "max_tokens": 2000, "system": sysm, "messages": hist}).encode(),

@@ -393,6 +393,26 @@ td .by{margin-left:5px}
 @media(max-width:1180px){.biz3,.pths,.div3,.q3{grid-template-columns:1fr}.nds{grid-template-columns:repeat(3,minmax(0,1fr))}.tkbox{grid-template-columns:1fr}.tk-set{align-items:flex-start}.seg2{justify-content:flex-start}.limbox{grid-template-columns:1fr}}
 @media(max-width:620px){.nds{grid-template-columns:repeat(2,minmax(0,1fr))}.sk{grid-template-columns:1fr}#ask{width:100vw}}
 body.demo .lim{font-size:26px}body.demo .bz p,body.demo .q3 p{font-size:15px}
+/* ───────── v4：归因 · 节点详情 · 节点上的 Agent ───────── */
+.sumbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 18px}.sumbar>div{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--ink2);background:var(--surface)}
+.sumbar b{display:block;font-size:12px;color:var(--accent-ink);margin-bottom:2px}
+.node .cf{font-size:11px;font-weight:600;border-radius:999px;padding:0 7px;line-height:18px}.node .cf.good{background:var(--good-soft);color:var(--good)}.node .cf.warn{background:var(--warn-soft);color:var(--warn-ink)}.node .cf.bad{background:var(--crit-soft);color:var(--critical)}
+.node .hv{font-size:11px;font-weight:600;color:var(--good)}.node .hv.no{color:var(--critical)}.node .hv.wait{color:var(--warn-ink)}
+.dfull{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}.dfull>.sub-h{margin:0;display:flex;gap:8px;align-items:center}
+.atb{border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}.ath{font-weight:700;font-size:13.5px}.atr{margin:3px 0 10px;font-size:13.5px;color:var(--ink)}
+.atbs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.atbs>.atb:only-child,.atbs>.atb.wide{grid-column:1/-1}
+.cbar{display:inline-block;width:64px;height:6px;border-radius:3px;background:var(--line2);margin-right:8px;vertical-align:middle;overflow:hidden}.cbar i{display:block;height:100%;background:var(--accent);border-radius:3px}.cbar.neg i{background:var(--good)}
+.pc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.pc>div{border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.pc .ph3{padding:8px 14px;font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center}.pc .pro .ph3{background:var(--good-soft);color:var(--good)}.pc .con .ph3{background:var(--crit-soft);color:var(--critical)}
+.pc ul{margin:0;padding:10px 14px 6px 30px;font-size:13px}.pc li{margin:0 0 8px}.pc li small{display:block;color:var(--muted);font-size:11.5px}.pc .none{padding:12px 14px;color:var(--muted);font-size:13px}
+.expl{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px}.expl .big{font-family:var(--font-num);font-size:24px;font-weight:700;line-height:1.1}.expl .big small{display:block;font-family:var(--font-body);font-size:11.5px;color:var(--muted);font-weight:400}
+.expl .meter2{height:8px;border-radius:4px;background:var(--line2);overflow:hidden;margin-top:6px}.expl .meter2 i{display:block;height:100%;background:var(--accent)}.expl p{margin:0;font-size:13.5px}
+.vbox{border:1px solid var(--good);border-radius:10px;padding:12px 14px;background:color-mix(in srgb,var(--good) 5%,var(--surface))}.vbox .vh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.vbox .vrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.nlist{display:flex;flex-direction:column;gap:8px}.nitem{border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13px;background:var(--surface2)}.nitem .nm{display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:4px}.nitem .nm .x{margin-left:auto}.nitem .nb p{margin:3px 0}.nitem .nb ul{margin:3px 0;padding-left:20px}.nitem .nb h5{margin:6px 0 2px;font-size:13px}
+.askrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px dashed var(--line);padding-top:12px}.askrow .btn{height:auto;min-height:30px;white-space:normal;text-align:left;padding:5px 12px}
+.msg .acts2{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:6px;border-top:1px dashed var(--line)}.msg .acts2 button{border:0;background:transparent;color:var(--accent);font-size:12px;padding:0 4px;font-weight:600}.msg .acts2 button:hover{text-decoration:underline}
+.draft.note .dh{background:var(--good-soft);color:var(--good)}.draft.note{border-color:var(--good)}
+@media(max-width:1180px){.sumbar,.atbs,.pc{grid-template-columns:1fr}.expl{grid-template-columns:1fr}}
 </style></head><body>
 <div class="shell">
 <aside class="side">
@@ -510,8 +530,8 @@ function pathOf(G,id){const set=new Set([id]);const walk=(cur,fw)=>G.edges.forEa
 function defaultSel(){const F=S.facts,a=F.异常.find(x=>x.级别==="critical")||F.异常.find(x=>x.级别!=="good")||F.异常[0];return "X:"+a.指标}
 function chOf(type){return S.tree.通道.find(c=>c.类型.includes(type))||{通道:"人工判断",id:"human"}}
 function nodeHtml(n,G,path){const on=UI.sel===n.id,inp=path.has(n.id),cls=`node ${on?"on":""} ${inp&&!on?"inpath":""} ${!inp?"faint":""}`;
-  if(n.k==="X"){const a=n.a;return `<div class="${cls}${a.级别==="good"?" off":""}" data-id="${h(n.id)}" onclick="pickNode('${jsq(n.id)}')"><div class="t">${ICON[a.级别]}<span>${h(a.指标)}</span></div><div class="r"><span class="v">${h(a.现值)}</span><span>vs ${h(a.参照)}</span></div></div>`}
-  if(n.k==="H"){const x=n.x;return `<div class="${cls}${x.判定==="未触发"?" off":""}" data-id="${h(n.id)}" onclick="pickNode('${jsq(n.id)}')"><div class="t"><span class="hid">${x.id}</span><span>${h(x.问题)}</span></div><div class="r">${vd(x.判定)}<span>${x.数据源.length} 个数据源</span></div></div>`}
+  if(n.k==="X"){const a=n.a;return `<div class="${cls}${a.级别==="good"?" off":""}" data-id="${h(n.id)}" onclick="pickNode('${jsq(n.id)}')"><div class="t">${ICON[a.级别]}<span>${h(a.指标)}</span></div><div class="r"><span class="v">${h(a.现值)}</span><span>vs ${h(a.参照)}</span>${AT()&&AT().问题[a.指标]&&AT().问题[a.指标].涉及金额&&a.级别!=="good"?`<span class="chip" style="line-height:17px">涉及 ${usd(AT().问题[a.指标].涉及金额)}</span>`:""}</div></div>`}
+  if(n.k==="H"){const x=n.x;return `<div class="${cls}${x.判定==="未触发"?" off":""}" data-id="${h(n.id)}" onclick="pickNode('${jsq(n.id)}')"><div class="t"><span class="hid">${x.id}</span><span>${h(x.问题)}</span></div><div class="r">${vd(x.判定)}${AT()&&AT().分析[x.id]?`<span class="cf ${CONF[AT().分析[x.id].把握]||""}">把握${h(AT().分析[x.id].把握)}</span>`:`<span>${x.数据源.length} 个数据源</span>`}${(S.verdicts||{})[n.id]?`<span class="hv ${HVC[S.verdicts[n.id].verdict]}">你：${h(S.verdicts[n.id].verdict)}</span>`:""}</div></div>`}
   if(n.k==="O"){const o=n.o,sel=UI.opts.has(o.key);return `<div class="${cls}${sel?" sel":" off"}" data-id="${h(n.id)}" onclick="pickNode('${jsq(n.id)}')"><div class="t"><span class="key">${o.key}</span><span>${h(o.名称)}</span><span class="ck" title="选进本轮" onclick="event.stopPropagation();pick('${o.key}')">${ic("check")}</span></div><div class="r"><span>综合 ${n.d.数据源.length} 个数据源</span><span>·</span><span>${o.已选?`本轮 ${o.动作条数} 条`:"本轮没选"}</span></div></div>`}
   const pend=n.list.filter(a=>a.status==="待确认").length;return `<div class="${cls}" data-id="${h(n.id)}" onclick="pickNode('${jsq(n.id)}')"><div class="t"><span>${h(n.type)}</span><span class="v" style="margin-left:auto">${n.list.length}</span></div><div class="r"><span class="chn">${h(chOf(n.type).通道)}</span>${pend?`<span class="chip warn" style="line-height:17px">${pend} 待审批</span>`:`<span>已处理</span>`}</div></div>`}
 function treeHtml(){const G=graph();if(!UI.sel||!G.by[UI.sel])UI.sel=defaultSel();const path=pathOf(G,UI.sel);
@@ -520,8 +540,8 @@ function treeHtml(){const G=graph();if(!UI.sel||!G.by[UI.sel])UI.sel=defaultSel(
   const changed=[...UI.opts].sort().join()!==[...S.task.options].sort().join();
   const tools=changed?`<span class="hint">取舍改成 <b style="color:var(--ink)">${[...UI.opts].sort().join(" · ")||"无"}</b></span>${B({label:"按这个取舍重新生成",icon:"refresh",cls:"primary sm",on:"saveOpts()",perm:"改取舍"})}${B({label:"放弃",cls:"ghost sm",on:"UI.opts=null;render()"})}`:`<span class="chip">对策打勾＝选进本轮 · 只有老板能改</span>`;
   const miss=S.tree.未知.length?`<div class="miss">${ic("help")}<div><b style="color:var(--ink)">分析时还缺的数据（缺什么、去哪取）</b><ul>${S.tree.未知.map(x=>`<li>${md(x)}</li>`).join("")}</ul></div></div>`:"";
-  return `<section class="panel" id="tree"><div class="ph"><span class="no">${ic("tree")}</span><div><h2>问题 → 分析 → 对策 → 动作</h2><div class="sub">点任意一个节点，看它从哪个异常来、用了哪些数据、最后落成哪些动作</div></div><div class="tools">${tools}</div></div>
-  <div class="pb"><div class="tree" id="tree-g"><svg id="edges"></svg>${cols}</div>${detailHtml(G)}${miss}</div></section>`}
+  return `<section class="panel" id="tree"><div class="ph"><span class="no">${ic("tree")}</span><div><h2>问题 → 分析 → 对策 → 动作</h2><div class="sub">点任意一个节点：问题看是谁造成的，分析看正反证据和把握，对策看它靠什么站住；每个节点都能直接问 Agent</div></div><div class="tools">${tools}</div></div>
+  <div class="pb">${sumBar()}<div class="tree" id="tree-g"><svg id="edges"></svg>${cols}</div>${detailHtml(G)}${miss}</div></section>`}
 function drawEdges(){const g=document.getElementById("tree-g"),svg=document.getElementById("edges");if(!g||!svg)return;const G=graph(),path=pathOf(G,UI.sel),R=g.getBoundingClientRect();
   const el={};g.querySelectorAll(".node").forEach(n=>el[n.dataset.id]=n);
   svg.innerHTML=G.edges.map(([a,b])=>{const A=el[a],Bn=el[b];if(!A||!Bn)return "";const ra=A.getBoundingClientRect(),rb=Bn.getBoundingClientRect();
@@ -544,7 +564,7 @@ const evBox=(name,src)=>`<div class="box"><div class="bh">${ic("db")}数据：${
 function detailHtml(G){const n=G.by[UI.sel];if(!n)return "";const T=S.tree;let head="",L="",R="";
   const chips=(ids)=>ids.map(id=>{const m=G.by[id];if(!m)return "";const lab=m.k==="X"?m.a.指标:m.k==="H"?`${m.x.id} ${m.x.问题}`:m.k==="O"?`${m.o.key} ${m.o.名称}`:m.type;return `<button class="btn sm" style="margin:0 6px 6px 0;height:auto;min-height:26px;white-space:normal;text-align:left" onclick="pickNode('${jsq(id)}')">${h(lab)}</button>`}).join("")||`<span class="hint">—</span>`;
   const up=G.edges.filter(e=>e[1]===n.id).map(e=>e[0]),down=G.edges.filter(e=>e[0]===n.id).map(e=>e[1]);
-  if(n.k==="X"){const a=n.a,e=EVX[a.指标];head=`<span>① 异常</span><b>${h(a.指标)}</b>${stat(a.级别)}`;
+  if(n.k==="X"){const a=n.a,e=EVX[a.指标];head=`<span>① 问题</span><b>${h(a.指标)}</b>${stat(a.级别)}`;
     L=`<div class="kv"><span>现值</span><div><b>${h(a.现值)}</b></div><span>对着什么比</span><div>${h(a.参照)}</div><span>说明</span><div>${h(a.说明)}</div><span>引出的分析</span><div>${chips(down)}</div></div>`;R=e?evBox(e[0],e[1]):""}
   if(n.k==="H"){const x=n.x;head=`<span>② 分析</span><b>${x.id} ${h(x.问题)}</b>${vd(x.判定)}`;
     L=`<div class="kv"><span>结论</span><div>${h(x.结论)}</div><span>什么情况下不成立</span><div>${h(x.不成立)}</div><span>来自异常</span><div>${chips(up)}</div><span>指向对策</span><div>${chips(down)}</div></div>`;
@@ -558,7 +578,8 @@ function detailHtml(G){const n=G.by[UI.sel];if(!n)return "";const T=S.tree;let h
     L=`<div class="kv"><span>来自对策</span><div>${chips(up)}</div><span>执行通道</span><div>${h(ch.通道)}${ch.接通===false?` <span class="tag off">未接通</span>`:""}<div class="hint">${h(ch.现在怎么做||"")}</div></div><span>状态</span><div style="display:flex;gap:8px;flex-wrap:wrap">${Object.entries(cnt).map(([s,v])=>`${stHtml(s)} <b>${v}</b>`).join("　")}</div></div>
     <div class="frow" style="margin-top:12px">${pend?B({label:`去拍板这一类（${pend} 条）`,icon:"arrow",cls:"primary sm",on:`goApprove('${jsq(n.type)}')`}):`<span class="hint">这一类都审批过了</span>`}</div>`;
     R=`<div class="tw"><table class="acts"><thead><tr><th>Campaign / 广告组</th><th>对象</th><th>改什么</th></tr></thead><tbody>${n.list.slice(0,6).map(a=>`<tr><td>${campCell(a)}</td><td>${objCell(a)}</td><td>${chgCell(a)}</td></tr>`).join("")}</tbody></table></div>${n.list.length>6?`<div class="hint" style="margin-top:6px">还有 ${n.list.length-6} 条，在「行动」里看全部</div>`:""}`}
-  return `<div class="detail"><div class="dh">${head}<span class="r">${ic("info","width:14px;height:14px")}<span>高亮的是这个节点的上下游</span></span></div><div class="db"><div>${L}</div><div>${R}</div></div></div>`}
+  const full=(n.k==="X"?attrX(n.a):n.k==="H"?attrH(n.x)+verdictBox(n.id):n.k==="O"?attrO(n.o):"")+notesBox(n.id)+askRow();
+  return `<div class="detail" id="ndetail"><div class="dh">${head}<span class="r">${ic("info","width:14px;height:14px")}<span>高亮的是这个节点的上下游</span></span></div><div class="db"><div>${L}</div><div>${R}</div></div>${full?`<div class="dfull">${full}</div>`:""}</div>`}
 
 /* ───────── 广告字段单元格 ───────── */
 function campCell(a){const f=a.f||{};if(!f.Campaign)return `<span class="hint">${h(a.campaign)}</span>`;
@@ -679,6 +700,7 @@ function actionDetail(g,tab){const o=S.options.find(x=>x.key===g.item)||{},ch=ch
   return `<div class="dcard" id="adetail"><div class="dhead"><div><span class="tg ${tab==="待你决定"?"":tab==="已驳回"?"bad":tab==="已作废"?"muted":"good"}">${tab}</span><h2>${h(g.type)}${g.cur?"":` <span class="vtag">上一版 v${g.ver}</span>`}</h2><div class="sub">${o.名称?`对策 ${h(o.key)}「${h(o.名称)}」 · `:""}交给 ${h(ch.通道)}</div></div><div class="big">${g.list.length}<small>条${sp?` · 涉及 ${usd(sp)}`:""}</small></div></div>
   ${stepper(cur,steps)}
   ${rev?`<div class="warnbox">${ic("info")}<span>输入已变，新输入下规则不再建议这里的 <b>${rev}</b> 条。系统不替你撤：逐条「撤回」，或者照做并标「已执行」。</span></div>`:""}
+  ${disagreeBox(g.item)}
   ${o.做什么&&!rev?`<div class="dsec"><h4>建议怎么做 <span class="by">Agent 写</span></h4><div class="rec"><b>${h(o.做什么)}</b><p>代价：${h(o.代价)}</p></div>
     <details class="more"><summary>为什么这么建议</summary><ul class="whyl">${xs.map(a=>`<li><b>${h(a.指标)}</b>　${h(a.现值)}（对比：${h(a.参照)}）<small>${h(a.说明)}</small></li>`).join("")}${hs.map(x=>`<li>${h(x.结论)}<small>不成立的情况：${h(x.不成立)}</small></li>`).join("")}</ul>
     <button class="btn sm" style="margin-top:8px" onclick="goWhy('T:${jsq(g.item)}:${jsq(g.type)}')">看完整的原因链</button></details></div>
@@ -867,39 +889,41 @@ function koujingCard(){const K=S.koujing;if(!K)return "";const note=K.说明||{}
   return `<div class="card" id="set-kj"><h3>口径（阈值与调幅）</h3><div class="sub">全仓唯一来源：<code>口径.json</code>。流水线读它，技能包引用它；改这个文件，再跑一圈</div><div class="tw" style="max-height:420px;overflow:auto"><table><thead><tr><th>分组</th><th>口径</th><th class="num">值</th><th>含义</th></tr></thead><tbody>${rows}</tbody></table></div></div>`}
 
 /* 问 Agent */
-const ASK={msgs:[],busy:false}, DRAFTS={}, SENT={};
-function mdx(s,drafts=true){const parts=String(s||"").split(/```/);let out="";
+const ASK={msgs:[],busy:false}, DRAFTS={}, SENT={}, NOTES={}, SAVED={};
+const TOOLZH={read_file:"读文件",skill_view:"看技能",terminal:"跑命令",search_files:"找文件",session_search:"翻历史对话",write_file:"写文件",web_search:"上网查",list_files:"看目录",patch:"改文件"};
+function mdx(s,drafts=true,node=null){const parts=String(s||"").split(/```/);let out="";
   parts.forEach((p,i)=>{if(i%2){const nl=p.indexOf("\n"),lang=(nl<0?p:p.slice(0,nl)).trim(),body=(nl<0?"":p.slice(nl+1)).replace(/\s+$/,"");
       if(lang==="群消息"&&drafts){const id="d"+Object.keys(DRAFTS).length;DRAFTS[id]=body;out+=`<div class="draft" id="${id}"><div class="dh">${ic("ext")}群消息草稿</div><div class="db2">${h(body)}</div><div class="df">${SENT[body]?`<span class="tg good">${h(SENT[body])}</span>`:`<button class="btn sm primary" onclick="sendGroup('${id}')">发到群</button><button class="btn sm" onclick="copyText(DRAFTS['${id}'])">复制</button><span class="hint">点了才会发；发之前再问你一次</span>`}</div></div>`}
+      else if(lang==="归因补充"&&drafts){const id="n"+Object.keys(NOTES).length;NOTES[id]={text:body,node};out+=`<div class="draft note" id="${id}"><div class="dh">${ic("tree")}归因补充（草稿）</div><div class="db2">${mdx(body,false)}</div><div class="df">${SAVED[body]?`<span class="tg good">${h(SAVED[body])}</span>`:node?`<button class="btn sm primary" onclick="saveNote('${id}')">存到这个节点</button><button class="btn sm" onclick="copyText(NOTES['${id}'].text)">复制</button><span class="hint">点了才存；存了以后在节点详情里能看到，下一圈也读得到</span>`:`<button class="btn sm" onclick="copyText(NOTES['${id}'].text)">复制</button><span class="hint">没有选中节点，存不了；到「原因 · 问题连线」里点着一个节点再问</span>`}</div></div>`}
       else out+=`<pre>${h(nl<0?p:body)}</pre>`;return}
     let ul=false;p.split("\n").forEach(line=>{const t=line.trim(),li=/^([-*•]|\d+[.、])\s+/.test(t);if(ul&&!li){out+="</ul>";ul=false}
       if(!t)return;const inl=md(t.replace(/^([-*•]|\d+[.、])\s+/,"").replace(/^#{1,6}\s*/,""));
       if(/^#{1,6}\s/.test(t))out+=`<h5>${inl}</h5>`;else if(t[0]===">")out+=`<p class="hint">${md(t.replace(/^>\s*/,""))}</p>`;else if(li){if(!ul){out+="<ul>";ul=true}out+=`<li>${inl}</li>`}else out+=`<p>${inl}</p>`});if(ul)out+="</ul>"});return out}
-function askCtx(){const n=PAGES.find(p=>p[0]===UI.page)[2];if(UI.page==="actions")return `行动 · ${UI.atab||"待你决定"}${UI.agrp?" · "+String(UI.agrp).split("|")[0]:""}`;if(UI.page==="campaigns"&&UI.camp)return `广告活动 · ${UI.camp}（${cn(UI.camp)}）`;if(UI.page==="why")return `原因 · ${UI.whyTab==="tree"?"问题连线":"经营拆解"}`;return n}
+function askCtx(){const n=PAGES.find(p=>p[0]===UI.page)[2];if(UI.page==="actions")return `行动 · ${UI.atab||"待你决定"}${UI.agrp?" · "+String(UI.agrp).split("|")[0]:""}`;if(UI.page==="campaigns"&&UI.camp)return `广告活动 · ${UI.camp}（${cn(UI.camp)}）`;if(UI.page==="why"){const o=nodeObj();return `原因 · ${UI.whyTab==="tree"?"问题连线":"经营拆解"}${o?` · ${o.type}「${o.id}」`:""}`}return n}
 function askSugs(){const J=S.jobcard||{},g=String(UI.agrp||"").split("|")[0];
   return ({home:["这周最该管的一件事是什么？依据呢？","目标 TACOS 是怎么算出来的，现在还有多少余量？","把这周的结论写成群消息"],
     actions:[g?`「${g}」这类动作为什么这么建议？`:"这一圈哪类动作最要紧？","哪几条风险最大，值得再想想？","这些动作通过后预期改变什么、多久复盘？"],
     campaigns:[UI.camp?`「${UI.camp}」这条广告的任务完成了吗？`:"哪些广告没完成它的任务？","哪些是纯利型广告？为什么？","预算吃紧的是哪几个？"],
-    why:["现在卡在哪个指标上？为什么不是别的？","四条利润路径为什么建议这一条？","帮我把决策表的执行方案写具体"],
+    why:nodeObj()?nodeQs(nodeObj()):["现在卡在哪个指标上？为什么不是别的？","四条利润路径为什么建议这一条？","帮我把决策表的执行方案写具体"],
     agent:["这周自动跑了没？结果怎样？","上一圈我驳回了什么，这一圈怎么处理的？"],settings:["目标广告后利润率我该怎么定？"]})[UI.page]||J.你可以问它||[]}
 function askHead(){const el=document.getElementById("askst");if(!el)return;const H=HEALTH,on=!!(H&&H.可问);document.querySelectorAll("#askfab i,#askdot").forEach(x=>x.classList.toggle("on",on));
   el.textContent=!H?"检查中…":H.可问?(H.走哪条==="hermes"?`已接通 · Hermes「${H.profile}」`:"已接通 · 直连模型"):"未接通（设置里看怎么接）";document.getElementById("askname").textContent=(H&&H.名字)||"广告 Agent"}
 function askRender(){const box=document.getElementById("askmsgs");if(!box)return;
-  box.innerHTML=ASK.msgs.length?ASK.msgs.map((m,i)=>m.role==="user"?`<div class="msg u">${h(m.content)}</div>`:m.err?`<div class="msg err">${h(m.content)}</div>`:`<div class="msg a" id="am${i}">${(m.tools||[]).map(t=>`<div class="tool">· ${h(t)}</div>`).join("")}${mdx(m.content)||(ASK.busy&&i===ASK.msgs.length-1?`<span class="hint">在想…</span>`:"")}</div>`).join("")
+  box.innerHTML=ASK.msgs.length?ASK.msgs.map((m,i)=>m.role==="user"?`<div class="msg u">${h(m.content)}</div>`:m.err?`<div class="msg err">${h(m.content)}</div>`:`<div class="msg a" id="am${i}">${(m.tools||[]).map(t=>`<div class="tool">· ${h(t)}</div>`).join("")}${mdx(m.content,true,m.node)||(ASK.busy&&i===ASK.msgs.length-1?`<span class="hint">在想…</span>`:"")}${m.content&&!(ASK.busy&&i===ASK.msgs.length-1)?`<div class="acts2">${m.node&&!/```归因补充/.test(m.content)?(SAVED[m.content]?`<span class="hint">${h(SAVED[m.content])}</span>`:`<button onclick="saveAnswer(${i})">存到「${h(m.nlabel)}」</button>`):""}<button onclick="copyText(ASK.msgs[${i}].content)">复制</button>${i===ASK.msgs.length-1?`<button onclick="askAgain()">重新回答</button>`:""}</div>`:""}</div>`).join("")
     :`<div class="hint" style="padding:6px 2px">它读的是这一圈脚本算好的数字和经营核算，回答会说明出处。它不审批、不改目标、不发消息：要发群，它只给草稿，你点了才发。</div>`;
   box.scrollTop=box.scrollHeight;document.getElementById("asksug").innerHTML=ASK.busy?"":askSugs().map(q=>`<button onclick="ask('${jsq(q)}')">${h(q)}</button>`).join("");
   document.getElementById("askctx").textContent="它知道你在看："+askCtx();document.getElementById("asksend").disabled=ASK.busy}
 function askOpen(on){document.body.classList.toggle("askopen",on);if(on){if(!HEALTH)loadHealth();askHead();askRender();setTimeout(()=>document.getElementById("askin")?.focus(),40)}}
 async function ask(q){q=(q??document.getElementById("askin").value).trim();if(!q||ASK.busy)return;document.getElementById("askin").value="";
-  ASK.msgs.push({role:"user",content:q});const a={role:"assistant",content:"",tools:[]};ASK.msgs.push(a);ASK.busy=true;askRender();
-  try{const r=await fetch("/api/agent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({who:who(),context:askCtx(),messages:ASK.msgs.slice(0,-1).filter(m=>!m.err).map(m=>({role:m.role,content:m.content}))})});
+  const obj=nodeObj();ASK.msgs.push({role:"user",content:q});const a={role:"assistant",content:"",tools:[],node:obj&&obj.node,nlabel:obj&&`${obj.type} ${obj.id}`};ASK.msgs.push(a);ASK.busy=true;askRender();
+  try{const r=await fetch("/api/agent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({who:who(),context:askCtx(),object:obj,messages:ASK.msgs.slice(0,-1).filter(m=>!m.err).map(m=>({role:m.role,content:m.content}))})});
     if(!r.ok){const j=await r.json().catch(()=>({}));a.err=true;a.content=j.error||("出错了："+r.status);loadHealth(true)}
     else{const rd=r.body.getReader(),dec=new TextDecoder();let buf="",evt="";
       for(;;){const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
         while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).replace(/\r$/,"");buf=buf.slice(i+1);
           if(line.startsWith("event:")){evt=line.slice(6).trim();continue}if(!line.startsWith("data:")){if(!line)evt="";continue}
           const d=line.slice(5).trim();if(d==="[DONE]")continue;let j;try{j=JSON.parse(d)}catch(e){continue}
-          if(evt&&evt.includes("tool")){if(j.status&&j.status!=="running")continue;const t=[j.tool||j.name||"",j.label||j.preview||""].filter(Boolean).join(" · ");if(t&&a.tools.at(-1)!==t)a.tools.push(String(t).slice(0,80))}
+          if(evt&&evt.includes("tool")){if(j.status&&j.status!=="running")continue;const t=[TOOLZH[j.tool]||j.tool||j.name||"",j.label||j.preview||""].filter(Boolean).join(" · ");if(t&&a.tools.at(-1)!==t)a.tools.push(String(t).slice(0,80))}
           else{const c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;if(c)a.content+=c}
           askRender()}}
       if(!a.content){a.err=true;a.content="它没有回话。再问一次，或到「设置」看接通状态。"}}}
@@ -908,6 +932,55 @@ async function ask(q){q=(q??document.getElementById("askin").value).trim();if(!q
 function copyText(t){navigator.clipboard?.writeText(t||"").then(()=>toast("已复制"),()=>modal("复制不了：浏览器没给剪贴板权限"))}
 async function sendGroup(id,key){const text=key==="weekly"?DRAFTS.weekly:DRAFTS[id];if(!text)return;if(!confirm("把这段发到群里？发出去就撤不回了。\n\n"+text.slice(0,200)+(text.length>200?"…":"")))return;
   try{const r=await api("/api/post-to-group",{text,confirm:true});SENT[text]=`已发到「${r.group}」 ${r.at}`;toast(SENT[text]);askRender();load()}catch(e){}}
+
+/* ───────── v4：归因（脚本算）· 你的判断（人定）· 节点上的 Agent ───────── */
+const AT=()=>S.attr&&!S.attr.错误?S.attr:null, CONF={"高":"good","中":"warn","低":"bad"}, HVC={"认同":"","不认同":"no","先查再说":"wait"};
+function fmtCell(t,col,v){if(v==null)return "—";const f=(t.格式||{})[col];
+  if(f==="钱")return usd(v);if(f==="钱±")return (v>=0?"+":"−")+"$"+Math.round(Math.abs(v)).toLocaleString("en-US");if(f==="比例")return pct(v);
+  if(f==="点")return (v>=0?"+":"−")+Math.abs(v*100).toFixed(1)+" 个点";if(f==="数±")return (v>0?"+":"")+v;if(f==="周")return v+" 周";return h(v)}
+function attrTable(t,wide){const bar=t.条,mx=bar?Math.max(...t.行.map(r=>Math.abs(r[bar]||0)),1e-9):0;
+  return `<div class="atb ${wide?"wide":""}"><div class="ath">${h(t.标题)}</div><p class="atr">${h(t.读法)}</p><div class="tw"><table><thead><tr>${t.列.map((c,i)=>`<th class="${i&&c?"num":""}">${h(c)}</th>`).join("")}</tr></thead><tbody>${t.行.map(r=>`<tr>${t.列.map((c,i)=>{
+    if(i===0)return `<td>${h(r.名)}</td>`;if(c==="")return `<td>${r.标?`<span class="tg ${r.标==="将断货"?"bad":"warn"}">${h(r.标)}</span>`:""}</td>`;const v=r[c];
+    return `<td class="num">${c===bar&&v!=null?`<span class="cbar ${v<0?"neg":""}"><i style="width:${Math.round(Math.abs(v)/mx*100)}%"></i></span>`:""}${fmtCell(t,c,v)}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>${t.口径?`<p class="hint" style="margin:6px 0 0">怎么算的：${h(t.口径)}</p>`:""}</div>`}
+function sumBar(){const A=AT();if(!A||!A.小结)return "";const T=["货","钱","词"];return `<div class="sumbar" id="sumbar">${A.小结.map((x,i)=>`<div><b>先看这三句 · ${T[i]||""}</b>${h(x)}</div>`).join("")}</div>`}
+function nodeObj(){if(UI.page!=="why"||UI.whyTab!=="tree"||!UI.sel||!S.hasRun)return null;const G=graph(),n=G.by[UI.sel];if(!n)return null;
+  return n.k==="X"?{type:"问题",id:n.a.指标,label:n.a.现值+"，对比 "+n.a.参照,node:n.id}:n.k==="H"?{type:"分析",id:n.x.id,label:n.x.问题,node:n.id}:n.k==="O"?{type:"对策",id:n.o.key,label:n.o.名称,node:n.id}:{type:"动作",id:n.type,label:n.list.length+" 条",node:n.id}}
+function nodeQs(o){if(!o)return [];return ({
+  "问题":[`「${o.id}」是谁造成的？各占多少？`,`这个问题先不管会怎样？折成钱大概多少？`,`还有哪些可能的原因没被查到？`],
+  "分析":[`「${o.id} ${o.label}」的依据可靠吗？有没有反例？`,`深挖「${o.id} ${o.label}」：把还缺的数据里现在能查到的查一遍，补上支持和反对的证据`,`如果这条分析是错的，哪几条动作不该做？`],
+  "对策":[`对策「${o.id} ${o.label}」最弱的一环是什么？`,`这条对策不做会怎样？和别的几条比先做哪条？`],
+  "动作":[`「${o.id}」这一类动作里，哪几条最值得再想想？为什么？`,`这类动作通过后预期改变什么？多久能看出来？`]})[o.type]||[]}
+function askNode(i){const o=nodeObj(),q=nodeQs(o)[i];if(!q)return;askOpen(true);ask(q)}
+function askRow(){const o=nodeObj(),qs=nodeQs(o);if(!qs.length)return "";const lab={"问题":["问 Agent：是谁造成的","问 Agent：不管会怎样","问 Agent：还漏了什么原因"],"分析":["问 Agent：依据可靠吗？有没有反例？","让 Agent 深挖这条分析","问 Agent：如果它是错的"],"对策":["问 Agent：最弱的一环","问 Agent：不做会怎样"],"动作":["问 Agent：哪几条再想想","问 Agent：预期改变什么"]}[o.type];
+  return `<div class="askrow">${qs.map((q,i)=>`<button class="btn sm ${o.type==="分析"&&i===1?"soft":""}" title="${h(q)}" onclick="askNode(${i})">${h(lab[i])}</button>`).join("")}<span class="hint">它会带着这个${o.type}的编号去读归因材料；回答可以存回这个节点</span></div>`}
+function verdictBox(id){const v=(S.verdicts||{})[id];
+  return `<div class="vbox" id="vbox"><div class="vh"><b>你的判断</b>${BY.h}<span class="hint">脚本和 Agent 只摆证据，信不信由你。写下来，Agent 和下一圈都会先读它</span></div>
+  <div class="vrow"><div class="seg2" style="justify-content:flex-start">${(S.verdictEnum||[]).map(x=>`<button class="${v&&v.verdict===x?"on":""}" onclick="setVerdict('${jsq(id)}','${x}')">${x}</button>`).join("")}</div>
+  <div class="ipt" style="flex:1;min-width:220px"><input id="vreason" type="text" placeholder="一句理由（「不认同」「先查再说」必填）" value="${h(v?v.reason||"":"")}"></div>${v?`<button class="btn sm ghost" onclick="setVerdict('${jsq(id)}','')">撤回</button>`:""}</div>
+  ${v?`<p class="hint" style="margin:6px 0 0">${h(v.by)} · ${h((v.at||"").slice(5,16))} · 是在 v${v.version} 的数据上下的判断</p>`:""}</div>`}
+async function setVerdict(node,v){const why=(document.getElementById("vreason")||{}).value||"";try{await api("/api/verdict",{node,verdict:v,reason:why});toast(v?`已记下：${v}`:"已撤回");await load()}catch(e){}}
+function notesBox(id){const L=(S.notes||[]).filter(n=>n.node===id);if(!L.length)return "";
+  return `<div><div class="sub-h" style="margin:0 0 8px">存下来的备注 ${BY.a}<span class="hint" style="font-weight:400">　Agent 写的，人看过才存；不会被下一圈覆盖</span></div><div class="nlist">${L.map(n=>`<div class="nitem"><div class="nm"><span>${h(n.saved_by)} 存于 ${h((n.at||"").slice(5,16))} · v${n.version}</span><button class="btn sm ghost x" onclick="delNote(${n.id})">删掉</button></div><div class="nb">${mdx(n.text,false)}</div></div>`).join("")}</div></div>`}
+async function delNote(id){if(!confirm("删掉这条备注？"))return;try{await api("/api/note",{delete:id});await load()}catch(e){}}
+function attrX(a){const A=AT(),q=A&&A.问题[a.指标];if(!q)return "";const one=q.表.length===1;
+  return `<div class="sub-h">是谁造成的 ${BY.s}<span class="hint" style="font-weight:400">　把这个问题往下拆：每张表上面那句话是读法</span></div><div class="atbs">${q.表.map((t,i)=>attrTable(t,one||(q.表.length%2===1&&i===0))).join("")}</div>`}
+function attrH(x){const A=AT(),a=A&&A.分析[x.id];if(!a)return "";const e=a.能解释||{},li=L=>L.map(v=>`<li>${h(v.话)}<small>出自：${h(v.出处)}</small></li>`).join("");
+  return `<div class="expl"><div><div class="big">${e.比例==null?"—":pct(e.比例,0)}<small>最多能解释「${h(e.对象||"")}」的多少</small></div><div class="meter2"><i style="width:${Math.round(Math.min(1,Math.max(0,e.比例||0))*100)}%"></i></div></div>
+    <div><p>${h(e.说明||"")}</p><p class="hint" style="margin-top:4px">把握 <b class="cf ${CONF[a.把握]||""}" style="padding:0 7px;border-radius:999px">${h(a.把握)}</b>　${h(a.把握依据||"")}</p></div></div>
+  <div class="pc"><div class="pro"><div class="ph3">支持它的证据（${a.支持.length}）${BY.s}</div>${a.支持.length?`<ul>${li(a.支持)}</ul>`:`<div class="none">没有找到支持它的数据。</div>`}</div>
+    <div class="con"><div class="ph3">不支持它的证据（${a.反对.length}）${BY.s}</div>${a.反对.length?`<ul>${li(a.反对)}</ul>`:`<div class="none">没有找到反过来的数据。</div>`}</div></div>
+  ${a.还缺&&a.还缺.length?`<div><div class="sub-h" style="margin:0 0 8px">要把它坐实，还缺这些</div><div class="tw"><table><thead><tr><th>缺什么</th><th>去哪取</th><th>拿到后能判断什么</th></tr></thead><tbody>${a.还缺.map(m=>`<tr><td><b>${h(m.缺什么)}</b></td><td>${h(m.去哪取)}</td><td>${h(m.拿到后)}</td></tr>`).join("")}</tbody></table></div></div>`:""}`}
+function attrO(o){const A=AT(),d=A&&A.对策[o.key];if(!d)return "";
+  return `<div class="expl"><div><div class="big">${d.动作数}<small>条动作${d.近14天涉及花费?` · 近 14 天涉及 ${usd(d.近14天涉及花费)}`:""}</small></div></div>
+   <div><p>靠这几条分析站住：${d.靠哪几条分析.map(x=>`<a href="javascript:void 0" style="color:var(--accent);font-weight:600" onclick="pickNode('H:${x.id}')">${x.id}</a> <b class="cf ${CONF[x.把握]||""}" style="padding:0 7px;border-radius:999px;font-size:11px">把握${h(x.把握||"—")}</b>${(S.verdicts||{})["H:"+x.id]?` <span class="hv ${HVC[S.verdicts["H:"+x.id].verdict]}">你：${h(S.verdicts["H:"+x.id].verdict)}</span>`:""}`).join("　")}</p>${d.提醒?`<p class="hint" style="margin-top:4px">${h(d.提醒)}</p>`:""}</div></div>`}
+
+async function saveNote(id){const n=NOTES[id];if(!n||!n.node)return;try{await api("/api/note",{node:n.node,text:n.text,confirm:true});SAVED[n.text]="已存到这个节点";toast("已存到节点，详情里能看到");askRender();await load()}catch(e){}}
+async function saveAnswer(i){const m=ASK.msgs[i];if(!m||!m.node)return;try{await api("/api/note",{node:m.node,text:m.content,confirm:true});SAVED[m.content]=`已存到「${m.nlabel}」`;toast(SAVED[m.content]);askRender();await load()}catch(e){}}
+function askAgain(){if(ASK.busy)return;const L=ASK.msgs;if(L.length<2||L.at(-1).role!=="assistant")return;L.pop();const q=L.pop().content;ask(q)}
+addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();askOpen(!document.body.classList.contains("askopen"))}else if(e.key==="Escape"&&document.body.classList.contains("askopen"))askOpen(false)});
+
+function disagreeBox(key){const A=AT(),d=A&&A.对策[key];if(!d||!d.主要靠)return "";const v=(S.verdicts||{})["H:"+d.主要靠];if(!v||v.verdict==="认同")return "";
+  return `<div class="warnbox" id="dis">${ic("info")}<span>这类动作所属的对策主要靠分析 <b>${h(d.主要靠)}</b>，而${h(v.by)}对它的判断是「<b>${h(v.verdict)}</b>」：${h(v.reason||"")}。系统不替你撤这些动作：照做、驳回，还是先放着，你定。<a href="javascript:void 0" style="color:inherit;text-decoration:underline" onclick="goWhy('H:${h(d.主要靠)}')">看这条分析</a></span></div>`}
 
 /* ───────── 动作 ───────── */
 async function load(){S=await api("/api/state");render()}
@@ -927,7 +1000,7 @@ $("#run").onclick=runLoop;
 const Q=new URLSearchParams(location.search);if(Q.get("sel"))UI.sel=Q.get("sel");if(Q.get("hk"))UI.hk=+Q.get("hk");if(Q.get("tab"))UI.atab=Q.get("tab");if(Q.get("grp"))UI.agrp=Q.get("grp");if(Q.get("camp"))UI.camp=Q.get("camp");if(Q.get("goal"))UI.goalOpen=true;if(Q.get("wtab"))UI.whyTab=Q.get("wtab");if(Q.get("agtab"))UI.agTab=Q.get("agtab");
 const MAXR=+Q.get("rows")||0;   // 截图用：明细表只留前几行
 const ONLY=Q.get("only")?Q.get("only").split(","):null;   // 截图用：?shot=1 隐藏侧栏顶栏；?only=todo,band 只留这些块
-function shotMode(){if(!ONLY&&!Q.get("shot"))return;document.body.classList.add("shot");if(ONLY)document.querySelectorAll("#app > *").forEach(el=>{el.style.display=ONLY.includes(el.id)?"":"none"})}
+function shotMode(){if(!ONLY&&!Q.get("shot"))return;document.body.classList.add("shot");if(Q.get("focus")){const el=document.getElementById(Q.get("focus"));if(el){const app=document.getElementById("app");app.innerHTML="";el.style.margin="0";app.appendChild(el)}return}if(ONLY)document.querySelectorAll("#app > *").forEach(el=>{el.style.display=ONLY.includes(el.id)?"":"none"})}
 (async()=>{S=await (await fetch("/api/state")).json();
   try{const w=localStorage.getItem("who");if(w&&S.roles.includes(w))UI.who=w}catch(e){}
   let dm=Q.get("demo")==="1";try{dm=dm||localStorage.getItem("demo")==="1"}catch(e){}document.body.classList.toggle("demo",dm);render();loadHealth().then(()=>{if(Q.get("ask")||Q.get("askq"))askOpen(true);if(Q.get("askq"))ask(Q.get("askq"))})})();
