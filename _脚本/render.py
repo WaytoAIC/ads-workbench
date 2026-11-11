@@ -173,3 +173,8 @@ if __name__ == "__main__":
     except Exception as e:                                    # biz.py 自己都载入不了（缺文件、语法错）
         json.dump({"写入方": "脚本", "生成于": str(datetime.date.today()), "错误": f"{type(e).__name__}: {e}"}, open(f"{OUT}/经营.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(f"⚠ 经营核算没跑起来（不影响动作清单）：{type(e).__name__}: {e}", file=sys.stderr)
+    try:                                                      # 归因：把问题拆到是谁造成的、每条分析摆正反证据；同样只留痕，不让这一圈失败
+        import attribution
+        attribution.run(ROOT)
+    except Exception as e:
+        print(f"⚠ 归因没跑起来（不影响动作清单）：{type(e).__name__}: {e}", file=sys.stderr)
