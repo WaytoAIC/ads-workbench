@@ -112,12 +112,87 @@ OBJ = {"问题": ("问题", "归因.json 的「问题」里同名的那一项（
        "对策": ("对策", "归因.json 的「对策」里同字母的那一项，和 选项.json"), "动作": ("动作类型", "动作清单.json 里同类型的那些行")}
 
 
+def _hyp_rule(root):
+    out = f"{root}/广告闭环/输出"; names = [a["指标"] for a in (jread(f"{out}/数字.json") or {}).get("异常", [])]; opts = [f"{o['key']}（{o.get('名称', '')}）" for o in (jread(f"{out}/选项.json") or [])]
+    return ("对方问「还漏了什么原因」「提一条新的分析」时：先看 归因.json 里已有的几条分析和 人的判断.json，别重复提；去明细里找一条现有分析没覆盖、又查得出数的原因。"
+            "每条写进一个单独的代码块，第一行写 ```新分析 ，结尾 ``` ，一次最多两条。块里严格按这个格式，一行一项：\n"
+            "问题：一句问句\n来自：它在解释哪个问题（只能从这些里选，原样照抄：" + "；".join(names) + "）\n指向：它支持哪条对策，写字母，没有就留空（现有：" + "、".join(opts) + "）\n"
+            "结论：一句话，带数\n把握：高、中、低三选一\n把握依据：一句话，样本多大、是确定数还是推断\n支持：\n- 一条证据，带数（出自哪个文件）\n反对：\n- 一条反过来的证据（出自哪个文件）\n"
+            "还缺：\n- 缺什么｜去哪取｜拿到后能判断什么\n不成立：什么情况下这条分析不成立\n"
+            "块外说明「点下面的按钮，人采纳了才会长到树上」。你自己从明细里算出来的数，在出处里写清是从哪个文件怎么算的。") if names else ""
+
+
 def object_hint(obj):
     """页面把「正在看的对象」结构化地带过来：是什么、编号、名字。告诉 Agent 去哪读它，不让它猜。"""
     if not obj or obj.get("type") not in OBJ: return ""
     kind, where = OBJ[obj["type"]]
     return (f"\n对方点着的对象：{kind}「{str(obj.get('id', ''))[:40]} {str(obj.get('label', ''))[:80]}」。它的材料在 广告闭环/输出/{where}；"
             "人对各条分析下过的判断和存下的备注在 广告闭环/输入/人的判断.json，人不认同的要先看他的理由。")
+
+
+# ------------------------------------------------------------------ Agent 提出的新分析：解析、核对（人采纳后才长到树上）
+HYP_KEYS = ["问题", "来自", "指向", "结论", "把握", "把握依据", "不成立"]; HYP_LISTS = ["支持", "反对", "还缺"]
+
+
+def parse_hypothesis(text):
+    """把 ```新分析 块里的文字拆成结构。一行一个「键：值」；「支持：」「反对：」「还缺：」下面每条一行，以 - 开头。"""
+    import re
+    d = {k: "" for k in HYP_KEYS}; d.update({k: [] for k in HYP_LISTS}); cur = None
+    for raw in str(text or "").splitlines():
+        line = raw.strip()
+        if not line: continue
+        m = re.match(r"^([\u4e00-\u9fa5]{2,4})\s*[:：]\s*(.*)$", line)
+        if m and m.group(1) in HYP_KEYS + HYP_LISTS:
+            k, v = m.group(1), m.group(2).strip(); cur = k if k in HYP_LISTS else None
+            if k in HYP_KEYS: d[k] = v
+            elif v: d[k].append(v)
+            continue
+        if cur and re.match(r"^([-*•]|\d+[.、])\s*", line): d[cur].append(re.sub(r"^([-*•]|\d+[.、])\s*", "", line))
+        elif cur and d[cur]: d[cur][-1] += line
+    def evi(x):
+        m = re.search(r"[（(]([^（()）]{2,60})[)）]\s*$", x)
+        return {"话": (x[:m.start()].rstrip("，,。； ") if m else x), "出处": (m.group(1) if m else "Agent 没写出处")}
+    def miss(x):
+        a = [t.strip() for t in re.split(r"[｜|]", x) if t.strip()]
+        return {"缺什么": a[0] if a else x, "去哪取": a[1] if len(a) > 1 else "—", "拿到后": a[2] if len(a) > 2 else "—"}
+    d["来自"] = [t.strip().strip("「」") for t in re.split(r"[；;、，,]", d["来自"]) if t.strip()]
+    d["指向"] = (re.findall(r"[A-Z]", d["指向"]) or [""])[0]; d["把握"] = next((x for x in ("高", "中", "低") if x in d["把握"]), "")
+    d["支持"], d["反对"], d["还缺"] = [evi(x) for x in d["支持"]], [evi(x) for x in d["反对"]], [miss(x) for x in d["还缺"]]
+    return d
+
+
+def check_hypothesis(root, d, existing=()):
+    """返回 (改正后的草稿, 不能采纳的原因[], 提醒[])。带 $ 或 % 的数在脚本产物里找不到的，不拦，但标出来让人核。"""
+    out = f"{root}/广告闭环/输出"; F = jread(f"{out}/数字.json") or {}; names = [a["指标"] for a in F.get("异常", [])]; opts = [o["key"] for o in (jread(f"{out}/选项.json") or [])]
+    errs, flags = [], []
+    if len(d["问题"]) < 6: errs.append("没有写清「问题」（要一句完整的问句）")
+    if d["问题"] and any(d["问题"] == q for q in existing): errs.append("树上已经有一条一样的分析")
+    fixed = []
+    for n in d["来自"]:
+        hit = [x for x in names if x == n] or [x for x in names if n and (n in x or x in n)]
+        if len(hit) == 1: fixed.append(hit[0])
+        else: errs.append(f"「来自」里的「{n}」对不上现有的问题（现有：{'、'.join(names)}）")
+    d["来自"] = list(dict.fromkeys(fixed))
+    if not d["来自"] and not any("来自" in e for e in errs): errs.append("没有写它来自哪个问题")
+    if d["指向"] and d["指向"] not in opts: flags.append(f"「指向」写的对策 {d['指向']} 不在这一圈的对策里，已当成没写"); d["指向"] = ""
+    if not d["结论"]: errs.append("没有写「结论」")
+    if not d["把握"]: errs.append("没有写「把握」（高、中、低）")
+    if not d["支持"] and not d["反对"]: errs.append("支持和反对的证据都是空的")
+    try:
+        import importlib.util
+        sp = importlib.util.spec_from_file_location("llm_check", os.path.join(REPO, "_脚本", "llm.py")); L = importlib.util.module_from_spec(sp); sp.loader.exec_module(L)
+        allowed = L.allowed_numbers([F, jread(f"{out}/经营.json"), jread(f"{out}/归因.json"), jread(f"{out}/动作清单.json"), jread(f"{root}/口径.json") or jread(f"{REPO}/口径.json"), jread(f"{root}/参数.json")])
+        for e in d["支持"] + d["反对"]:
+            bad = L.invented(e["话"], allowed)
+            if bad: e["核对"] = "脚本算好的结果里找不到 " + "、".join(bad) + "：可能是它从明细里自己算的，采纳前核一下"
+        for k in ("结论", "把握依据"):
+            bad = L.invented(d[k], allowed)
+            if bad: flags.append(f"「{k}」里的 {'、'.join(bad)} 在脚本算好的结果里找不到")
+    except Exception as e:
+        flags.append(f"数字没核成（{type(e).__name__}），采纳前自己对一下")
+    n_bad = sum(1 for e in d["支持"] + d["反对"] if e.get("核对"))
+    if n_bad: flags.append(f"{n_bad} 条证据里有数字在脚本算好的结果里找不到，已在那几条下面标出")
+    return d, errs, flags
 
 
 def system_prompt(root, context="", obj=None):
@@ -132,6 +207,7 @@ def system_prompt(root, context="", obj=None):
             "对方让你「深挖」「补证据」「找反例」某条分析时：先把归因.json 里它的「还缺」逐条看，能从现有文件里查到的就去查；"
             "然后把结果完整写在一个代码块里，第一行写 ```归因补充 ，结尾 ``` ；块里分三段，每段以「支持：」「反对：」「还缺：」开头，每条一行、带数字、括号里写出自哪个文件；"
             "块外用一句话说你现在更信还是更不信这条分析、为什么，并说明「点下面的按钮才会存到这个节点」。你自己不改任何文件。"
+            + _hyp_rule(root)
             + (f"\n对方当前在工作台看的是：{context}" if context else "") + object_hint(obj))
 
 

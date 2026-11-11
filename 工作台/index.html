@@ -463,7 +463,7 @@ serious:`<svg width="14" height="14" viewBox="0 0 14 14"><rect x="1.5" y="1.5" w
 warning:`<svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="var(--warning)"/><rect x="6.3" y="3.5" width="1.4" height="4.4" fill="#0b0b0b"/><rect x="6.3" y="8.9" width="1.4" height="1.4" fill="#0b0b0b"/></svg>`,
 good:`<svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="var(--good)"/><path d="M4 7.2l2.1 2.1L10 5.3" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`};
 const LV={critical:"严重",serious:"要管",warning:"留意",good:"正常"}, LC={critical:"--critical",serious:"--serious",warning:"--warning",good:"--good"};
-const VC={"成立":"--serious","成立（样本小）":"--serious","证据弱":"--warning","待运营确认":"--st-ok","排除":"--good","未触发":"--st-void","未发现":"--st-void","缺数据":"--st-void"};
+const VC={"人采纳":"--st-ok","成立":"--serious","成立（样本小）":"--serious","证据弱":"--warning","待运营确认":"--st-ok","排除":"--good","未触发":"--st-void","未发现":"--st-void","缺数据":"--st-void"};
 const vd=v=>`<span class="vd" style="--c:var(${VC[v]||"--muted"})">${h(v)}</span>`;
 const stat=l=>`<span class="stat">${ICON[l]}${LV[l]}</span>`;
 const cn=n=>(S.names&&S.names[n])||n;
@@ -538,7 +538,7 @@ function treeHtml(){const G=graph();if(!UI.sel||!G.by[UI.sel])UI.sel=defaultSel(
   const H=[["发现的问题","拿数据对着目标比出来的"],["分析","一个问题可以拆成几问，一问也可以来自几个问题"],["对策","综合几方数据定怎么办；做不做由人定"],["动作","按对策生成，去「行动」里拍板"]];
   const cols=[0,1,2,3].map(c=>`<div class="tcol"><div class="tch"><span class="st">${c+1}</span><b>${H[c][0]}</b><small>${H[c][1]}</small></div>${G.nodes.filter(n=>n.col===c).map(n=>nodeHtml(n,G,path)).join("")||`<p class="hint">本轮没有生成动作</p>`}</div>`).join("");
   const changed=[...UI.opts].sort().join()!==[...S.task.options].sort().join();
-  const tools=changed?`<span class="hint">取舍改成 <b style="color:var(--ink)">${[...UI.opts].sort().join(" · ")||"无"}</b></span>${B({label:"按这个取舍重新生成",icon:"refresh",cls:"primary sm",on:"saveOpts()",perm:"改取舍"})}${B({label:"放弃",cls:"ghost sm",on:"UI.opts=null;render()"})}`:`<span class="chip">对策打勾＝选进本轮 · 只有老板能改</span>`;
+  const tools=changed?`<span class="hint">取舍改成 <b style="color:var(--ink)">${[...UI.opts].sort().join(" · ")||"无"}</b></span>${B({label:"按这个取舍重新生成",icon:"refresh",cls:"primary sm",on:"saveOpts()",perm:"改取舍"})}${B({label:"放弃",cls:"ghost sm",on:"UI.opts=null;render()"})}`:`<button class="btn sm soft" onclick="askNew()" title="它会看一遍现有的分析和你的判断，再去明细里找一条没被覆盖的原因">让 Agent 提一条新的分析</button><span class="chip">对策打勾＝选进本轮 · 只有老板能改</span>`;
   const miss=S.tree.未知.length?`<div class="miss">${ic("help")}<div><b style="color:var(--ink)">分析时还缺的数据（缺什么、去哪取）</b><ul>${S.tree.未知.map(x=>`<li>${md(x)}</li>`).join("")}</ul></div></div>`:"";
   return `<section class="panel" id="tree"><div class="ph"><span class="no">${ic("tree")}</span><div><h2>问题 → 分析 → 对策 → 动作</h2><div class="sub">点任意一个节点：问题看是谁造成的，分析看正反证据和把握，对策看它靠什么站住；每个节点都能直接问 Agent</div></div><div class="tools">${tools}</div></div>
   <div class="pb">${sumBar()}<div class="tree" id="tree-g"><svg id="edges"></svg>${cols}</div>${detailHtml(G)}${miss}</div></section>`}
@@ -568,7 +568,7 @@ function detailHtml(G){const n=G.by[UI.sel];if(!n)return "";const T=S.tree;let h
     L=`<div class="kv"><span>现值</span><div><b>${h(a.现值)}</b></div><span>对着什么比</span><div>${h(a.参照)}</div><span>说明</span><div>${h(a.说明)}</div><span>引出的分析</span><div>${chips(down)}</div></div>`;R=e?evBox(e[0],e[1]):""}
   if(n.k==="H"){const x=n.x;head=`<span>② 分析</span><b>${x.id} ${h(x.问题)}</b>${vd(x.判定)}`;
     L=`<div class="kv"><span>结论</span><div>${h(x.结论)}</div><span>什么情况下不成立</span><div>${h(x.不成立)}</div><span>来自异常</span><div>${chips(up)}</div><span>指向对策</span><div>${chips(down)}</div></div>`;
-    R=`<div class="sub-h">依据的事实（${x.数据源.length} 个数据源）</div><ul class="facts">${x.事实.map(i=>`<li>${md(S.sanlan.事实[i-1]||"")}<div class="s">${(T.事实来源[i]||[]).map(srcChip).join("")}</div></li>`).join("")}</ul>`+(EVH[x.id]?`<div style="margin-top:14px">${evBox(EVH[x.id])}</div>`:"")}
+    R=x.来源==="Agent"?`<div class="okbox"><b>这条分析是 Agent 提出、${h(x.采纳人)} 采纳的</b> <span class="by">Agent 写</span><p class="hint" style="margin:6px 0 0">采纳于 ${h((x.采纳于||"").slice(5,16))}，当时是 v${x.版本} 的数据。脚本没有算过它，证据是 Agent 找的，数字以它写的出处为准；重跑一圈后它不会自动更新。</p><div style="margin-top:10px">${B({label:"从树上拿掉",icon:"x",cls:"sm danger",on:`dropHyp('${x.id}')`,perm:"下判断"})}</div></div>`:`<div class="sub-h">依据的事实（${x.数据源.length} 个数据源）</div><ul class="facts">${x.事实.map(i=>`<li>${md(S.sanlan.事实[i-1]||"")}<div class="s">${(T.事实来源[i]||[]).map(srcChip).join("")}</div></li>`).join("")}</ul>`+(EVH[x.id]?`<div style="margin-top:14px">${evBox(EVH[x.id])}</div>`:"")}
   if(n.k==="O"){const o=n.o,sel=UI.opts.has(o.key);head=`<span>③ 诊断 · 对策</span><b>${o.key} ${h(o.名称)}</b><span class="chip ${o.已选?"on":""}">${o.已选?`本轮已选 · ${o.动作条数} 条动作`:"本轮没选"}</span>`;
     L=`<div class="kv"><span>做什么</span><div>${h(o.做什么)}</div><span>代价</span><div>${h(o.代价)}</div><span>什么时候选</span><div>${h(o.何时选)}</div><span>可逆</span><div>${h(o.可逆)}</div><span>来自分析</span><div>${chips(up)}</div></div>
     <div class="frow" style="margin-top:12px">${B({label:sel?"不选这条对策":"选进本轮",icon:sel?"x":"check",cls:sel?"":"soft",on:`pick('${o.key}')`,perm:"改取舍"})}</div>`;
@@ -895,6 +895,7 @@ function mdx(s,drafts=true,node=null){const parts=String(s||"").split(/```/);let
   parts.forEach((p,i)=>{if(i%2){const nl=p.indexOf("\n"),lang=(nl<0?p:p.slice(0,nl)).trim(),body=(nl<0?"":p.slice(nl+1)).replace(/\s+$/,"");
       if(lang==="群消息"&&drafts){const id="d"+Object.keys(DRAFTS).length;DRAFTS[id]=body;out+=`<div class="draft" id="${id}"><div class="dh">${ic("ext")}群消息草稿</div><div class="db2">${h(body)}</div><div class="df">${SENT[body]?`<span class="tg good">${h(SENT[body])}</span>`:`<button class="btn sm primary" onclick="sendGroup('${id}')">发到群</button><button class="btn sm" onclick="copyText(DRAFTS['${id}'])">复制</button><span class="hint">点了才会发；发之前再问你一次</span>`}</div></div>`}
       else if(lang==="归因补充"&&drafts){const id="n"+Object.keys(NOTES).length;NOTES[id]={text:body,node};out+=`<div class="draft note" id="${id}"><div class="dh">${ic("tree")}归因补充（草稿）</div><div class="db2">${mdx(body,false)}</div><div class="df">${SAVED[body]?`<span class="tg good">${h(SAVED[body])}</span>`:node?`<button class="btn sm primary" onclick="saveNote('${id}')">存到这个节点</button><button class="btn sm" onclick="copyText(NOTES['${id}'].text)">复制</button><span class="hint">点了才存；存了以后在节点详情里能看到，下一圈也读得到</span>`:`<button class="btn sm" onclick="copyText(NOTES['${id}'].text)">复制</button><span class="hint">没有选中节点，存不了；到「原因 · 问题连线」里点着一个节点再问</span>`}</div></div>`}
+      else if(lang==="新分析"&&drafts){out+=hypCard(body)}
       else out+=`<pre>${h(nl<0?p:body)}</pre>`;return}
     let ul=false;p.split("\n").forEach(line=>{const t=line.trim(),li=/^([-*•]|\d+[.、])\s+/.test(t);if(ul&&!li){out+="</ul>";ul=false}
       if(!t)return;const inl=md(t.replace(/^([-*•]|\d+[.、])\s+/,"").replace(/^#{1,6}\s*/,""));
@@ -946,13 +947,13 @@ function sumBar(){const A=AT();if(!A||!A.小结)return "";const T=["货","钱","
 function nodeObj(){if(UI.page!=="why"||UI.whyTab!=="tree"||!UI.sel||!S.hasRun)return null;const G=graph(),n=G.by[UI.sel];if(!n)return null;
   return n.k==="X"?{type:"问题",id:n.a.指标,label:n.a.现值+"，对比 "+n.a.参照,node:n.id}:n.k==="H"?{type:"分析",id:n.x.id,label:n.x.问题,node:n.id}:n.k==="O"?{type:"对策",id:n.o.key,label:n.o.名称,node:n.id}:{type:"动作",id:n.type,label:n.list.length+" 条",node:n.id}}
 function nodeQs(o){if(!o)return [];return ({
-  "问题":[`「${o.id}」是谁造成的？各占多少？`,`这个问题先不管会怎样？折成钱大概多少？`,`还有哪些可能的原因没被查到？`],
+  "问题":[`「${o.id}」是谁造成的？各占多少？`,`这个问题先不管会怎样？折成钱大概多少？`,`「${o.id}」还有哪些可能的原因没被查到？把最值得查的一条写成新分析`],
   "分析":[`「${o.id} ${o.label}」的依据可靠吗？有没有反例？`,`深挖「${o.id} ${o.label}」：把还缺的数据里现在能查到的查一遍，补上支持和反对的证据`,`如果这条分析是错的，哪几条动作不该做？`],
   "对策":[`对策「${o.id} ${o.label}」最弱的一环是什么？`,`这条对策不做会怎样？和别的几条比先做哪条？`],
   "动作":[`「${o.id}」这一类动作里，哪几条最值得再想想？为什么？`,`这类动作通过后预期改变什么？多久能看出来？`]})[o.type]||[]}
 function askNode(i){const o=nodeObj(),q=nodeQs(o)[i];if(!q)return;askOpen(true);ask(q)}
-function askRow(){const o=nodeObj(),qs=nodeQs(o);if(!qs.length)return "";const lab={"问题":["问 Agent：是谁造成的","问 Agent：不管会怎样","问 Agent：还漏了什么原因"],"分析":["问 Agent：依据可靠吗？有没有反例？","让 Agent 深挖这条分析","问 Agent：如果它是错的"],"对策":["问 Agent：最弱的一环","问 Agent：不做会怎样"],"动作":["问 Agent：哪几条再想想","问 Agent：预期改变什么"]}[o.type];
-  return `<div class="askrow">${qs.map((q,i)=>`<button class="btn sm ${o.type==="分析"&&i===1?"soft":""}" title="${h(q)}" onclick="askNode(${i})">${h(lab[i])}</button>`).join("")}<span class="hint">它会带着这个${o.type}的编号去读归因材料；回答可以存回这个节点</span></div>`}
+function askRow(){const o=nodeObj(),qs=nodeQs(o);if(!qs.length)return "";const lab={"问题":["问 Agent：是谁造成的","问 Agent：不管会怎样","让 Agent 提一条新的分析"],"分析":["问 Agent：依据可靠吗？有没有反例？","让 Agent 深挖这条分析","问 Agent：如果它是错的"],"对策":["问 Agent：最弱的一环","问 Agent：不做会怎样"],"动作":["问 Agent：哪几条再想想","问 Agent：预期改变什么"]}[o.type];
+  return `<div class="askrow">${qs.map((q,i)=>`<button class="btn sm ${(o.type==="分析"&&i===1)||(o.type==="问题"&&i===2)?"soft":""}" title="${h(q)}" onclick="askNode(${i})">${h(lab[i])}</button>`).join("")}<span class="hint">它会带着这个${o.type}的编号去读归因材料；回答可以存回这个节点</span></div>`}
 function verdictBox(id){const v=(S.verdicts||{})[id];
   return `<div class="vbox" id="vbox"><div class="vh"><b>你的判断</b>${BY.h}<span class="hint">脚本和 Agent 只摆证据，信不信由你。写下来，Agent 和下一圈都会先读它</span></div>
   <div class="vrow"><div class="seg2" style="justify-content:flex-start">${(S.verdictEnum||[]).map(x=>`<button class="${v&&v.verdict===x?"on":""}" onclick="setVerdict('${jsq(id)}','${x}')">${x}</button>`).join("")}</div>
@@ -964,11 +965,11 @@ function notesBox(id){const L=(S.notes||[]).filter(n=>n.node===id);if(!L.length)
 async function delNote(id){if(!confirm("删掉这条备注？"))return;try{await api("/api/note",{delete:id});await load()}catch(e){}}
 function attrX(a){const A=AT(),q=A&&A.问题[a.指标];if(!q)return "";const one=q.表.length===1;
   return `<div class="sub-h">是谁造成的 ${BY.s}<span class="hint" style="font-weight:400">　把这个问题往下拆：每张表上面那句话是读法</span></div><div class="atbs">${q.表.map((t,i)=>attrTable(t,one||(q.表.length%2===1&&i===0))).join("")}</div>`}
-function attrH(x){const A=AT(),a=A&&A.分析[x.id];if(!a)return "";const e=a.能解释||{},li=L=>L.map(v=>`<li>${h(v.话)}<small>出自：${h(v.出处)}</small></li>`).join("");
-  return `<div class="expl"><div><div class="big">${e.比例==null?"—":pct(e.比例,0)}<small>最多能解释「${h(e.对象||"")}」的多少</small></div><div class="meter2"><i style="width:${Math.round(Math.min(1,Math.max(0,e.比例||0))*100)}%"></i></div></div>
+function attrH(x){const A=AT(),a=A&&A.分析[x.id];if(!a)return "";const ag=a.来源==="Agent",by=ag?BY.a:BY.s,e=a.能解释||{},li=L=>L.map(v=>`<li>${h(v.话)}<small>出自：${h(v.出处)}</small>${v.核对?`<small style="color:var(--warn-ink)">${h(v.核对)}</small>`:""}</li>`).join("");
+  return `<div class="expl"><div><div class="big">${ag?"新":e.比例==null?"—":pct(e.比例,0)}<small>${ag?`在解释「${h(e.对象||"")}」；能解释多少还没有人算过`:`最多能解释「${h(e.对象||"")}」的多少`}</small></div><div class="meter2"><i style="width:${Math.round(Math.min(1,Math.max(0,e.比例||0))*100)}%"></i></div></div>
     <div><p>${h(e.说明||"")}</p><p class="hint" style="margin-top:4px">把握 <b class="cf ${CONF[a.把握]||""}" style="padding:0 7px;border-radius:999px">${h(a.把握)}</b>　${h(a.把握依据||"")}</p></div></div>
-  <div class="pc"><div class="pro"><div class="ph3">支持它的证据（${a.支持.length}）${BY.s}</div>${a.支持.length?`<ul>${li(a.支持)}</ul>`:`<div class="none">没有找到支持它的数据。</div>`}</div>
-    <div class="con"><div class="ph3">不支持它的证据（${a.反对.length}）${BY.s}</div>${a.反对.length?`<ul>${li(a.反对)}</ul>`:`<div class="none">没有找到反过来的数据。</div>`}</div></div>
+  <div class="pc"><div class="pro"><div class="ph3">支持它的证据（${a.支持.length}）${by}</div>${a.支持.length?`<ul>${li(a.支持)}</ul>`:`<div class="none">没有找到支持它的数据。</div>`}</div>
+    <div class="con"><div class="ph3">不支持它的证据（${a.反对.length}）${by}</div>${a.反对.length?`<ul>${li(a.反对)}</ul>`:`<div class="none">没有找到反过来的数据。</div>`}</div></div>
   ${a.还缺&&a.还缺.length?`<div><div class="sub-h" style="margin:0 0 8px">要把它坐实，还缺这些</div><div class="tw"><table><thead><tr><th>缺什么</th><th>去哪取</th><th>拿到后能判断什么</th></tr></thead><tbody>${a.还缺.map(m=>`<tr><td><b>${h(m.缺什么)}</b></td><td>${h(m.去哪取)}</td><td>${h(m.拿到后)}</td></tr>`).join("")}</tbody></table></div></div>`:""}`}
 function attrO(o){const A=AT(),d=A&&A.对策[o.key];if(!d)return "";
   return `<div class="expl"><div><div class="big">${d.动作数}<small>条动作${d.近14天涉及花费?` · 近 14 天涉及 ${usd(d.近14天涉及花费)}`:""}</small></div></div>
@@ -981,6 +982,23 @@ addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()===
 
 function disagreeBox(key){const A=AT(),d=A&&A.对策[key];if(!d||!d.主要靠)return "";const v=(S.verdicts||{})["H:"+d.主要靠];if(!v||v.verdict==="认同")return "";
   return `<div class="warnbox" id="dis">${ic("info")}<span>这类动作所属的对策主要靠分析 <b>${h(d.主要靠)}</b>，而${h(v.by)}对它的判断是「<b>${h(v.verdict)}</b>」：${h(v.reason||"")}。系统不替你撤这些动作：照做、驳回，还是先放着，你定。<a href="javascript:void 0" style="color:inherit;text-decoration:underline" onclick="goWhy('H:${h(d.主要靠)}')">看这条分析</a></span></div>`}
+
+/* Agent 提出的新分析：先让后端核对格式和数字，人点了才长到树上 */
+const HYP={};
+async function checkHyp(text){try{const r=await fetch("/api/hypothesis",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({who:who(),text,dry:true})});HYP[text]=await r.json()}catch(e){HYP[text]={ok:false,errors:["核对不了："+e.message],flags:[],draft:null}}askRender()}
+function hypCard(text){if(ASK.busy)return `<pre>${h(text)}</pre>`;const r=HYP[text];if(r===undefined){HYP[text]=null;checkHyp(text)}
+  if(!r)return `<div class="draft note"><div class="dh">${ic("tree")}新分析（草稿）</div><div class="db2"><span class="hint">正在核对格式和数字…</span></div></div>`;
+  if(r.error)return `<div class="draft note"><div class="dh">${ic("tree")}新分析（草稿）</div><div class="db2">${h(r.error)}</div></div>`;
+  const d=r.draft||{},li=L=>(L||[]).map(v=>`<li>${h(v.话)} <span class="hint">（${h(v.出处)}）</span>${v.核对?`<div style="color:var(--warn-ink);font-size:11.5px">${h(v.核对)}</div>`:""}</li>`).join(""),done=SAVED["hyp:"+text];
+  return `<div class="draft note"><div class="dh">${ic("tree")}新分析（草稿）<span class="by" style="margin-left:auto">Agent 写</span></div><div class="db2" style="white-space:normal">
+    <p><b>${h(d.问题||"（没写问题）")}</b></p><p class="hint">在解释：${(d.来自||[]).map(h).join("、")||"—"}${d.指向?`　支持对策 ${h(d.指向)}`:""}　把握 <b class="cf ${CONF[d.把握]||""}" style="padding:0 7px;border-radius:999px">${h(d.把握||"—")}</b></p>
+    <p>${h(d.结论||"")}</p>${(d.支持||[]).length?`<p style="margin-top:6px"><b>支持</b></p><ul>${li(d.支持)}</ul>`:""}${(d.反对||[]).length?`<p><b>反对</b></p><ul>${li(d.反对)}</ul>`:""}
+    ${(d.还缺||[]).length?`<p><b>还缺</b></p><ul>${d.还缺.map(m=>`<li>${h(m.缺什么)} <span class="hint">（${h(m.去哪取)}）</span></li>`).join("")}</ul>`:""}
+    ${(r.errors||[]).map(x=>`<p style="color:var(--critical)">不能采纳：${h(x)}</p>`).join("")}${(r.flags||[]).map(x=>`<p style="color:var(--warn-ink)">提醒：${h(x)}</p>`).join("")}</div>
+    <div class="df">${done?`<span class="tg good">${h(done)}</span>`:r.ok?`<button class="btn sm primary" onclick="adoptHyp(this)">采纳到树上</button><span class="hint">点了才会长到树上；之后可以对它下判断，也可以随时拿掉</span>`:`<span class="hint">格式不对，采纳不了。让它「按新分析的格式重写」</span>`}</div><textarea hidden>${h(text)}</textarea></div>`}
+async function adoptHyp(btn){const text=btn.closest(".draft").querySelector("textarea").value;try{const r=await api("/api/hypothesis",{text,confirm:true});SAVED["hyp:"+text]=`已采纳为 ${r.id}，在树的「分析」一列`;toast(SAVED["hyp:"+text]);askRender();UI.sel="H:"+r.id;UI.whyTab="tree";await load();if(UI.page!=="why")go("why")}catch(e){}}
+async function dropHyp(id){if(!confirm(`把 ${id} 从树上拿掉？你对它下的判断也会一起清掉。`))return;try{await api("/api/hypothesis",{delete:id});UI.sel=null;toast("已拿掉");await load()}catch(e){}}
+function askNew(){askOpen(true);ask("看一遍这一圈的归因材料：现有的几条分析之外，还有没有值得查的原因？挑最值得的一条写成新分析。")}
 
 /* ───────── 动作 ───────── */
 async function load(){S=await api("/api/state");render()}

@@ -35,7 +35,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, who TEXT, kind TEXT, ref TEXT, detail TEXT);
         CREATE TABLE IF NOT EXISTS campaign_task(campaign TEXT PRIMARY KEY, task TEXT, by TEXT, at TEXT);
         CREATE TABLE IF NOT EXISTS verdict(node TEXT PRIMARY KEY, verdict TEXT, reason TEXT, by TEXT, at TEXT, version INT);
-        CREATE TABLE IF NOT EXISTS note(id INTEGER PRIMARY KEY AUTOINCREMENT, node TEXT, text TEXT, source TEXT, saved_by TEXT, at TEXT, version INT);""")
+        CREATE TABLE IF NOT EXISTS note(id INTEGER PRIMARY KEY AUTOINCREMENT, node TEXT, text TEXT, source TEXT, saved_by TEXT, at TEXT, version INT);
+        CREATE TABLE IF NOT EXISTS hypothesis(id TEXT PRIMARY KEY, doc TEXT, by TEXT, at TEXT, version INT);""")
         if not c.execute("SELECT 1 FROM task").fetchone():
             P = jread(PARAMS); c.execute("INSERT INTO task VALUES(?,?,?,?,?,?,?,?,?)", (P["任务编号"], "待处理", float(P["目标ACOS"]), float(P["补货到仓周数"]), P["产品阶段"],
                       json.dumps(P.get("取舍项") or ["A", "B", "C", "E"]), 0, P.get("取舍人", "老板"), now()))
@@ -61,8 +62,8 @@ def _loop(who, trigger):
     json.dump({"读回时间": now(), "被驳回的动作": [key(a) for a in rej], "已处理的动作": [key(a) for a in done],
                "人对分析的判断": [{"分析": r["node"][2:], "判断": r["verdict"], "理由": r["reason"], "谁": r["by"]} for r in c.execute("SELECT * FROM verdict")]}, open(f"{OUT}/读回状态.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     dist_s = "、".join(f"{k} {v}" for k, v in dist.items()) or "空"
-    vds = [dict(r) for r in c.execute("SELECT * FROM verdict")]; nn = c.execute("SELECT COUNT(*) FROM note").fetchone()[0]
-    step(1, "读取状态", f"任务 {tid}：状态＝{t['status']}。动作库：{dist_s}。人驳回过 {len(rej)} 条、确认过 {len(done)} 条" + (f"；对 {len(vds)} 条分析下过判断" if vds else "") + (f"；存了 {nn} 条备注" if nn else "") + "。",
+    vds = [dict(r) for r in c.execute("SELECT * FROM verdict")]; nn = c.execute("SELECT COUNT(*) FROM note").fetchone()[0]; nh = c.execute("SELECT COUNT(*) FROM hypothesis").fetchone()[0]
+    step(1, "读取状态", f"任务 {tid}：状态＝{t['status']}。动作库：{dist_s}。人驳回过 {len(rej)} 条、确认过 {len(done)} 条" + (f"；对 {len(vds)} 条分析下过判断" if vds else "") + (f"；存了 {nn} 条备注" if nn else "") + (f"；采纳过 {nh} 条 Agent 提的新分析" if nh else "") + "。",
          extra=[f"驳回理由：{a['object']} —— {a['reason']}" for a in rej] + [f"人的判断：{v['node'][2:]} {v['verdict']}" + (f" —— {v['reason']}" if v['reason'] else "") for v in vds])
     if t["status"] != "待处理":
         step(2, "判断下一步", f"状态是「{t['status']}」，没有待处理的任务 → 本轮不跑。"); step(6, "判断停止条件", "停。等人把任务标成「待处理」，或到复盘日。"); return
@@ -129,8 +130,24 @@ def sync_judgements(c):
     """人对每条分析的判断、人存下来的 Agent 备注，写一份给 Agent 和下一圈读（状态库是源头）。"""
     doc = {"说明": "人在「原因 · 问题连线」里对每条分析下的判断，和人点了才存下来的 Agent 备注。Agent 只读。",
            "判断": {r["node"]: {"判断": r["verdict"], "理由": r["reason"], "谁": r["by"], "时间": r["at"], "版本": r["version"]} for r in c.execute("SELECT * FROM verdict")},
-           "备注": [{"节点": r["node"], "内容": r["text"], "来源": r["source"], "谁存的": r["saved_by"], "时间": r["at"], "版本": r["version"]} for r in c.execute("SELECT * FROM note ORDER BY id")]}
+           "备注": [{"节点": r["node"], "内容": r["text"], "来源": r["source"], "谁存的": r["saved_by"], "时间": r["at"], "版本": r["version"]} for r in c.execute("SELECT * FROM note ORDER BY id")],
+           "采纳的新分析": [{"编号": r["id"], **json.loads(r["doc"]), "来源": "Agent 提出", "谁采纳的": r["by"], "时间": r["at"], "版本": r["version"]} for r in c.execute("SELECT * FROM hypothesis ORDER BY id")]}
     json.dump(doc, open(f"{ROOT}/广告闭环/输入/人的判断.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+def merge_hypotheses(c, tree, attr):
+    """人采纳过的新分析并进树和归因里（它们存在状态库，不在脚本产物里，所以每次读状态时现并）。"""
+    for r in c.execute("SELECT * FROM hypothesis ORDER BY id"):
+        d = json.loads(r["doc"]); hid = r["id"]; opt = [d["指向"]] if d.get("指向") else []
+        tree["分析"].append({"id": hid, "问题": d["问题"], "来自": d["来自"], "事实": [], "对策": opt, "判定": "人采纳", "结论": d["结论"], "不成立": d.get("不成立") or "—", "触发": True, "数据源": [],
+                           "来源": "Agent", "采纳人": r["by"], "采纳于": r["at"], "版本": r["version"]})
+        for g in tree["诊断"]:
+            if g["key"] in opt: g["分析"].append(hid)
+        if attr and "分析" in attr:
+            attr["分析"][hid] = {"把握": d["把握"], "把握依据": d.get("把握依据", ""), "支持": d["支持"], "反对": d["反对"], "还缺": d["还缺"], "来源": "Agent",
+                               "能解释": {"对象": d["来自"][0], "说明": d["结论"], "比例": None}}
+            for n in d["来自"]:
+                if n in attr["问题"]: attr["问题"][n]["谁在查它"].append(hid)
+            for k in opt:
+                if k in attr["对策"]: attr["对策"][k]["靠哪几条分析"].append({"id": hid, "把握": d["把握"]})
 def run_biz():
     """只重算经营核算（确定性、秒级）。脚本还没有或失败都不拦人：返回 (成功, 一句话)。"""
     f = os.path.join(SCRIPTS, "biz.py")
@@ -179,8 +196,10 @@ def state():
              "verdicts": {r["node"]: dict(r) for r in c.execute("SELECT * FROM verdict")}, "verdictEnum": VERDICTS, "notes": [dict(r) for r in c.execute("SELECT * FROM note ORDER BY id DESC")], "taskEnum": HUB.TASKS, "runlog": HUB.runlog(ROOT), "weekly": HUB.weekly_draft(ROOT),
              "jobcard": jread(os.path.join(os.path.dirname(HERE), "agent", "岗位卡.json")), "skills": HUB.skills(ROOT), "harness": HUB.harness(ROOT, hs),
              "koujing": jread(f"{ROOT}/口径.json") or jread(os.path.join(os.path.dirname(HERE), "口径.json")), "agentCfg": {k: HUB.cfg(ROOT)[k] for k in ("agent", "weekly")}, "aiBusy": AIBUSY["on"]}
+    tree_ = TREE.build(F_, SL_, O_) if has else None
+    if tree_: merge_hypotheses(c, tree_, extra["attr"] if extra["attr"] and not extra["attr"].get("错误") else None)
     return {**extra, "meta": {"店铺": P["显示店铺"], "产品": P["显示产品"], "数据标记": P.get("数据标记", ""), "周期": f"{P['窗口前'][0]} ～ {P['窗口近'][1]}", "复盘日": P["复盘日"], "今天": P["今天"], "归因未满": P.get("归因未满", "")},
-            "roles": ROLES, "can": {k: sorted(v) for k, v in CAN.items()}, "task": t, "hasRun": has, "facts": F_, "sanlan": SL_, "options": O_, "tree": TREE.build(F_, SL_, O_) if has else None, "checks": checks_, "inventory": inv if has else [],
+            "roles": ROLES, "can": {k: sorted(v) for k, v in CAN.items()}, "task": t, "hasRun": has, "facts": F_, "sanlan": SL_, "options": O_, "tree": tree_, "checks": checks_, "inventory": inv if has else [],
             "actions": acts, "names": {k: v["Campaign"] for k, v in MP.C.items()}, "history": HIST, "campaigns": STRUCT.build(RAW, MP, ((F_ or {}).get("活动表") or {}).get("近14天")), "parentAsin": MP.parent, "mapped": MP.on, "products": MP.P, "card": ({**dict(card), "fields": json.loads(card["fields"])} if card else None),
             "runs": runs, "events": [dict(r) for r in c.execute("SELECT * FROM event ORDER BY id DESC LIMIT 80")], "calls": calls, "progress": PROG}
 
@@ -254,6 +273,20 @@ class H(BaseHTTPRequestHandler):
             if v not in VERDICTS: return self.send(400, {"error": f"判断只能是：{'、'.join(VERDICTS)}"})
             if v != "认同" and not why: return self.send(400, {"error": "不认同或要先查，得写一句理由：下一圈 Agent 要读它"})
             c.execute("INSERT OR REPLACE INTO verdict VALUES(?,?,?,?,?,?)", (node, v, why, who, now(), ver)); log(c, who, "下判断", node, f"{v}" + (f"｜{why}" if why else "")); c.commit(); sync_judgements(c); return self.send(200, {"ok": True})
+        if u.path == "/api/hypothesis":
+            if who not in CAN["下判断"]: return deny("下判断")
+            if body.get("delete"):
+                hid = str(body["delete"]); c.execute("DELETE FROM hypothesis WHERE id=?", (hid,)); c.execute("DELETE FROM verdict WHERE node=?", ("H:" + hid,))
+                log(c, who, "拿掉新分析", hid, "从树上拿掉"); c.commit(); sync_judgements(c); return self.send(200, {"ok": True})
+            if not c.execute("SELECT 1 FROM run").fetchone(): return self.send(400, {"error": "还没跑过一圈"})
+            exist = [json.loads(r["doc"])["问题"] for r in c.execute("SELECT doc FROM hypothesis")] + [a["问题"] for a in TREE.build(jread(f"{OUT}/数字.json"), sanlan(), jread(f"{OUT}/选项.json"))["分析"]]
+            d, errs, flags = HUB.check_hypothesis(ROOT, HUB.parse_hypothesis(body.get("text") or ""), exist)
+            if body.get("dry"): return self.send(200, {"ok": not errs, "draft": d, "errors": errs, "flags": flags})
+            if errs: return self.send(400, {"error": "这条新分析还不能采纳：" + "；".join(errs)})
+            if body.get("confirm") is not True: return self.send(400, {"error": "要人点了才采纳"})
+            n = 1 + max([int(r["id"][1:]) for r in c.execute("SELECT id FROM hypothesis")] or [0]); hid = f"N{n}"; ver = c.execute("SELECT version FROM task").fetchone()[0]
+            c.execute("INSERT INTO hypothesis VALUES(?,?,?,?,?)", (hid, json.dumps(d, ensure_ascii=False), who, now(), ver))
+            log(c, who, "采纳新分析", hid, f"Agent 提出：{d['问题']}（把握{d['把握']}，来自 {'、'.join(d['来自'])}）"); c.commit(); sync_judgements(c); return self.send(200, {"ok": True, "id": hid, "flags": flags})
         if u.path == "/api/note":
             if who not in CAN["下判断"]: return deny("下判断")
             if body.get("delete"):
