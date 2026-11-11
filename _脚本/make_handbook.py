@@ -16,7 +16,7 @@ def step(no, title, mins, *parts): return f'<section class="step"><div class="no
 p = lambda t: f"<p>{t}</p>"
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); from handbook_steps import build
-R1, R2, PAGE, FILES = build(step, img, say, do, see, stuck, p)
+R1, R2, R3, PAGE, FILES = build(step, img, say, do, see, stuck, p)
 
 CSS = """:root{--bg:#faf9f6;--fg:#1f1e1c;--mut:#6b675f;--line:#e3e0d8;--card:#fff;--acc:#b4532a;--say:#f3efe6}
 @media(prefers-color-scheme:dark){:root{--bg:#191817;--fg:#ece9e2;--mut:#a09b90;--line:#34322e;--card:#22211f;--acc:#e08a5f;--say:#2a2825}}
@@ -38,7 +38,7 @@ HEAD = f'<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="
 BODY = f"""<body><main>
 <h1>广告实操手册 · Codex 版</h1>
 <p class="lead">从一份广告报表，到一张有人点头、有日期、能复盘的动作清单。全程不花钱，不用任何付费接口，不连广告后台。</p>
-<div class="toc"><a href="#p0">先认识页面</a><a href="#r1">第一轮 · 示例（40 分钟）</a><a href="#pass">第一轮过线自查</a><a href="#r2">第二轮 · 自己的产品（90 分钟）</a><a href="#no">四条不许</a><a href="#faq">常见问题</a><a href="#terms">术语</a><a href="#files">文件地图</a></div>
+<div class="toc"><a href="#p0">先认识页面</a><a href="#r1">第一轮 · 示例（40 分钟）</a><a href="#pass">第一轮过线自查</a><a href="#r2">第二轮 · 自己的产品（90 分钟）</a><a href="#r3">第三轮 · 经营核算与 Agent（30 分钟）</a><a href="#no">四条不许</a><a href="#faq">常见问题</a><a href="#terms">术语</a><a href="#files">文件地图</a></div>
 <div class="rule"><b>怎么用这份手册：</b>每一步都是「对 Codex 说一句话，或在工作台上点一下 → 看它做 → 对照应该看到什么」。你不用敲命令，但每一步<b>你要看、要定</b>。每步标了大约要几分钟。</div>
 <table><tr><th>谁干</th><th>干什么</th></tr>
 <tr><td>脚本</td><td>算账、对目标找异常、按规则出动作、验证器、写状态库、出报告</td></tr>
@@ -57,6 +57,8 @@ BODY = f"""<body><main>
 <li>你能说出行动卡第 9 格里下次什么时候跑、看哪几个数 —— 下次怎么触发</li></ul></div>
 
 <h2 id="r2">第二轮 · 换成你自己的产品（约 90 分钟，带了报表的学员做）</h2>{"".join(R2)}
+
+<h2 id="r3">第三轮 · 加上经营核算、技能包和 Agent（约 30 分钟，选做）</h2>{"".join(R3)}
 
 <h2 id="no">四条不许（Codex 犯了就叫停）</h2>
 <div class="rule">① 不许自己算数字，数字只从脚本产出里取。② 不许替你做取舍，也不许替你填「目标与约束」和分组规则。③ 样本不够的词不许否，出过单的词和自家品牌词永远不许否。④ 不许碰广告后台：动钱的动作一律停在「待确认」，上传是人做。</div>
