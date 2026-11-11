@@ -39,3 +39,8 @@ __pycache__/
 广告闭环/输出/
 广告闭环/输入/
 广告闭环/行动卡/
+
+# Agent / Harness 的本机产物
+agent/SOUL.local.md
+运行记录/
+评测/结果-*.json

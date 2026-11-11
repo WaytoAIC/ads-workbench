@@ -3,7 +3,7 @@
 """本地业务工作台 · 广告周检        启动：python3 工作台/app.py        打开：http://localhost:8810
 一条流程、明确的使用者、一处数据存储（SQLite）、一个操作入口（这个页面），Agent 处理、人检查。
 只用 Python 标准库；分析流水线在 ../_脚本/（需要 pandas）。只监听本机，不连任何广告后台。"""
-import argparse, csv, datetime, io, json, os, shutil, sqlite3, subprocess, sys, threading, time
+import argparse, csv, datetime, io, json, os, shutil, sqlite3, subprocess, sys, threading, time, urllib.parse
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -14,13 +14,13 @@ ROOT = os.path.abspath(ARGS.root); SCRIPTS = os.path.join(os.path.dirname(HERE),
 OUT, CARD_DIR, RAW = f"{ROOT}/广告闭环/输出", f"{ROOT}/广告闭环/行动卡", f"{ROOT}/_原始拉取"
 DB, PARAMS = f"{ROOT}/工作台.db", f"{ROOT}/参数.json"
 ROLES = ["老板", "广告运营", "供应链"]
-CAN = {"改取舍": {"老板"}, "改目标": {"老板"}, "改到仓": {"老板", "供应链"}, "点动作": {"老板", "广告运营"}, "跑一圈": {"老板", "广告运营"}, "重置": {"老板"}}
+CAN = {"改取舍": {"老板"}, "改目标": {"老板"}, "改到仓": {"老板", "供应链"}, "点动作": {"老板", "广告运营"}, "定任务": {"老板", "广告运营"}, "跑一圈": {"老板", "广告运营"}, "模型补位": {"老板", "广告运营"}, "发到群": {"老板", "广告运营"}, "重置": {"老板"}}
 NEXT = {"待确认": {"已确认", "驳回"}, "已确认": {"已执行", "待确认"}, "驳回": {"待确认"}, "已执行": {"已验证", "已确认"}, "已验证": set(), "作废": set()}
 now = lambda: datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 jread = lambda p, d=None: json.load(open(p, encoding="utf-8")) if os.path.exists(p) else d
 for _d in (OUT, CARD_DIR, f"{ROOT}/广告闭环/输入"): os.makedirs(_d, exist_ok=True)
-sys.path.insert(0, SCRIPTS); import tree as TREE, fields as FIELDS, structure as STRUCT   # 诊断树连线、动作→广告后台字段、活动构成（只用标准库）
-LOCK = threading.Lock(); PROG = {"running": False, "steps": [], "started": None}
+sys.path.insert(0, SCRIPTS); sys.path.insert(0, HERE); import tree as TREE, fields as FIELDS, structure as STRUCT, hub as HUB   # 诊断树连线、动作→广告后台字段、活动构成、Agent/Harness 接线（都只用标准库）
+LOCK = threading.Lock(); PROG = {"running": False, "steps": [], "started": None}; AIBUSY = {"on": False}
 
 def db():
     c = sqlite3.connect(DB, timeout=15); c.row_factory = sqlite3.Row; c.execute("PRAGMA journal_mode=WAL"); return c
@@ -32,7 +32,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS action(no TEXT PRIMARY KEY, task_id TEXT, version INT, item TEXT, type TEXT, campaign TEXT, object TEXT, old TEXT, new TEXT, why TEXT, spend REAL, reversible TEXT,
                                           status TEXT, by TEXT, reason TEXT, note TEXT, updated_at TEXT);
         CREATE TABLE IF NOT EXISTS card(no TEXT PRIMARY KEY, task_id TEXT, version INT, status TEXT, fields TEXT, review_date TEXT);
-        CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, who TEXT, kind TEXT, ref TEXT, detail TEXT);""")
+        CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, who TEXT, kind TEXT, ref TEXT, detail TEXT);
+        CREATE TABLE IF NOT EXISTS campaign_task(campaign TEXT PRIMARY KEY, task TEXT, by TEXT, at TEXT);""")
         if not c.execute("SELECT 1 FROM task").fetchone():
             P = jread(PARAMS); c.execute("INSERT INTO task VALUES(?,?,?,?,?,?,?,?,?)", (P["任务编号"], "待处理", float(P["目标ACOS"]), float(P["补货到仓周数"]), P["产品阶段"],
                       json.dumps(P.get("取舍项") or ["A", "B", "C", "E"]), 0, P.get("取舍人", "老板"), now()))
@@ -77,7 +78,7 @@ def _loop(who, trigger):
     c.execute("UPDATE task SET status='处理中', updated_at=? WHERE id=?", (now(), tid)); c.commit()
     P = dict(P0); P.update({"目标ACOS": inputs["目标ACOS"], "补货到仓周数": inputs["补货到仓周数"], "产品阶段": inputs["产品阶段"], "取舍项": inputs["取舍项"], "版本": ver, "触发方式": trigger})
     bak = f"{ROOT}/.上一份有效结果"; shutil.rmtree(bak, ignore_errors=True); shutil.copytree(f"{ROOT}/广告闭环", bak)
-    json.dump(P, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1); t0 = time.time()
+    json.dump(P, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1); sync_tasks(c); t0 = time.time()
     r = subprocess.run([sys.executable, os.path.join(SCRIPTS, "render.py")], capture_output=True, text=True, env=dict(os.environ, ADS_ROOT=ROOT))
     secs = round(time.time() - t0, 1); checks = jread(f"{OUT}/验证器.json", [])
     if r.returncode != 0:
@@ -101,10 +102,37 @@ def _loop(who, trigger):
     F = jread(f"{OUT}/数字.json"); top = F["异常"][0]
     concl = f"最该管的是「{top['指标']}」：{top['现值']}（{top['参照']}）。{top['说明']}。泛词＋跑偏词只占花费 {F['泛词加跑偏']['占比']:.1%}，不是主要问题。"
     c.execute("INSERT OR REPLACE INTO run VALUES(?,?,?,?,?,?,?,?)", (tid, ver, now(), trigger, json.dumps(inputs, ensure_ascii=False), json.dumps(summ, ensure_ascii=False), concl, secs))
-    c.execute("UPDATE task SET status='待核对', version=?, updated_at=? WHERE id=?", (ver, now(), tid))
+    c.execute("UPDATE task SET status='待核对', version=?, updated_at=? WHERE id=?", (ver, now(), tid)); ai_stale()
     log(c, "Agent", "写入", f"{tid} v{ver}", f"新动作 {len(rows)} 条；作废 {voided} 条没人点过的旧动作；保留 {kept} 条人处理过的；提醒复核 {len(stale)} 条；沿用上轮已确认 {summ.get('沿用上轮已确认',0)} 条；被驳回不再提 {len(summ.get('上轮被驳回不再提',[]))} 条"); c.commit()
     step(5, "写入状态", f"新动作 {len(rows)} 条入库，全部「待确认」；作废 {voided} 条没人点过的旧动作；人处理过的 {kept} 条原样保留；被驳回的 {len(summ.get('上轮被驳回不再提',[]))} 条不再提；{len(stale)} 条旧确认标了「请复核」。行动卡 {cno}。")
     step(6, "判断停止条件", f"停在「待核对」，等人处理 {len(rows)} 条动作。下一次触发：{P['复盘日']} 复盘，或输入改变。永久停止：连续两次缺资料、单日花费翻三倍、行动卡结案。")
+
+def sync_tasks(c):
+    """人确认过的活动任务，从状态库写一份给经营核算读（状态库是源头，这个文件只是给脚本看的副本）。"""
+    rows = {r["campaign"]: {"任务": r["task"], "确认人": r["by"], "时间": r["at"]} for r in c.execute("SELECT * FROM campaign_task")}
+    json.dump(rows, open(f"{ROOT}/广告闭环/输入/活动任务.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+STALE = f"{OUT}/.模型补位过期"          # 数字或口径变了以后，旧的模型文字不再显示，直到重跑补位
+def ai_stale(on=True):
+    if on: open(STALE, "w").close()
+    elif os.path.exists(STALE): os.remove(STALE)
+def read_ai():
+    a = jread(f"{OUT}/AI补位.json")
+    if a and os.path.exists(STALE) and os.path.getmtime(STALE) >= os.path.getmtime(f"{OUT}/AI补位.json"): a = {**a, "过期": True}
+    return a
+def run_biz():
+    """只重算经营核算（确定性、秒级）。脚本还没有或失败都不拦人：返回 (成功, 一句话)。"""
+    f = os.path.join(SCRIPTS, "biz.py")
+    if not os.path.exists(f): return False, "没有 _脚本/biz.py"
+    r = subprocess.run([sys.executable, f], capture_output=True, text=True, env=dict(os.environ, ADS_ROOT=ROOT))
+    return r.returncode == 0, (r.stderr.strip().splitlines() or [""])[-1][:200]
+def run_llm(only=None):
+    """重跑一次模型补位（_脚本/llm.py 自己校验枚举和数字后才落盘）。"""
+    f = os.path.join(SCRIPTS, "llm.py")
+    if not os.path.exists(f): return False, "没有 _脚本/llm.py"
+    r = subprocess.run([sys.executable, f, "--root", ROOT] + (["--only", only] if only else []), capture_output=True, text=True, timeout=600, env={**os.environ, **HUB.llm_env()})
+    a = jread(f"{OUT}/AI补位.json") or {}
+    if r.returncode == 0 and a.get("状态") in ("ok", "partial"): ai_stale(False)
+    return r.returncode == 0, a.get("状态", "") + ("：" + a["原因"] if a.get("原因") else "")
 
 # ------------------------------------------------------------------ 状态快照（页面只读这一个接口）
 def sanlan():
@@ -118,6 +146,7 @@ def sanlan():
     return out
 def state():
     c = db(); t = dict(c.execute("SELECT * FROM task").fetchone()); t["options"] = json.loads(t["options"]); P = jread(PARAMS)
+    t["margin"], t["target_profit"] = P.get("定价毛利率"), P.get("目标广告后利润率")          # 经营口径：人填，存在 参数.json
     runs = [dict(r) for r in c.execute("SELECT * FROM run ORDER BY version DESC")]
     for r in runs: r["inputs"], r["summary"] = json.loads(r["inputs"]), json.loads(r["summary"])
     has = bool(runs); card = c.execute("SELECT * FROM card ORDER BY version DESC LIMIT 1").fetchone()
@@ -131,8 +160,14 @@ def state():
     HIST = jread(f"{ROOT}/历史回放.json")                                   # 历史回放（模拟，只读），由 _脚本/history_sim.py 生成
     for r in (HIST or {}).get("圈", []):
         for x in r["动作"]: x["f"] = MP.camp(x["campaign"])
-    return {"meta": {"店铺": P["显示店铺"], "产品": P["显示产品"], "数据标记": P.get("数据标记", ""), "周期": f"{P['窗口前'][0]} ～ {P['窗口近'][1]}", "复盘日": P["复盘日"], "今天": P["今天"], "归因未满": P.get("归因未满", "")},
-            "roles": ROLES, "can": {k: sorted(v) for k, v in CAN.items()}, "task": t, "hasRun": has, "facts": F_, "sanlan": SL_, "options": O_, "tree": TREE.build(F_, SL_, O_) if has else None, "checks": jread(f"{OUT}/验证器.json") if has else None, "inventory": inv if has else [],
+    checks_ = jread(f"{OUT}/验证器.json") if has else None
+    hs = {"hasRun": has, "checks": checks_, "status": t["status"], "version": t["version"], "pending": sum(1 for a in acts if a["status"] == "待确认"), "rejected": sum(1 for a in acts if a["status"] == "驳回")}
+    extra = {"biz": jread(f"{OUT}/经营.json") if has else None, "ai": read_ai() if has else None,
+             "tasks": {r["campaign"]: dict(r) for r in c.execute("SELECT * FROM campaign_task")}, "taskEnum": HUB.TASKS, "runlog": HUB.runlog(ROOT), "weekly": HUB.weekly_draft(ROOT),
+             "jobcard": jread(os.path.join(os.path.dirname(HERE), "agent", "岗位卡.json")), "skills": HUB.skills(ROOT), "harness": HUB.harness(ROOT, hs),
+             "koujing": jread(f"{ROOT}/口径.json") or jread(os.path.join(os.path.dirname(HERE), "口径.json")), "agentCfg": {k: HUB.cfg(ROOT)[k] for k in ("agent", "weekly")}, "aiBusy": AIBUSY["on"]}
+    return {**extra, "meta": {"店铺": P["显示店铺"], "产品": P["显示产品"], "数据标记": P.get("数据标记", ""), "周期": f"{P['窗口前'][0]} ～ {P['窗口近'][1]}", "复盘日": P["复盘日"], "今天": P["今天"], "归因未满": P.get("归因未满", "")},
+            "roles": ROLES, "can": {k: sorted(v) for k, v in CAN.items()}, "task": t, "hasRun": has, "facts": F_, "sanlan": SL_, "options": O_, "tree": TREE.build(F_, SL_, O_) if has else None, "checks": checks_, "inventory": inv if has else [],
             "actions": acts, "names": {k: v["Campaign"] for k, v in MP.C.items()}, "history": HIST, "campaigns": STRUCT.build(RAW, MP, ((F_ or {}).get("活动表") or {}).get("近14天")), "parentAsin": MP.parent, "mapped": MP.on, "products": MP.P, "card": ({**dict(card), "fields": json.loads(card["fields"])} if card else None),
             "runs": runs, "events": [dict(r) for r in c.execute("SELECT * FROM event ORDER BY id DESC LIMIT 80")], "calls": calls, "progress": PROG}
 
@@ -144,11 +179,25 @@ class H(BaseHTTPRequestHandler):
         self.send_response(code); self.send_header("Content-Type", ctype); self.send_header("Content-Length", str(len(b))); self.send_header("Cache-Control", "no-store")
         for k, v in (extra or {}).items(): self.send_header(k, v)
         self.end_headers(); self.wfile.write(b)
+    def agent(self, body):
+        """问 Agent：转给本机 Hermes（没接上就走直连模型），上游的流原样转回页面。"""
+        try: up, via = HUB.open_agent(ROOT, body.get("messages") or [], (body.get("context") or "").strip())
+        except RuntimeError as e: return self.send(503, {"error": str(e)})
+        self.send_response(200); self.send_header("Content-Type", "text/event-stream; charset=utf-8"); self.send_header("Cache-Control", "no-store"); self.send_header("X-Accel-Buffering", "no"); self.send_header("X-Agent-Via", via); self.end_headers()
+        try:
+            while True:
+                chunk = up.readline()
+                if not chunk: break
+                self.wfile.write(chunk)
+                if chunk in (b"\n", b"\r\n"): self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError): pass
+        finally: up.close()
     def do_GET(self):
         u = urlparse(self.path)
         if u.path in ("/", "/index.html"): return self.send(200, open(f"{HERE}/index.html", "rb").read(), "text/html; charset=utf-8")
         if u.path == "/api/state": return self.send(200, state())
         if u.path == "/api/progress": return self.send(200, PROG)
+        if u.path == "/api/health": return self.send(200, HUB.health(ROOT, fresh="fresh" in u.query))
         if u.path == "/arch":
             f = os.path.join(os.path.dirname(HERE), "流程图", "项目架构.html")
             return self.send(200, open(f, "rb").read(), "text/html; charset=utf-8") if os.path.exists(f) else self.send(404, {"error": "还没有架构图"})
@@ -172,8 +221,33 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         u = urlparse(self.path); n = int(self.headers.get("Content-Length") or 0); body = json.loads(self.rfile.read(n) or b"{}"); who = body.get("who") or "老板"
         deny = lambda what: self.send(403, {"error": f"「{what}」这一步，{who}没有权限。能做的人：{'、'.join(sorted(CAN[what]))}"})
+        if u.path == "/api/agent": return self.agent(body)                       # 只读问答，跑圈的时候也能问
         if PROG["running"] and u.path != "/api/run": return self.send(409, {"error": "Agent 正在跑，等它写完状态再操作"})
         c = db()
+        if u.path == "/api/task":
+            if who not in CAN["定任务"]: return deny("定任务")
+            camp, task = str(body.get("campaign") or ""), body.get("task")
+            if camp not in (((jread(f"{OUT}/数字.json") or {}).get("活动表") or {}).get("近14天") or {}): return self.send(404, {"error": "这一圈的活动表里没有这个活动"})
+            if task in ("", None):
+                c.execute("DELETE FROM campaign_task WHERE campaign=?", (camp,)); log(c, who, "撤回任务", camp, "回到建议值"); c.commit(); sync_tasks(c); run_biz(); return self.send(200, {"ok": True})
+            if task not in HUB.TASKS: return self.send(400, {"error": f"任务只能是：{'、'.join(HUB.TASKS)}"})
+            c.execute("INSERT OR REPLACE INTO campaign_task VALUES(?,?,?,?)", (camp, task, who, now())); log(c, who, "定任务", camp, f"这个活动的任务＝{task}"); c.commit(); sync_tasks(c); run_biz(); return self.send(200, {"ok": True})
+        if u.path == "/api/ai-fill":
+            if who not in CAN["模型补位"]: return deny("模型补位")
+            if AIBUSY["on"]: return self.send(409, {"error": "模型补位正在跑"})
+            if not c.execute("SELECT 1 FROM run").fetchone(): return self.send(400, {"error": "还没跑过一圈，没有东西可补"})
+            AIBUSY["on"] = True
+            try: ok, msg = run_llm(body.get("only"))
+            except Exception as e: ok, msg = False, type(e).__name__
+            finally: AIBUSY["on"] = False
+            log(c, who, "模型补位", "AI补位.json", msg or ("完成" if ok else "失败")); c.commit(); return self.send(200, {"ok": ok, "msg": msg})
+        if u.path == "/api/post-to-group":
+            if who not in CAN["发到群"]: return deny("发到群")
+            text = (body.get("text") or "").strip()
+            if not text or body.get("confirm") is not True: return self.send(400, {"error": "要发的正文不能空，并且必须是人点了确认"})
+            code, out = HUB.post_to_group(ROOT, text, who)
+            if code == 200: log(c, who, "发到群", out.get("group", ""), f"{len(text)} 字"); c.commit()
+            return self.send(code, out)
         if u.path == "/api/run":
             if who not in CAN["跑一圈"]: return deny("跑一圈")
             if PROG["running"]: return self.send(409, {"error": "已经在跑了"})
@@ -187,9 +261,19 @@ class H(BaseHTTPRequestHandler):
                 if who not in CAN[perm]: return deny(perm)
                 if k == "options" and not json.loads(v): return self.send(400, {"error": "至少选一条路"})
                 c.execute(f"UPDATE task SET {col}=? WHERE id=?", (v, t["id"])); ch.append(f"{ {'target_acos':'目标 ACOS','arrive_weeks':'补货到仓周数','stage':'产品阶段','options':'取舍'}[k] }：{t[col]} → {v}")
+            bz = []
+            for k, name in (("margin", "定价毛利率"), ("target_profit", "目标广告后利润率")):
+                if k not in body: continue
+                P_ = jread(PARAMS); v = None if body[k] in ("", None) else float(body[k]); old = P_.get(name)
+                if v == old: continue
+                if who not in CAN["改目标"]: return deny("改目标")
+                if v is not None and not 0 < v < 1: return self.send(400, {"error": f"{name}要填 0～100% 之间的数"})
+                P_.pop(name, None) if v is None else P_.__setitem__(name, v); json.dump(P_, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1); bz.append(f"{name}：{old} → {v}")
+            if bz:
+                ai_stale(); ok, msg = run_biz() if c.execute("SELECT 1 FROM run").fetchone() else (True, ""); log(c, who, "改经营口径", t["id"], "；".join(bz) + ("；经营核算已重算，动作不变" if ok else f"；经营核算没重算成：{msg}")); c.commit()
             if ch or body.get("retrigger"):
                 c.execute("UPDATE task SET status='待处理', updated_at=? WHERE id=?", (now(), t["id"])); log(c, who, "改输入" if ch else "重新触发", t["id"], "；".join(ch) or "输入没动，只把状态改回「待处理」"); c.commit()
-            return self.send(200, {"ok": True, "changed": ch})
+            return self.send(200, {"ok": True, "changed": ch, "biz": bz})
         if u.path.startswith("/api/action/"):
             if who not in CAN["点动作"]: return deny("点动作")
             no = u.path.rsplit("/", 1)[1]; a = c.execute("SELECT * FROM action WHERE no=?", (no,)).fetchone(); new = body.get("status")
@@ -205,9 +289,9 @@ class H(BaseHTTPRequestHandler):
         if u.path == "/api/reset":
             if who not in CAN["重置"]: return deny("重置")
             c.close()
-            for f in (DB, DB + "-wal", DB + "-shm", f"{OUT}/读回状态.json"):
+            for f in (DB, DB + "-wal", DB + "-shm", f"{OUT}/读回状态.json", f"{ROOT}/广告闭环/输入/活动任务.json"):
                 if os.path.exists(f): os.remove(f)
-            P = jread(PARAMS); P.update({"版本": 1, "补货到仓周数": 4, "目标ACOS": 0.30, "产品阶段": "新品期", "取舍项": ["A", "B", "C", "E"], "触发方式": "手动"}); json.dump(P, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            P = jread(PARAMS); P.update({"版本": 1, "补货到仓周数": 4, "目标ACOS": 0.30, "产品阶段": "新品期", "取舍项": ["A", "B", "C", "E"], "触发方式": "手动"}); P.pop("定价毛利率", None); P.pop("目标广告后利润率", None); json.dump(P, open(PARAMS, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             PROG.update({"running": False, "steps": [], "started": None}); init_db(); return self.send(200, {"ok": True})
         self.send(404, {"error": "not found"})
 
