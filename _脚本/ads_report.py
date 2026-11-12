@@ -4,10 +4,10 @@
 
 拉什么：
   报表（异步，POST /reporting/reports → 轮询 GET /reporting/reports/{id} → 下载）：
-    搜索词·按天（spSearchTerm）、广告产品·按天（spAdvertisedProduct）、活动·按天（spCampaigns）
+    搜索词·按天（spSearchTerm）、广告产品·按天（spAdvertisedProduct）、活动·按天（spCampaigns）、广告位·按天（spCampaigns 按广告位汇总）
   结构（POST /adsApi/v1/query/…）：活动、广告组、投放对象（关键词／否定／商品定位／自动四组）、商品广告
 写成什么（数据格式.md 里的那几张表）：
-  搜索词报告.csv、活动.csv、广告组.csv、关键词竞价.csv、否定词.csv、广告产品.csv、商品定位.csv、否定ASIN.csv
+  搜索词报告.csv、广告位.csv、活动.csv、广告组.csv、关键词竞价.csv、否定词.csv、广告产品.csv、商品定位.csv、否定ASIN.csv
   周度经营-接口预填.csv（只填得出 SP 广告费；件数、销售额、退款、毛利率广告接口里没有，要人补完再改名成 周度经营.csv）
 拉不到的：库存.csv、产品.json、参数.json、分组规则.json —— 不是广告数据，仍然手填。
 
@@ -18,7 +18,7 @@
   python3 _脚本/ads_report.py pull <我的数据目录> --campaign-like 关键词  或者按活动名里的字圈
   python3 _脚本/ads_report.py pull <我的数据目录> --asin … --then-import <工作台根目录>   拉完直接整理成工作台能读的样子
 
-每次调用都耗紫鸟积分：建 3 份报表 3 次，每分钟问一轮进度（最多 10 分钟），结构约 4～10 次。2026-11-12 在真实店铺上实测：第一次 23 次，圈定后再拉 5 次。
+每次调用都耗紫鸟积分：建 4 份报表 4 次，每分钟问一轮进度（最多 10 分钟），结构约 4～10 次。2026-11-12 在真实店铺上实测：四份报表第一次 26 次，圈定后再拉 5 次。
 注意两条官方规矩：搜索词报表只保留 65 天、只含被点过的词；这套报表接口（Reporting v3）2027-06-30 停止出数，届时要换成 /adsApi/v1/create/reports。
 报表没生成完就先停，任务编号记在目录里；过一会儿再跑同一条命令会接着取，不会重复建。
 真实数据只写到你给的目录，不能是这个仓库里面。运行记录里只留个数。"""
@@ -34,13 +34,14 @@ REPORTS = {   # 名字 → 报表类型、汇总到哪一层、要哪些列。�
             "filters": [{"field": "keywordType", "values": ["BROAD", "EXACT", "PHRASE", "TARGETING_EXPRESSION", "TARGETING_EXPRESSION_PREDEFINED"]}]},
     "广告产品": {"reportTypeId": "spAdvertisedProduct", "groupBy": ["advertiser"], "columns": ["date", "campaignId", "campaignName", "adGroupId", "adGroupName", "adId", "advertisedAsin", "advertisedSku"] + NUM},
     "活动": {"reportTypeId": "spCampaigns", "groupBy": ["campaign"], "columns": ["date", "campaignId", "campaignName", "campaignStatus", "campaignBudgetAmount", "campaignBiddingStrategy"] + NUM},
+    "广告位": {"reportTypeId": "spCampaigns", "groupBy": ["campaign", "campaignPlacement"], "columns": ["date", "campaignId", "campaignName", "placementClassification"] + NUM},   # SP 没有单独的广告位报表：活动报表按广告位汇总
 }
 MAX_DAYS, KEEP_DAYS = 31, 65                 # 官方文档：一份报表最多跨 31 天；搜索词报表只保留 65 天（其余多数 95 天），按最短的卡
 ST = {"ENABLED": "enabled", "PAUSED": "paused"}
 STRATEGY = {"MANUAL": "固定", "SALES_DOWN_ONLY": "只降低", "SALES_UP_AND_DOWN": "提高和降低"}
 PLACE = {"TOP_OF_SEARCH": "搜索顶部加价", "PRODUCT_PAGE": "商品页面加价", "REST_OF_SEARCH": "其余位置加价"}
 AUTO = {"KEYWORDS_CLOSE_MATCH": "close-match", "KEYWORDS_LOOSE_MATCH": "loose-match", "PRODUCT_SUBSTITUTES": "substitutes", "PRODUCT_COMPLEMENTS": "complements"}   # 新版把自动投放四组叫「主题投放」
-API_FILES = ["搜索词报告.csv", "活动.csv", "广告组.csv", "关键词竞价.csv", "否定词.csv", "广告产品.csv", "商品定位.csv", "否定ASIN.csv", "周度经营-接口预填.csv", "接口-产品清单.csv", "接口编号.json"]
+API_FILES = ["搜索词报告.csv", "广告位.csv", "活动.csv", "广告组.csv", "关键词竞价.csv", "否定词.csv", "广告产品.csv", "商品定位.csv", "否定ASIN.csv", "周度经营-接口预填.csv", "接口-产品清单.csv", "接口编号.json"]
 HAND_FILES = ["周度经营.csv", "库存.csv", "产品.json", "参数.json", "分组规则.json"]
 UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
 
@@ -109,14 +110,18 @@ def download(url):
 def reports(ch, out, start, end, names=None, wait=600, every=60, sleep=time.sleep, fetch=download, say=print):
     """返回 (已取到的 {名字: 行}, 还在生成的 [名字])。任务编号记在 <out>/.接口任务.json，下次接着取。"""
     names = names or list(REPORTS); tf = os.path.join(out, ".接口任务.json"); task = jread(tf) or {}; cf = os.path.join(out, ".接口报表.json.gz"); key = [start, end, ch.cfg["country"], datetime.date.today().isoformat()]
+    got = {}
     try:
         with gzip.open(cf, "rt", encoding="utf-8") as fh: c = json.load(fh)
-        if c.get("key") == key and all(n in c["R"] for n in names): say("  报表：今天已经取过这一段，直接用（不重建、不花积分）"); return {n: c["R"][n] for n in names}, []
+        if c.get("key") == key: got = {n: c["R"][n] for n in names if n in c["R"]}
     except (OSError, ValueError, KeyError): pass
+    if got: say(f"  报表：{'、'.join(got)} 今天已经取过这一段，直接用（不重建、不花积分）")
+    names = [n for n in names if n not in got]
+    if not names: return got, []
     if task.get("范围") != [start, end] or task.get("站点") != ch.cfg["country"]: task = {"范围": [start, end], "站点": ch.cfg["country"], "报表": {}}
     for n in names:
         if n not in task["报表"]: task["报表"][n] = create(ch, n, start, end); say(f"  建报表：{n}"); jwrite(tf, task)
-    got, pending, waited = {}, list(names), 0
+    pending, waited = list(names), 0
     while pending:
         if waited: sleep(every)
         elif every: sleep(min(every, 30))                         # 刚建完不会立刻好，先等一会儿再问
@@ -127,9 +132,9 @@ def reports(ch, out, start, end, names=None, wait=600, every=60, sleep=time.slee
             elif s in ("FAILED", "FATAL", "CANCELLED"):
                 task["报表"].pop(n, None); jwrite(tf, task); raise A.AdsError(f"报表「{n}」生成失败：{str(st.get('failureReason') or s)[:120]}")
         if pending and waited >= wait: break
-    if not pending:
-        if os.path.exists(tf): os.remove(tf)
-        with gzip.open(cf, "wt", encoding="utf-8") as fh: json.dump({"key": key, "R": got}, fh, ensure_ascii=False)     # 同一天再拉（比如先看产品清单、再圈产品）不用重建报表
+    if not pending and os.path.exists(tf): os.remove(tf)
+    if got:
+        with gzip.open(cf, "wt", encoding="utf-8") as fh: json.dump({"key": key, "R": got}, fh, ensure_ascii=False)     # 同一天再拉（先看产品清单、再圈产品；或后来多要一份报表）只建缺的
     return got, pending
 
 
@@ -158,6 +163,17 @@ def structure(ch, cids, size=500):
             if not full: raise A.AdsError(f"{kind} 太多，没读完")
             out[kind] += rows
     return out
+
+
+def place_name(v):
+    """报表里的广告位写法 → 搜索顶部／商品页面／其余位置。官方文档没列全取值，按字面认；认不出的原样留着，规则不会用它。"""
+    s = str(v or "").lower()
+    if "business" in s: return "Amazon Business"
+    if "off" in s and "amazon" in s: return "站外"
+    if "top" in s: return "搜索顶部"
+    if "detail" in s or "product" in s: return "商品页面"
+    if "rest" in s or "other" in s: return "其余位置"
+    return str(v or "")
 
 
 def budget(c):
@@ -210,6 +226,9 @@ def tables(S, R, cids, start, end):
     T["搜索词报告.csv"] = [["日期", "广告活动", "广告组", "投放", "匹配类型", "客户搜索词", "曝光量", "点击量", "花费", "7天总销售额", "7天总订单数", "7天总销量"]] + [
         [r.get("date"), str(r.get("campaignName", "")).strip(), r.get("adGroupName", ""), r.get("targeting", ""), mt(r.get("matchType")), r.get("searchTerm", ""), r.get("impressions") or 0, r.get("clicks") or 0, r.get("cost") or 0, r.get("sales7d") or 0, r.get("purchases7d") or 0, r.get("unitsSoldClicks7d") or 0]
         for r in sorted(R.get("搜索词", []), key=lambda r: (str(r.get("date")), str(r.get("campaignName")), str(r.get("searchTerm")))) if cids is None or str(r.get("campaignId")) in cids]
+    T["广告位.csv"] = [["日期", "广告活动", "广告位", "曝光量", "点击量", "花费", "7天总销售额", "7天总订单数"]] + [
+        [r.get("date"), str(r.get("campaignName", "")).strip(), place_name(r.get("placementClassification")), r.get("impressions") or 0, r.get("clicks") or 0, r.get("cost") or 0, r.get("sales7d") or 0, r.get("purchases7d") or 0]
+        for r in sorted(R.get("广告位", []), key=lambda r: (str(r.get("date")), str(r.get("campaignName")), str(r.get("placementClassification")))) if cids is None or str(r.get("campaignId")) in cids]
     e = datetime.date.fromisoformat(end); wk = [["周起始日", "件数", "销售额", "SP广告费", "SB广告费", "SBV广告费", "退款件", "广告前毛利率"]]
     for i in (3, 2, 1, 0):
         a = e - datetime.timedelta(days=7 * i + 6); b = a + datetime.timedelta(days=6)
@@ -298,7 +317,7 @@ def main():
     ap.add_argument("--root", default=os.environ.get("ADS_ROOT") or A.REPO); ap.add_argument("--asin", default=""); ap.add_argument("--campaign-like", default=""); ap.add_argument("--days", type=int, default=MAX_DAYS); ap.add_argument("--end", default="")
     ap.add_argument("--wait", type=int, default=600); ap.add_argument("--then-import", default="")
     a = ap.parse_args(); e = A.local_env(); asins = [x for x in (a.asin or e.get("ADS_SCOPE_ASINS", "")).split(",") if x.strip()]; like = a.campaign_like or e.get("ADS_SCOPE_CAMPAIGN_LIKE", "")
-    print("⚠️ 接下来的接口调用将消耗紫鸟积分（建报表 3 次，每分钟问一轮进度，结构约 4～10 次）。")
+    print("⚠️ 接下来的接口调用将消耗紫鸟积分（建报表 4 次，每分钟问一轮进度，结构约 4～10 次）。")
     d = pull(os.path.abspath(a.root), a.out, asins, like, a.days, a.end or None, wait=a.wait, say=print)
     for f in d["文件"]: print(f"  {f['名']}：{f['行数'] if f['行数'] is not None else '—'} 行（{f['来源']}）")
     if d.get("还要人补"): print("还要人补：" + "；".join(d["还要人补"]))

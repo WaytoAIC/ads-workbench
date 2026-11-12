@@ -280,6 +280,29 @@ def actions(F):
             if stg == "up_and_down": add("B", "改竞价策略", camp, "竞价策略", STRATEGY[stg], STRATEGY["down_only"], f"整个活动 ACOS {pct(ac,0)} 超盈亏线，先不让系统往上加价", round(sp, 2))
             g_ = groups.get(cid_)
             if g_ and cut(float(g_["defaultBid"])) < float(g_["defaultBid"]): add("B", "下调默认竞价", camp, "默认竞价", float(g_["defaultBid"]), cut(float(g_["defaultBid"])), f"整个活动 ACOS {pct(ac,0)} 超盈亏线；默认竞价同步降 {pct(CAP,0)}，之后新加的投放不从高价起步", round(sp, 2))
+    # 广告位加价（看每个活动的每个位置）：有广告位报表、又知道现在加了多少，才出。
+    # 加价是在出价上再乘一层：加价 50%＝这个位置的出价 ×1.5。所以调多少按「折到出价上」算，和竞价共用单次调幅。
+    # 下调：这个位置现在有加价，近 14 天点击够数，却 0 单或 ACOS 超盈亏线 → 把加价降下来（降到 0 为止；再往下要靠降竞价，不归这条管）
+    # 上调：这个位置 ACOS 明显好于目标、订单够数，且活动这轮没在降预算 → 把加价提一档
+    PL_NAME = {"placementTop": "搜索顶部", "placementProductPage": "商品页面", "placementRestOfSearch": "其余位置"}
+    has_pl = os.path.exists(f"{RAW}/报表-adPlacementReport-0.pkl")
+    if has_pl:
+        pr = pd.read_pickle(f"{RAW}/报表-adPlacementReport-0.pkl"); pr["日期"] = pd.to_datetime(pr["日期"])
+        for n in NUM: pr[n] = pd.to_numeric(pr[n], errors="coerce").fillna(0)
+        p14 = win(pr, B).groupby(["广告活动", "广告位"])[NUM].sum(); CK_PL, PL_MAX = kj("门槛", "广告位判断点击", 20), float(kj("调幅", "广告位加价上限", 100))
+        for cid_, c_ in camps.items():
+            camp = c_["name"]
+            if c_.get("state") != "enabled" or cid_ not in camp_set: continue                      # 不知道现在加了多少的活动不动
+            cur = {a_["placement"]: float(a_["percentage"]) for a_ in camp_set[cid_].get("placementAdjustments") or []}
+            for key_, nm in PL_NAME.items():
+                if (camp, key_) not in p14.index: continue
+                ck, od, sp, ac = perf(p14.loc[(camp, key_)]); p_ = cur.get(key_, 0.0); eff = lambda q: 1 + q / 100
+                if p_ > 0 and ck >= CK_PL and (od == 0 or (ac and ac > BE)):
+                    new_ = max(0.0, math.ceil((eff(p_) * (1 - CAP) - 1) * 100 - 1e-6))
+                    if new_ < p_: add("B", "下调广告位加价", camp, nm, f"{p_:g}%", f"{new_:g}%", f"近 14 天这个位置 {ck} 次点击 {od} 单，" + (f"ACOS {pct(ac,0)} 超盈亏线 {pct(BE)}" if od else "一单没出") + f"；加价从 {p_:g}% 降到 {new_:g}%，折到这个位置的出价上是降 {pct(1 - eff(new_)/eff(p_),0)}", round(sp, 2))
+                elif od >= OD_UP and ac and ac <= LOW * TARGET and camp not in risk_camps and p_ < PL_MAX:
+                    new_ = min(PL_MAX, float(math.floor((eff(p_) * (1 + UP) - 1) * 100 + 1e-6)))
+                    if new_ > p_: add("B", "上调广告位加价", camp, nm, f"{p_:g}%", f"{new_:g}%", f"近 14 天这个位置 {od} 单，ACOS {pct(ac,0)} 不到目标 {pct(TARGET,0)} 的 {pct(LOW,0)}；加价从 {p_:g}% 提到 {new_:g}%，折到这个位置的出价上是提 {pct(eff(new_)/eff(p_) - 1,0)}", round(sp, 2))
     # 搜索词收割（成对：精确组新建 + 来源组精确否定；任一条被驳回，两条都不再提）
     exact_kw = {k_["keywordText"].lower() for k_ in kws if k_["matchType"] == "exact"}
     for (term_, camp), r in b.groupby(["用户搜索词", "广告活动"])[NUM].sum().iterrows():
@@ -333,7 +356,7 @@ def actions(F):
     if F["逐周"][-1]["退款率"] > RF and ret:
         top, n_ = F["退货原因"][0]; add("E", "Listing 建议稿", "—", f"退货首因：{top}", f"退款率 {pct(F['逐周'][-1]['退款率'])}", "规格表与主图加选码提示，出建议稿走 A/B，不直接替换", f"已退回 {F['已退回件']} 件里 {n_} 件是这个原因", "", "可逆")
     adj = {c_["name"]: (camp_set.get(i_) or {}).get("placementAdjustments") for i_, c_ in camps.items() if (camp_set.get(i_) or {}).get("placementAdjustments")}
-    if adj and not os.path.exists(f"{RAW}/报表-adPlacementReport-0.pkl"):                                 # 没有广告位报表：只标缺数据，不编规则
+    if adj and not has_pl:                                 # 没有广告位报表：只标缺数据，不编规则
         now_ = "；".join(f"{k_}：" + "、".join(f"{ {'placementTop': '搜索顶部', 'placementProductPage': '商品页', 'placementRestOfSearch': '搜索其余位置'}.get(a['placement'], a['placement'])} +{a['percentage']}%" for a in v) for k_, v in adj.items())
         add("E", "广告位待补数据", "、".join(adj), "广告位加价", now_, "补广告位报表后再定", f"{len(adj)} 个活动设了广告位加价，但没有按广告位拆开的花费和订单，看不出加价值不值；不出调整动作", "", "—")
     add("E", "查证", "—", "补货到仓日期", f"按 {R:g} 周估", "供应链回填实际到仓日", "到仓周数决定 A 的力度；改了这个数，动作清单要重算", "", "—")
@@ -351,6 +374,8 @@ def actions(F):
               ("所有动作都停在「待确认」", all(r["状态"] == "待确认" for r in rows)),
               ((f"搜索词报告与活动报告花费相差 <{pct(kj('判定', '报告花费口径允许偏差', 0.01),0)}" if not F["口径核对"]["活动报告缺失_由搜索词报告聚合"] else "口径核对：活动报告缺失，跳过"), abs(F["口径核对"]["活动报告花费"] - F["口径核对"]["搜索词报告花费"]) / F["口径核对"]["活动报告花费"] < kj("判定", "报告花费口径允许偏差", 0.01)),
               ("只生成了人选中的取舍项", all(r["取舍项"] in CHOSEN for r in rows))]
+    plrows = [r for r in rows if "广告位加价" in r["类型"]]; pv = lambda v: 1 + float(str(v).strip("%")) / 100
+    if plrows: checks.append((f"广告位加价单次调整，折到出价上不超过 {pct(BID_LIM,0)}", all(abs(pv(r["新值"]) / pv(r["现值"]) - 1) <= BID_LIM + 1e-9 for r in plrows)))   # 出了广告位动作才有这一条
     json.dump([{"检查": c, "通过": bool(ok)} for c, ok in checks], open(f"{OUT}/验证器.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     bad = [c for c, ok in checks if not ok]; assert not bad, "验证器未通过：" + "；".join(bad)
     cols = ["动作编号", "周检任务", "版本", "取舍项", "类型", "广告活动", "对象", "现值", "新值", "依据", "近14天涉及花费", "可逆", "状态"]

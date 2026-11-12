@@ -1067,9 +1067,9 @@ function apiPull(){const A=S.adsapi||{},D=A.文档||{},L=A.报表,C=A.取数配�
     ${L.步骤.map(x=>`<div class="hrow w"><i class="${x.ok?"":x.名==="没走通"?"off":"warn"}"></i><b>${h(x.名)}</b><div><p>${h(x.说明)}</p></div></div>`).join("")}
     ${(L.文件||[]).length?`<div class="tw" style="margin-top:10px"><table><thead><tr><th>文件</th><th class="num">行数</th><th>谁写的</th></tr></thead><tbody>${L.文件.map(f=>`<tr><td>${h(f.名)}</td><td class="num">${f.行数==null?"—":f.行数}</td><td>${f.来源==="接口"?`<span class="tag on">接口</span>`:`<span class="chip">${h(f.来源)}</span>`}</td></tr>`).join("")}</tbody></table></div>`:""}
     ${(L.还要人补||[]).length?`<div class="warnbox">${ic("info")}<span>还要人补：${L.还要人补.map(h).join("；")}</span></div>`:""}`:`<p class="hint">这台电脑上还没拉过。</p>`}
-    <div class="aifill">${ready?B({label:busy?"正在拉…报表生成要几分钟":"从接口拉一次",icon:"refresh",cls:"sm",on:busy?"":"adsPull()",perm:"连接口"})+`<span class="hint">会花紫鸟积分：建 3 份报表、每分钟问一轮进度、再读结构；只读，不改任何广告${C.圈了产品?"":"。还没圈产品（<code>ADS_SCOPE_ASINS</code>）：第一次只出产品清单"}</span>`:`<span class="hint">这台电脑还差：${need.join("；")}。写在 <code>agent/.env.local</code>（不进仓）。</span>`}</div></div>
+    <div class="aifill">${ready?B({label:busy?"正在拉…报表生成要几分钟":"从接口拉一次",icon:"refresh",cls:"sm",on:busy?"":"adsPull()",perm:"连接口"})+`<span class="hint">会花紫鸟积分：建 4 份报表、每分钟问一轮进度、再读结构；只读，不改任何广告${C.圈了产品?"":"。还没圈产品（<code>ADS_SCOPE_ASINS</code>）：第一次只出产品清单"}</span>`:`<span class="hint">这台电脑还差：${need.join("；")}。写在 <code>agent/.env.local</code>（不进仓）。</span>`}</div></div>
   <div class="card" id="pull-how"><h3>命令行怎么用</h3><div class="sub">页面上的按钮和这几条命令是同一件事</div><pre class="cmd">${h((D.命令||[]).join("\n"))}</pre></div>`}
-async function adsPull(){if(!confirm("现在从广告接口拉一次数据？\n\n会花紫鸟积分（建 3 份报表、每分钟问一轮进度、再读结构）。只读，不改任何广告。\n数据写到你在 agent/.env.local 里配的目录。"))return;try{await api("/api/ads/pull",{confirm:true});toast("开始拉了，报表生成要几分钟");await load()}catch(e){}}
+async function adsPull(){if(!confirm("现在从广告接口拉一次数据？\n\n会花紫鸟积分（建 4 份报表、每分钟问一轮进度、再读结构）。只读，不改任何广告。\n数据写到你在 agent/.env.local 里配的目录。"))return;try{await api("/api/ads/pull",{confirm:true});toast("开始拉了，报表生成要几分钟");await load()}catch(e){}}
 
 /* ───────── 动作 ───────── */
 async function load(){S=await api("/api/state");render()}

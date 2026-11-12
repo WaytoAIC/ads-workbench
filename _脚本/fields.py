@@ -16,7 +16,9 @@ KW_BID = {"降竞价", "关键词降竞价", "关键词提竞价"}
 TG_BID = {f"{k}{d}竞价" for k in ("ASIN 定位", "类目定位", "自动投放组") for d in ("降", "提")}
 TG_PAUSE = {"暂停 ASIN 定位", "暂停 类目定位", "关闭自动投放组"}
 NEG_KW = {"换道否定", "竞品词否定", "粗规则否词", "来源组否定"}
-ADS_TYPES = {"暂停广告产品", "补挂广告产品", "下调预算", "预算上调", "改竞价策略", "下调默认竞价", "暂停关键词", "搜索词收割", "竞品词降价单独跑", "否定 ASIN"} | KW_BID | TG_BID | TG_PAUSE | NEG_KW
+PL_ADJ = {"下调广告位加价", "上调广告位加价"}
+PL_BULK = {"搜索顶部": "Placement Top", "商品页面": "Placement Product Page", "其余位置": "Placement Rest Of Search"}
+ADS_TYPES = PL_ADJ | {"暂停广告产品", "补挂广告产品", "下调预算", "预算上调", "改竞价策略", "下调默认竞价", "暂停关键词", "搜索词收割", "竞品词降价单独跑", "否定 ASIN"} | KW_BID | TG_BID | TG_PAUSE | NEG_KW
 
 
 class Mapper:
@@ -59,6 +61,8 @@ class Mapper:
             f.update({"实体": "Campaign", "操作": "update", "改什么": "Daily Budget", "现值": f"${money(old)}", "新值": f"${money(new)}"})
         elif t == "改竞价策略":
             f.update({"实体": "Campaign", "操作": "update", "改什么": "Bidding Strategy", "现值": old, "新值": new})
+        elif t in PL_ADJ:
+            f.update({"实体": "Bidding Adjustment", "操作": "update", "改什么": "Percentage", "广告位": obj, "现值": old, "新值": new})
         elif t == "下调默认竞价":
             f.update({"实体": "Ad Group", "操作": "update", "改什么": "Ad Group Default Bid", "现值": f"${money(old)}", "新值": f"${money(new)}"})
         elif t in KW_BID:
@@ -89,16 +93,17 @@ class Mapper:
 
 # 导出成广告后台批量上传表的列（Ads API 通道）。一行一个实体；没用到的列留空，和后台模板一样
 BULK_COLS = ["Product", "Entity", "Operation", "Campaign ID", "Ad Group ID", "Keyword ID", "Product Targeting ID", "Campaign Name (Informational only)", "Ad Group Name (Informational only)",
-             "SKU", "ASIN (Informational only)", "Keyword Text", "Match Type", "Product Targeting Expression", "State", "Daily Budget", "Ad Group Default Bid", "Bid", "Bidding Strategy", "动作编号", "依据"]
+             "SKU", "ASIN (Informational only)", "Keyword Text", "Match Type", "Product Targeting Expression", "State", "Daily Budget", "Ad Group Default Bid", "Bid", "Bidding Strategy", "Placement", "Percentage", "动作编号", "依据"]
 _MT = {"精确": "exact", "词组": "phrase", "广泛": "broad", "精确否定": "negativeExact"}
 
 
 def bulk_row(a, f):
     ent, what, new = f.get("实体", ""), f.get("改什么", ""), f.get("新值", "")
     val = lambda w: new.lstrip("$") if what == w else ""
-    camp_lvl = ent == "Campaign"
+    camp_lvl = ent in ("Campaign", "Bidding Adjustment")
     # State 列：只有改状态、或新建实体时才填；只改竞价/预算的行留空，免得上传时顺手改了状态
     st = new if what == "State" else ("enabled" if f.get("操作") == "create" else "")
     return ["Sponsored Products", ent, f.get("操作", ""), f.get("Campaign ID", ""), "" if camp_lvl else f.get("广告组 ID", ""), f.get("关键词 ID", ""), f.get("定位 ID", ""),
             f.get("Campaign", ""), "" if camp_lvl else f.get("广告组", ""), f.get("SKU", ""), f.get("ASIN", ""), f.get("关键词", ""), _MT.get(f.get("匹配", ""), ""), f.get("定位", ""),
-            st, val("Daily Budget"), val("Ad Group Default Bid"), val("Bid"), STRATEGY_BULK.get(new, "") if what == "Bidding Strategy" else "", a["no"], a["why"]]
+            st, val("Daily Budget"), val("Ad Group Default Bid"), val("Bid"), STRATEGY_BULK.get(new, "") if what == "Bidding Strategy" else "",
+            PL_BULK.get(f.get("广告位", ""), "") if what == "Percentage" else "", str(new).rstrip("%") if what == "Percentage" else "", a["no"], a["why"]]

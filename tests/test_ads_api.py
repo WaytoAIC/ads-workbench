@@ -70,8 +70,17 @@ class 动作翻成请求(unittest.TestCase):
 
     def test_每一类动作都有路由_都翻得出来(self):
         for t in A.ROUTES:
-            route, body, miss = self.one(t, new=("动态竞价-只降低" if t == "改竞价策略" else "1.05")); self.assertEqual(route, A.ROUTES[t][0], t); self.assertEqual(miss, [], t)
+            pl = "广告位加价" in t; f = {**self.F, "广告位": "搜索顶部", "广告位现值": {"TOP_OF_SEARCH": 50, "PRODUCT_PAGE": 20}} if pl else None
+            route, body, miss = self.one(t, new=("动态竞价-只降低" if t == "改竞价策略" else "28%" if pl else "1.05"), f=f); self.assertEqual(route, A.ROUTES[t][0], t); self.assertEqual(miss, [], t)
             self.assertEqual(len(next(iter(body.values()))), 1, t)
+
+    def test_改广告位加价_只改一个位置_其余位置原样带上(self):
+        f = {**self.F, "广告位": "搜索顶部", "广告位现值": {"TOP_OF_SEARCH": 50, "PRODUCT_PAGE": 20}}
+        _, body, miss = A.build({"type": "下调广告位加价", "old": "50%", "new": "28%", "object": "搜索顶部"}, f); self.assertEqual(miss, [])
+        self.assertEqual(body["campaigns"][0]["optimizations"]["bidSettings"]["bidAdjustments"]["placementBidAdjustments"], [{"placement": "PRODUCT_PAGE", "percentage": 20}, {"placement": "TOP_OF_SEARCH", "percentage": 28}])
+        _, _, miss = A.build({"type": "下调广告位加价", "old": "50%", "new": "28%", "object": "搜索顶部"}, {**self.F, "广告位": "搜索顶部", "广告位现值": None})
+        self.assertIn("这个活动现在各位置的加价", miss)                       # 不知道其余位置现在加了多少，就不发
+        self.assertNotIn("下调广告位加价", A.PROVEN)
 
     def test_几类典型动作的请求长什么样(self):
         self.assertEqual(self.one("暂停广告产品")[1], {"ads": [{"adId": "AD", "state": "PAUSED"}]})

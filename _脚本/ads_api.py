@@ -25,6 +25,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REGION = {"US": "na", "CA": "na", "MX": "na", "BR": "na", "UK": "eu", "GB": "eu", "DE": "eu", "FR": "eu", "IT": "eu", "ES": "eu", "NL": "eu", "SE": "eu", "PL": "eu", "JP": "fe", "AU": "fe", "SG": "fe"}
 KINDS = {"campaigns": "campaignId", "adGroups": "adGroupId", "targets": "targetId", "ads": "adId"}
 STRATEGY = {"固定竞价": "MANUAL", "动态竞价-只降低": "SALES_DOWN_ONLY", "动态竞价-提高和降低": "SALES_UP_AND_DOWN"}
+PLACEMENT = {"搜索顶部": "TOP_OF_SEARCH", "商品页面": "PRODUCT_PAGE", "其余位置": "REST_OF_SEARCH", "placementTop": "TOP_OF_SEARCH", "placementProductPage": "PRODUCT_PAGE", "placementRestOfSearch": "REST_OF_SEARCH"}
 MATCH = {"精确": "EXACT", "词组": "PHRASE", "广泛": "BROAD", "exact": "EXACT", "phrase": "PHRASE", "broad": "BROAD"}
 
 # 动作类型 → (路由, 改的是什么, 在真实店铺上跑通过没有)。「跑通过」＝真实提交并独立回读成功过；其余是同一套接口、按官方字段起草、没在真实店铺上发过。
@@ -38,6 +39,7 @@ ROUTES = {
     "自动投放组降竞价": ("update/targets", "自动投放某一组的竞价", False), "自动投放组提竞价": ("update/targets", "自动投放某一组的竞价", False),
     "下调预算": ("update/campaigns", "活动的日预算", False), "预算上调": ("update/campaigns", "活动的日预算", False), "改竞价策略": ("update/campaigns", "活动的竞价策略", False),
     "下调默认竞价": ("update/adGroups", "广告组的默认竞价", False),
+    "下调广告位加价": ("update/campaigns", "活动在某个广告位上的加价", False), "上调广告位加价": ("update/campaigns", "活动在某个广告位上的加价", False),
     "补挂广告产品": ("create/ads", "在广告组里新增一条商品广告", False),
     "搜索词收割": ("create/targets", "新增一个精确关键词并出价", False), "竞品词降价单独跑": ("create/targets", "新增一个精确关键词并出价", False),
     "换道否定": ("create/targets", "新增一条否定关键词（精确）", False), "来源组否定": ("create/targets", "新增一条否定关键词（精确）", False), "竞品词否定": ("create/targets", "新增一条否定关键词（精确）", False), "粗规则否词": ("create/targets", "新增一条否定关键词（精确）", False),
@@ -192,6 +194,12 @@ def build(a, f, currency="USD"):
     elif t == "补挂广告产品": body = {"ads": [{**sp, "adGroupId": need("广告组 ID"), "adType": "PRODUCT_AD", "state": "ENABLED", "creative": {"productCreative": {"productCreativeSettings": {"advertisedProduct": {"productIdType": "SKU", "productId": need("SKU")}}}}}]}
     elif t in ("下调预算", "预算上调"): body = {"campaigns": [{"campaignId": need("Campaign ID"), "budgets": [{"budgetType": "MONETARY", "recurrenceTimePeriod": "DAILY", "budgetValue": {"monetaryBudgetValue": {"monetaryBudget": {"currencyCode": currency, "value": num(a["new"])}}}}]}]}
     elif t == "改竞价策略": body = {"campaigns": [{"campaignId": need("Campaign ID"), "optimizations": {"bidSettings": {"bidStrategy": STRATEGY.get(str(a["new"])) or miss.append("认不出的竞价策略") or str(a["new"])}}}]}
+    elif t in ("下调广告位加价", "上调广告位加价"):
+        # 官方没写明改一个位置时其余位置会不会被清掉，所以把这个活动现在所有位置的加价一起带上，只改其中一个
+        allp = dict(f.get("广告位现值") or {}); key = PLACEMENT.get(f.get("广告位") or a["object"]) or miss.append("认不出的广告位") or str(a["object"])
+        if f.get("广告位现值") is None: miss.append("这个活动现在各位置的加价")
+        allp[key] = int(num(str(a["new"]).rstrip("%")) or 0)
+        body = {"campaigns": [{"campaignId": need("Campaign ID"), "optimizations": {"bidSettings": {"bidAdjustments": {"placementBidAdjustments": [{"placement": k, "percentage": int(v)} for k, v in sorted(allp.items())]}}}}]}
     elif t == "下调默认竞价": body = {"adGroups": [{"adGroupId": need("广告组 ID"), "bid": {"defaultBid": num(a["new"])}}]}
     elif route == "update/targets":
         tid = f.get("关键词 ID") or f.get("定位 ID") or miss.append("投放对象 ID") or "<缺 投放对象 ID>"
@@ -218,7 +226,11 @@ def preview(root, status="已确认", types=None):
     for r in c.execute("SELECT * FROM action WHERE status=? ORDER BY no", (status,)):
         a = dict(r)
         if a["type"] not in ROUTES or (types and a["type"] not in types): continue
-        f = MP.enrich(a); route, body, miss = build(a, f)
+        f = MP.enrich(a)
+        if a["type"] in ("下调广告位加价", "上调广告位加价"):                 # 这个活动现在各位置加了多少：从结构表里按活动名取
+            cs = next((c_ for c_ in (jread(f"{root}/_原始拉取/本父体-spCampaign.json") or []) if c_.get("name") == a["campaign"]), None)
+            f["广告位现值"] = {PLACEMENT.get(p_["placement"], p_["placement"]): int(float(p_["percentage"])) for p_ in (cs.get("placementAdjustments") or [])} if cs else None
+        route, body, miss = build(a, f)
         why = "演示数据：活动、广告组、关键词的编号是按格式生成的，真实账号里没有这些对象" if demo else ("缺：" + "、".join(miss) if miss else ("" if a["type"] in PROVEN else "这一类还没在真实店铺上发过，先只预演"))
         out.append({"动作编号": a["no"], "类型": a["type"], "改什么": ROUTES[a["type"]][1], "路由": "POST /adsApi/v1/" + route, "请求体": body, "跑通过": a["type"] in PROVEN, "能发": not why, "为什么不能发": why,
                     "发之前": "先读一次现值，和动作上记的不一样就不发", "发之后": "独立回读，对上了才标「已执行」"})

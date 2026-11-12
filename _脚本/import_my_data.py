@@ -137,10 +137,26 @@ for i, x in enumerate(targets, 1): x["targetId"] = f"TG{i:03d}"
 ne_tg = rows_of("否定ASIN.csv", lambda r, c: {"campaignId": c, "expression": [{"type": "ASIN_SAME_AS", "value": str(r["ASIN"]).strip().upper()}]})
 for name, obj in (("本父体-spKeyword.json", kws), ("本父体-spNeKeyword.json", ne), ("基础-spAdProduct-全店.json", ap), ("本父体-spCampaign.json", camp_set), ("本父体-spGroup.json", groups), ("本父体-spTarget.json", targets), ("本父体-spNeTarget.json", ne_tg)):
     json.dump(obj, open(f"{RAW}/{name}", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+# 3e. 广告位（可选）→ 报表-adPlacementReport-0.pkl：每个活动每天在 搜索顶部／商品页面／其余位置 各花了多少、出了几单。有它才出「上调／下调广告位加价」
+PLACE_KEY = {"搜索顶部": "placementTop", "商品页面": "placementProductPage", "商品页": "placementProductPage", "其余位置": "placementRestOfSearch", "搜索其余位置": "placementRestOfSearch"}
+def place_key(v):
+    v = str(v).strip(); s_ = v.lower()
+    if v in PLACE_KEY: return PLACE_KEY[v]
+    if "business" in s_ or ("off" in s_ and "amazon" in s_): return v
+    return "placementTop" if "top" in s_ else "placementProductPage" if ("detail" in s_ or "product" in s_) else "placementRestOfSearch" if ("rest" in s_ or "other" in s_) else v
+n_pl = 0
+if opt("广告位.csv"):
+    pl = read(opt("广告位.csv")); pl = pl[pl["广告活动"].str.strip().isin(cid)].copy()
+    pcol = lambda *ks: next((h for h in pl.columns if any(k in norm(h) for k in ks)), None)
+    out_pl = pd.DataFrame({"日期": pd.to_datetime(pl["日期"], errors="coerce"), "广告活动": pl["广告活动"].str.strip(), "广告活动ID": pl["广告活动"].str.strip().map(cid), "广告位": pl["广告位"].map(place_key),
+                           "广告花费": pl[pcol("花费", "spend", "cost")].map(money).round(2), "广告曝光量": pl[pcol("曝光", "展示", "impressions")].map(money).astype(int), "广告点击量": pl[pcol("点击量", "点击", "clicks")].map(money).astype(int),
+                           "广告订单量": pl[pcol("订单", "orders")].map(money).astype(int), "广告销售额": pl[pcol("销售额", "sales")].map(money).round(2)}).dropna(subset=["日期"])
+    out_pl.to_pickle(f"{RAW}/报表-adPlacementReport-0.pkl"); n_pl = len(out_pl)
+elif os.path.exists(f"{RAW}/报表-adPlacementReport-0.pkl"): os.remove(f"{RAW}/报表-adPlacementReport-0.pkl")      # 这次没给广告位表：别让上一次的旧表留着
 ret = []
 if opt("退货.csv"):
     for _, r in read(opt("退货.csv")).iterrows(): ret += [{"reasonStr": r["原因"].strip()}] * max(1, int(money(r.get("件数", 1)) or 1))
 json.dump(ret, open(f"{RAW}/FBA退货-本父体.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 open(f"{RAW}/调用记录.jsonl", "w", encoding="utf-8").write(json.dumps({"path": "本地文件：搜索词报告.csv 等，未调任何接口"}) + "\n")
 unused = [h for h in st.columns if h not in m.values()]
-print(f"导入完成 → {DST}\n  搜索词报告 {len(d)} 行｜{d['日期'].min().date()}～{end.date()}（{span} 天）｜广告活动 {len(camps)} 个｜日期无法解析被丢弃 {bad_dates} 行\n  列对应：{m}\n  没用上的列（{len(unused)}）：{unused}\n  周度经营 {len(prof)} 周｜库存 {len(rows)} 个 SKU｜活动预算 {len(bud)}｜关键词竞价 {len(kws)}｜否定词 {len(ne)}｜广告产品 {len(ap)}｜退货 {len(ret)} 件\n  活动设置（竞价策略/广告位加价）{n_set}｜广告组 {len(groups)}｜商品定位 {len(targets)}｜否定ASIN {len(ne_tg)}\n  窗口：前 {P['窗口前']}，近 {P['窗口近']}；复盘日 {P['复盘日']}\n下一步：python3 工作台/app.py --root {DST} --port 8811")
+print(f"导入完成 → {DST}\n  搜索词报告 {len(d)} 行｜{d['日期'].min().date()}～{end.date()}（{span} 天）｜广告活动 {len(camps)} 个｜日期无法解析被丢弃 {bad_dates} 行\n  列对应：{m}\n  没用上的列（{len(unused)}）：{unused}\n  周度经营 {len(prof)} 周｜库存 {len(rows)} 个 SKU｜活动预算 {len(bud)}｜关键词竞价 {len(kws)}｜否定词 {len(ne)}｜广告产品 {len(ap)}｜退货 {len(ret)} 件\n  活动设置（竞价策略/广告位加价）{n_set}｜广告组 {len(groups)}｜商品定位 {len(targets)}｜否定ASIN {len(ne_tg)}｜广告位 {n_pl} 行\n  窗口：前 {P['窗口前']}，近 {P['窗口近']}；复盘日 {P['复盘日']}\n下一步：python3 工作台/app.py --root {DST} --port 8811")

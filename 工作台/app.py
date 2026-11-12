@@ -293,7 +293,7 @@ class H(BaseHTTPRequestHandler):
             d = ADS.check(ROOT); log(c, who, "连广告接口", d.get("站点", ""), ("连通：" if d["ok"] else "没连通：") + "；".join(s["说明"] for s in d["步骤"])[:300]); c.commit(); return self.send(200, d)
         if u.path == "/api/ads/pull":
             if who not in CAN["连接口"]: return deny("连接口")
-            if body.get("confirm") is not True: return self.send(400, {"error": "这一步会花紫鸟积分（建 3 份报表、每分钟问一轮进度、再读结构），要人点了确认才拉"})
+            if body.get("confirm") is not True: return self.send(400, {"error": "这一步会花紫鸟积分（建 4 份报表、每分钟问一轮进度、再读结构），要人点了确认才拉"})
             pc = pull_cfg()
             if not pc["数据目录"]: return self.send(400, {"error": "还没说数据写到哪：在 agent/.env.local 里写 ADS_DATA_DIR=仓库外面的一个目录"})
             if PULL["on"]: return self.send(400, {"error": "上一次还在拉"})
