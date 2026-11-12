@@ -76,7 +76,7 @@ def unwrap(v):
     """紫鸟代理的回包：业务错误一律当失败；带 data 的取 data。"""
     if isinstance(v, dict):
         if v.get("success") is False or v.get("errors") or v.get("error_code", 0) != 0 or v.get("ret", 0) != 0 or v.get("code", 200) not in (0, 200):
-            raise AdsError("接口回了业务错误：" + str(v.get("message") or v.get("msg") or v.get("ret") or v.get("code"))[:160])
+            raise AdsError("接口回了业务错误：" + str(v.get("message") or v.get("msg") or v.get("detail") or v.get("errors") or v.get("ret") or v.get("code"))[:240])
         if "data" in v and ("code" in v or "error_code" in v or "ret" in v): return v["data"]
     return v
 
@@ -91,15 +91,20 @@ class Channel:
         exe = shutil.which("zn-open-eco") or "/opt/homebrew/bin/zn-open-eco"
         if not os.path.exists(exe): raise AdsError("没找到 zn-open-eco：这条路要先装紫鸟的命令行并登录")
         p = subprocess.run([exe] + args, capture_output=True, text=True, timeout=60)
-        if p.returncode: raise AdsError("紫鸟命令行执行失败：" + (p.stderr.strip().splitlines() or ["?"])[-1][:160])
+        if p.returncode:
+            i = p.stdout.find("{")
+            if i >= 0:                                              # 平台的错误说明在标准输出的 JSON 里（比如「这份报表刚建过」），先按业务错误读
+                try: unwrap(json.JSONDecoder().raw_decode(p.stdout[i:])[0])
+                except ValueError: pass
+            raise AdsError("紫鸟命令行执行失败：" + ((p.stderr.strip() or p.stdout.strip()).splitlines() or ["?"])[-1][:200])
         out = p.stdout; i = min([x for x in (out.find("{"), out.find("[")) if x >= 0] or [0])      # 命令行有时在 JSON 后面带一段提示文字，只取 JSON
         return json.JSONDecoder().raw_decode(out[i:])[0]
 
     def call(self, args): return unwrap(self.t(args))
 
-    def http(self, method, path, body=None, scoped=True):
+    def http(self, method, path, body=None, scoped=True, ctype=None):
         if not self.account: raise AdsError("还没核对店铺身份")
-        h = {"X-Account-Id": str(self.account), "Content-Type": "application/json", "Accept": "application/json"}
+        h = {"X-Account-Id": str(self.account), "Content-Type": ctype or "application/json", **({} if ctype else {"Accept": "application/json"})}   # 报表接口用它自己的内容类型
         if scoped: h["Amazon-Advertising-API-Scope"] = str(self.profile["profileId"])
         self.calls += 1
         return self.call(["http", method, f"/proxy/{self.region}{path}", "--module", "amazon-ads-api", "--headers", json.dumps(h)] + (["--body", json.dumps(body, ensure_ascii=False)] if body is not None else []))
@@ -122,9 +127,9 @@ class Channel:
         if len(mine) != 1: raise AdsError(f"{cc} 站的卖家广告账号找到 {len(mine)} 个，要正好 1 个")
         self.profile = mine[0]; return self
 
-    def query(self, kind, flt=None, pages=20):
+    def query(self, kind, flt=None, pages=20, size=100):
         if kind not in KINDS: raise AdsError("只能读活动、广告组、投放对象、广告")
-        body = {"adProductFilter": {"include": ["SPONSORED_PRODUCTS"]}, "stateFilter": {"include": ["ENABLED", "PAUSED", "ARCHIVED"]}, "maxResults": 100, **(flt or {})}
+        body = {"adProductFilter": {"include": ["SPONSORED_PRODUCTS"]}, "stateFilter": {"include": ["ENABLED", "PAUSED", "ARCHIVED"]}, "maxResults": size, **(flt or {})}
         rows, seen, tokens = [], set(), set()
         for _ in range(pages):
             r = self.http("POST", f"/adsApi/v1/query/{kind}", body)
@@ -191,14 +196,15 @@ def build(a, f, currency="USD"):
     elif route == "update/targets":
         tid = f.get("关键词 ID") or f.get("定位 ID") or miss.append("投放对象 ID") or "<缺 投放对象 ID>"
         body = {"targets": [{"targetId": tid, **({"state": "PAUSED"} if ("暂停" in t or "关闭" in t) else {"bid": {"bid": num(a["new"])}})}]}
+    # 新建投放对象：按官方接口定义，广告组这一层的只带广告组编号（活动编号只给活动层的用）；「层级」是回包里的字段，请求里没有
     elif t in ("搜索词收割", "竞品词降价单独跑"):
-        body = {"targets": [{**sp, "campaignId": need("Campaign ID"), "adGroupId": need("广告组 ID"), "negative": False, "state": "ENABLED", "targetType": "KEYWORD", "targetLevel": "AD_GROUP",
+        body = {"targets": [{**sp, "adGroupId": need("广告组 ID"), "negative": False, "state": "ENABLED", "targetType": "KEYWORD",
                              "targetDetails": {"keywordTarget": {"keyword": f.get("关键词") or a["object"], "matchType": "EXACT"}}, "bid": {"bid": num(a["new"])}}]}
     elif t == "否定 ASIN":
-        body = {"targets": [{**sp, "campaignId": need("Campaign ID"), "adGroupId": need("广告组 ID"), "negative": True, "state": "ENABLED", "targetType": "PRODUCT", "targetLevel": "AD_GROUP",
-                             "targetDetails": {"productTarget": {"matchType": "PRODUCT_EXACT", "product": {"productId": f.get("ASIN") or a["object"], "productIdType": "ASIN"}}}}]}
+        body = {"targets": [{**sp, "adGroupId": need("广告组 ID"), "negative": True, "state": "ENABLED", "targetType": "PRODUCT",
+                             "targetDetails": {"productTarget": {"matchType": "PRODUCT_EXACT", "productIdType": "ASIN", "product": {"productId": f.get("ASIN") or a["object"]}}}}]}   # productIdType 和 product 平级（按官方接口定义）
     else:                                                                    # 四类否定关键词
-        body = {"targets": [{**sp, "campaignId": need("Campaign ID"), "adGroupId": need("广告组 ID"), "negative": True, "state": "ENABLED", "targetType": "KEYWORD", "targetLevel": "AD_GROUP",
+        body = {"targets": [{**sp, "adGroupId": need("广告组 ID"), "negative": True, "state": "ENABLED", "targetType": "KEYWORD",
                              "targetDetails": {"keywordTarget": {"keyword": f.get("关键词") or a["object"], "matchType": "EXACT"}}}]}
     return route, body, [m for m in miss if m]
 
@@ -235,8 +241,10 @@ def execute(root, no, confirm_text, transport=None):
             if len(before) != 1: raise AdsError("发之前没读到这个对象，不发")
             if obj.get("state") == "PAUSED" and before[0].get("state") != "ENABLED": raise AdsError(f"它现在已经是 {before[0].get('state')}，不用再发")
             log["发之前"] = before[0].get("state")
-        ch.http("POST", "/adsApi/v1/" + route, body); log["已提交"] = True                     # 只提交这一次
-        flt = {idk + "Filter": {"include": [str(obj[idk])]}} if route.startswith("update/") else {"campaignIdFilter": {"include": [str(obj["campaignId"])]}, "adGroupIdFilter": {"include": [str(obj["adGroupId"])]}}
+        resp = ch.http("POST", "/adsApi/v1/" + route, body); log["已提交"] = True              # 只提交这一次
+        bad = (resp or {}).get("error") if isinstance(resp, dict) else None                    # 写接口回的是「逐条结果」：success／error 两个清单，整体 HTTP 成功不代表这一条成功
+        if bad: log["平台逐条结果"] = "这一条被平台拒了：" + str((bad[0].get("errors") or bad[0])[0] if isinstance(bad[0].get("errors"), list) and bad[0].get("errors") else bad[0])[:200]
+        flt = {idk + "Filter": {"include": [str(obj[idk])]}} if route.startswith("update/") else {"adGroupIdFilter": {"include": [str(obj["adGroupId"])]}}
         after, _ = ch.query(kind, flt, pages=3)
         if route.startswith("update/"): ok = len(after) == 1 and all(after[0].get(k) == v for k, v in obj.items() if k in ("state",))
         else: ok = any(t.get("negative") is True and json.dumps(obj["targetDetails"], sort_keys=True) in json.dumps(t.get("targetDetails"), sort_keys=True) or (t.get("targetDetails") or {}) == obj["targetDetails"] for t in after)

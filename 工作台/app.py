@@ -19,8 +19,8 @@ NEXT = {"待确认": {"已确认", "驳回"}, "已确认": {"已执行", "待确
 now = lambda: datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 jread = lambda p, d=None: json.load(open(p, encoding="utf-8")) if os.path.exists(p) else d
 for _d in (OUT, CARD_DIR, f"{ROOT}/广告闭环/输入"): os.makedirs(_d, exist_ok=True)
-sys.path.insert(0, SCRIPTS); sys.path.insert(0, HERE); import tree as TREE, fields as FIELDS, structure as STRUCT, hub as HUB, ads_api as ADS   # 诊断树连线、动作→广告后台字段、活动构成、Agent/Harness 接线（都只用标准库）
-LOCK = threading.Lock(); PROG = {"running": False, "steps": [], "started": None}; AIBUSY = {"on": False}
+sys.path.insert(0, SCRIPTS); sys.path.insert(0, HERE); import tree as TREE, fields as FIELDS, structure as STRUCT, hub as HUB, ads_api as ADS, ads_report as RPT   # 诊断树连线、动作→广告后台字段、活动构成、Agent/Harness 接线（都只用标准库）
+LOCK = threading.Lock(); PROG = {"running": False, "steps": [], "started": None}; AIBUSY = {"on": False}; PULL = {"on": False}
 
 def db():
     c = sqlite3.connect(DB, timeout=15); c.row_factory = sqlite3.Row; c.execute("PRAGMA journal_mode=WAL"); return c
@@ -173,6 +173,14 @@ def sanlan():
         if line.startswith("## "): cur = next((k for k in out if k in line), None)
         elif cur and (line[:2] in ("- ",) or (line[:1].isdigit() and ". " in line[:4])): out[cur].append(line.split(" ", 1)[1] if line.startswith("- ") else line.split(". ", 1)[1])
     return out
+def pull_cfg():
+    """从接口取数的本机配置齐不齐。只回「有没有」，不回目录和 ASIN 本身。"""
+    e = ADS.local_env()
+    try: d = RPT.data_dir(ROOT)
+    except ADS.AdsError: d = ""
+    return {"数据目录": bool(d), "圈了产品": bool(e.get("ADS_SCOPE_ASINS") or e.get("ADS_SCOPE_CAMPAIGN_LIKE")), "配了店铺": bool(ADS.settings(ROOT).get("store"))}
+
+
 def state():
     c = db(); t = dict(c.execute("SELECT * FROM task").fetchone()); t["options"] = json.loads(t["options"]); P = jread(PARAMS)
     t["margin"], t["target_profit"] = P.get("定价毛利率"), P.get("目标广告后利润率")          # 经营口径：人填，存在 参数.json
@@ -196,7 +204,8 @@ def state():
              "verdicts": {r["node"]: dict(r) for r in c.execute("SELECT * FROM verdict")}, "verdictEnum": VERDICTS, "notes": [dict(r) for r in c.execute("SELECT * FROM note ORDER BY id DESC")], "taskEnum": HUB.TASKS, "runlog": HUB.runlog(ROOT), "weekly": HUB.weekly_draft(ROOT),
              "jobcard": jread(os.path.join(os.path.dirname(HERE), "agent", "岗位卡.json")), "skills": HUB.skills(ROOT), "harness": HUB.harness(ROOT, hs),
              "adsapi": {"开关": ADS.settings(ROOT).get("enabled"), "配了店铺": bool(ADS.settings(ROOT).get("store")), "站点": ADS.settings(ROOT).get("country"), "跑通记录": jread(os.path.join(os.path.dirname(HERE), "Ads接口跑通记录.json")),
-                        "上次连通": jread(f"{ROOT}/运行记录/ads-api-连通.json"), "动作": {k: {"改什么": v[1], "接口": "POST /adsApi/v1/" + v[0], "跑通": v[2]} for k, v in ADS.ROUTES.items()}},
+                        "上次连通": jread(f"{ROOT}/运行记录/ads-api-连通.json"), "报表": jread(f"{ROOT}/运行记录/ads-api-报表.json"), "取数中": PULL["on"], "取数配置": pull_cfg(),
+                        "文档": jread(os.path.join(os.path.dirname(HERE), "Ads接口文档.json")), "动作": {k: {"改什么": v[1], "接口": "POST /adsApi/v1/" + v[0], "跑通": v[2]} for k, v in ADS.ROUTES.items()}},
              "koujing": jread(f"{ROOT}/口径.json") or jread(os.path.join(os.path.dirname(HERE), "口径.json")), "agentCfg": {k: HUB.cfg(ROOT)[k] for k in ("agent", "weekly")}, "aiBusy": AIBUSY["on"]}
     tree_ = TREE.build(F_, SL_, O_) if has else None
     if tree_: merge_hypotheses(c, tree_, extra["attr"] if extra["attr"] and not extra["attr"].get("错误") else None)
@@ -282,6 +291,17 @@ class H(BaseHTTPRequestHandler):
             if who not in CAN["连接口"]: return deny("连接口")
             if body.get("confirm") is not True: return self.send(400, {"error": "这一步会花紫鸟积分（大约 7 次调用），要人点了确认才连"})
             d = ADS.check(ROOT); log(c, who, "连广告接口", d.get("站点", ""), ("连通：" if d["ok"] else "没连通：") + "；".join(s["说明"] for s in d["步骤"])[:300]); c.commit(); return self.send(200, d)
+        if u.path == "/api/ads/pull":
+            if who not in CAN["连接口"]: return deny("连接口")
+            if body.get("confirm") is not True: return self.send(400, {"error": "这一步会花紫鸟积分（建 3 份报表、每分钟问一轮进度、再读结构），要人点了确认才拉"})
+            pc = pull_cfg()
+            if not pc["数据目录"]: return self.send(400, {"error": "还没说数据写到哪：在 agent/.env.local 里写 ADS_DATA_DIR=仓库外面的一个目录"})
+            if PULL["on"]: return self.send(400, {"error": "上一次还在拉"})
+            e = ADS.local_env(); PULL["on"] = True
+            def work():
+                try: RPT.pull(ROOT, None, [x for x in e.get("ADS_SCOPE_ASINS", "").split(",") if x.strip()], e.get("ADS_SCOPE_CAMPAIGN_LIKE", ""))
+                finally: PULL["on"] = False
+            threading.Thread(target=work, daemon=True).start(); log(c, who, "从广告接口取数", ADS.settings(ROOT).get("country", ""), "开始拉报表和结构（只读）"); c.commit(); return self.send(200, {"ok": True})
         if u.path == "/api/ads/execute":
             if who not in CAN["点动作"]: return deny("点动作")
             no = str(body.get("no") or ""); a = c.execute("SELECT * FROM action WHERE no=?", (no,)).fetchone()

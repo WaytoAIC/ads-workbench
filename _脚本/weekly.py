@@ -126,6 +126,20 @@ class Weekly:
         return (f"任务 {t['id']} · {t['status']} · v{t['version']}；上一圈人通过 {ok_n} 条、驳回 {len(rej)} 条、执行了 {done} 条"
                 + (f"；{len(rej)} 条驳回理由已读回（下一圈不再提）" if rej else ""))
 
+    # ---------- 从接口取数（可选：ads.config.json 里 ads_api.每周自动取数 为真才有这一步） ----------
+    def s_pull(self):
+        import ads_api as ADS, ads_report as RPT
+        if os.path.realpath(self.root) == os.path.realpath(REPO): return "这是仓库自带的演示数据，不从接口取数"
+        e = ADS.local_env(); asins = [x for x in e.get("ADS_SCOPE_ASINS", "").split(",") if x.strip()]; like = e.get("ADS_SCOPE_CAMPAIGN_LIKE", "")
+        try: out = RPT.data_dir(self.root)
+        except ADS.AdsError as x: return False, f"{x} → 沿用现有数据"
+        if not out or not (asins or like): return False, "开了每周自动取数，但本机没配" + ("数据目录（ADS_DATA_DIR）" if not out else "要圈的产品（ADS_SCOPE_ASINS）") + " → 沿用现有数据"
+        if self.dry: return "演练：会从广告接口拉近 31 天的报表和结构（只读，花紫鸟积分），写到数据目录，再整理进工作台；这次不执行"
+        d = RPT.pull(self.root, out, asins, like, say=self.detail)
+        if not d["ok"]: return False, "没取成，沿用现有数据：" + d["步骤"][-1]["说明"]
+        if RPT.then_import(out, self.root, say=self.detail): return False, "数据取到了，但整理进工作台没成（多半是人填的那几张表没补齐）→ 沿用现有数据，细节看日志"
+        return f"{d['范围'][0]}～{d['范围'][1]}，接口写了 {sum(1 for f in d['文件'] if f['来源'] == '接口')} 张表，调用 {d['调用次数']} 次；已整理进工作台"
+
     # ---------- 2 数据体检 ----------
     def s_inputs(self):
         miss = preflight(self.root); P = jread(os.path.join(self.root, "参数.json")); P = P if isinstance(P, dict) else {}
@@ -342,6 +356,7 @@ class Weekly:
     def run(self):
         self.say(f"广告周检 · 每周一圈 {self.stamp:%Y-%m-%d %H:%M:%S}｜数据目录 {self.root}｜触发：{self.trigger}" + ("｜--dry-run" if self.dry else "") + ("｜--no-llm" if self.no_llm else ""))
         self.step("读回状态", self.s_readback)
+        if (self.cfg.get("ads_api") or {}).get("每周自动取数"): self.step("从接口取数", self.s_pull)
         if self.step("数据体检", self.s_inputs) or not self.missing:
             self.step("跑一圈", self.s_loop)
             self.step("经营核算", self.s_biz)

@@ -413,6 +413,12 @@ body.demo .lim{font-size:26px}body.demo .bz p,body.demo .q3 p{font-size:15px}
 .msg .acts2{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:6px;border-top:1px dashed var(--line)}.msg .acts2 button{border:0;background:transparent;color:var(--accent);font-size:12px;padding:0 4px;font-weight:600}.msg .acts2 button:hover{text-decoration:underline}
 .draft.note .dh{background:var(--good-soft);color:var(--good)}.draft.note{border-color:var(--good)}
 @media(max-width:1180px){.sumbar,.atbs,.pc{grid-template-columns:1fr}.expl{grid-template-columns:1fr}}
+.srcb{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:0 6px;line-height:18px;white-space:nowrap;vertical-align:1px}.srcb.good{background:var(--good-soft);color:var(--up-good)}.srcb.warn{background:var(--warn-soft);color:#8a5a00}.srcb.mute{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}.srcb.bad{background:var(--crit-soft,#fde8e6);color:var(--critical)}
+.legend{display:flex;flex-direction:column;gap:5px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line2);font-size:12.5px;color:var(--ink2)}
+ul.plain{margin:0;padding-left:18px;font-size:13.5px;line-height:1.75;color:var(--ink2)}ul.plain li{margin:2px 0}.concl2 p{margin:0 0 6px;font-size:14.5px;line-height:1.7}.concl2 p:first-child{font-weight:600}
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}.steps3>div{border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:5px;font-size:13px}.steps3 span{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}.steps3 p{margin:0;color:var(--ink2)}.steps3 code{align-self:flex-start}
+pre.cmd{margin:10px 0 0;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+@media(max-width:900px){.steps3{grid-template-columns:1fr}}
 </style></head><body>
 <div class="shell">
 <aside class="side">
@@ -611,7 +617,7 @@ function rowHtml(a,mode){let ops="";const b=(txt,st,cls,icon)=>B({label:txt,icon
 Object.assign(P,{home:'<path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/>',todo:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',back:'<path d="M15 6l-6 6 6 6"/>'});
 Object.assign(UI,{page:"home",atab:"待你决定",agrp:null,camp:null,goalOpen:false});
-const PAGES=[["home","home","首页"],["actions","todo","行动"],["campaigns","layers","广告活动"],["why","tree","原因"],["agent","loop","Agent 运行"],["settings","gear","设置"]];
+const PAGES=[["home","home","首页"],["actions","todo","行动"],["campaigns","layers","广告活动"],["why","tree","原因"],["agent","loop","Agent 运行"],["api","plug","广告接口"],["settings","gear","设置"]];
 const ATAB={"待你决定":"待确认","待执行":"已确认","等验证":"已执行","已验证":"已验证","已驳回":"驳回","已作废":"作废"};
 const TCOL={"待处理":"--warning","处理中":"--accent","待核对":"--st-ok","已完成":"--good","遇到问题":"--critical"};
 const SEV={critical:0,serious:1,warning:2,good:3};
@@ -641,7 +647,7 @@ function chrome(){const m=S.meta,t=S.task,running=S.progress.running||UI.playing
   $("#sched").innerHTML=`<i></i>${h(cronText(S.agentCfg&&S.agentCfg.weekly.schedule))} 自动运转<br>上次 ${S.runs[0]?h(S.runs[0].at.slice(5,16)):"还没跑过"} · 下次 ${h(m.复盘日.slice(5))}`}
 function emptyHtml(){const t=S.task;return `<div class="card"><div class="empty"><div class="ic">${ic("bolt")}</div><h2>任务 ${h(t.id)} 已建好，还没跑过</h2><p>目标 ACOS ${pct(t.target_acos,0)}、补货到仓 ${t.arrive_weeks} 周、${h(t.stage)}。点「跑第一圈」：Agent 读报表、对着目标找问题、起草动作，然后停下来等你拍板。</p>${B({label:"跑第一圈",icon:"play",cls:"primary lg",on:"runLoop()",perm:"跑一圈"})}</div></div>`}
 function render(){route();chrome();if(S.hasRun&&!UI.opts)UI.opts=new Set(S.task.options);
-  const pg={home:homePage,actions:actionsPage,campaigns:campaignsPage,why:whyPage,agent:agentPage,settings:settingsPage}[UI.page];
+  const pg={home:homePage,actions:actionsPage,campaigns:campaignsPage,why:whyPage,agent:agentPage,api:apiPage,settings:settingsPage}[UI.page];
   $("#app").innerHTML=(!S.hasRun&&["home","actions","why"].includes(UI.page))?emptyHtml():pg();shotMode();if(UI.page==="why")requestAnimationFrame(drawEdges);if(document.body.classList.contains("askopen"))askRender()}
 
 /* ───────── 首页：今天要我处理什么 ───────── */
@@ -788,13 +794,13 @@ function settingsPage(){const C=S.campaigns||{有哪些表:{}},m=S.meta,perms=Ob
   return `<div class="pagehead"><div><h1>设置</h1><p>大部分时候不用来这里。要你处理的事会出现在首页。</p></div></div>
   <div class="card" id="set-goal"><h3>对照目标</h3><div class="sub">都由人定。上面三个，Agent 拿数据对着它们找问题；下面两个决定目标 TACOS 和每天能花多少</div>${goalForm()}</div>
   ${healthCard()}
-  <div class="card" id="set-data"><h3>数据从哪来</h3><div class="sub">${h(m.数据标记)}。这份数据只读本机文件；广告接口通不通看下面「广告接口」</div>
+  <div class="card" id="set-data"><h3>数据从哪来</h3><div class="sub">${h(m.数据标记)}。演示数据只读本机文件；自己的数据可以从广告接口拉，也可以手工导表，见「广告接口 → 取数」</div>
     <div class="tw"><table><thead><tr><th>数据</th><th>状态</th><th>没有它会怎样</th></tr></thead><tbody>
     ${[["活动设置","竞价策略、广告位加价","出不了「改竞价策略」"],["广告组","默认竞价","出不了「下调默认竞价」"],["广告产品","每个活动挂了哪些 SKU","出不了「暂停／补挂广告产品」"],["关键词","词、匹配、竞价","出不了关键词调价和暂停"],["商品定位","ASIN／类目／自动四组的竞价","出不了定位调价、暂停和关组"],["否定关键词","已经否过哪些词","换道否定可能和已有否词重复"],["否定 ASIN","已经否过哪些 ASIN","出不了「否定 ASIN」的去重"]].map(([k,what,miss])=>`<tr><td><b>${k}</b><div class="sub2">${what}</div></td><td><span class="tag ${C.有哪些表[k]?"on":"off"}">${C.有哪些表[k]?"已有":"没给"}</span></td><td class="sub2">${miss}</td></tr>`).join("")}</tbody></table></div>
     <p class="hint" style="margin:10px 0 0">换成自己的数据：照 <code>数据格式.md</code> 准备，<code>python3 _脚本/import_my_data.py 我的数据 目录</code> 导入。这一圈调用过的只读查询：${Object.entries(S.calls).map(([k,v])=>`<code>${h(k.split("/").slice(-2).join("/"))}</code>×${v}`).join(" ")||"无"}</p></div>
   ${chs?`<div class="card" id="set-ch"><h3>动作交给谁执行</h3><div class="sub">广告接口已经在真实店铺上跑通；演示数据的编号是生成的，所以这里只出清单和预演，人去后台上传</div><div class="tw"><table><thead><tr><th>通道</th><th>管什么</th><th>状态</th><th>现在怎么做</th></tr></thead><tbody>${chs}</tbody></table></div></div>`:""}
   ${koujingCard()}
-  ${adsCard()}
+  <div class="card" id="set-ads"><h3>广告接口（Amazon Ads API）<span class="tag on" style="margin-left:8px">已在真实店铺跑通</span></h3><div class="sub">能做什么、跑通了什么、数据怎么从接口进来，都在左边「广告接口」那一页</div><div class="links"><a class="btn" href="#api" onclick="UI.apiTab='doc'">${ic("plug")}新版文档</a><a class="btn" href="#api" onclick="UI.apiTab='proven'">${ic("check")}已跑通的</a><a class="btn" href="#api" onclick="UI.apiTab='pull'">${ic("refresh")}取数</a></div></div>
   <div class="card" id="set-perm"><h3>谁能做什么</h3><div class="sub">右上角切换身份；权限由服务端强制，不靠页面隐藏按钮</div><div class="tw"><table><thead><tr><th>操作</th>${S.roles.map(r=>`<th>${h(r)}</th>`).join("")}</tr></thead><tbody>${perms.map(([k,v])=>`<tr><td><b>${h(k)}</b></td>${S.roles.map(r=>`<td>${v.includes(r)?ic("check","stroke:var(--good)"):`<span class="hint">—</span>`}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
   <div class="card" id="set-misc"><h3>资料与演示</h3><div class="sub">讲解用的图和手册；投屏时开演示模式</div>
     <div class="links"><a class="btn" href="/arch" target="_blank">${ic("ext")}架构图</a><a class="btn" href="/flow" target="_blank">${ic("ext")}流程图</a><a class="btn" href="/report" target="_blank">${ic("ext")}运行报告</a></div>
@@ -1023,6 +1029,48 @@ function adsPvBox(type){const p=UI.adsPv;if(!p||p.type!==type)return "";const r=
   <p class="hint" style="margin:8px 0 0">真发的时候：先读一次现值，和这里记的不一样就不发；只提交一次，结果不明不重发；发完独立回读，对上了才标「已执行」。</p></div>`}
 async function adsExec(no){const t=prompt("通过广告接口执行 "+no+"。\n这会真的改广告后台。写一句确认的话（会留在记录里）：");if(!t||!t.trim())return;try{const r=await api("/api/ads/execute",{no,confirm_text:t});toast(r.结果);UI.adsPv=null;await load()}catch(e){}}
 
+/* ───────── v7：广告接口页（新版文档 / 已跑通的 / 取数） ───────── */
+const DOCSRC={"接口定义":"good","官方文档":"good","发布记录":"warn","真实调用":"good","凭记忆":"mute","没查到":"bad"};
+const srcb=k=>`<span class="srcb ${DOCSRC[k]||"mute"}" title="${h(((S.adsapi.文档||{}).把握说明||{})[k]||"")}">${h(k)}</span>`;
+const codes=xs=>(xs||[]).map(x=>`<code>${h(x)}</code>`).join(" ");
+function apiPage(){const tab=UI.apiTab||"doc",T=[["doc","新版文档"],["proven","已跑通的"],["pull","取数"]];
+  return `<div class="pagehead"><div><h1>广告接口</h1><p>Amazon Ads API 现在能做什么、我们在真实店铺上跑通了什么、数据怎么从接口进来。</p></div></div>
+  <div class="tabs2" id="apitabs">${T.map(([k,n])=>`<button class="tab2 ${k===tab?"on":""}" onclick="UI.apiTab='${k}';render()">${n}</button>`).join("")}</div>${tab==="doc"?apiDoc():tab==="proven"?(adsCard()||`<p class="hint">没有跑通记录。</p>`):apiPull()}`}
+function apiDoc(){const D=(S.adsapi||{}).文档;if(!D)return `<div class="card"><p class="hint">仓里没有 <code>Ads接口文档.json</code>。</p></div>`;
+  const ops=["查","建","改","删"],R=D.报表||{};
+  return `<div class="card" id="doc-top"><h3>先说结论</h3><div class="concl2">${(D.结论||[]).map(x=>`<p>${h(x)}</p>`).join("")}</div>
+    <div class="sub-h" style="margin-top:14px">这一页是怎么核的 <span class="hint">核对于 ${h(D.核对于)}</span></div><ul class="plain">${(D.怎么核的||[]).map(x=>`<li>${h(x)}</li>`).join("")}</ul>
+    <div class="legend">${Object.entries(D.把握说明||{}).map(([k,v])=>`<span>${srcb(k)} ${h(v)}</span>`).join("")}</div></div>
+  <div class="card" id="doc-ver"><h3>现在有哪几套接口</h3><div class="sub">亚马逊这两年在把各个广告产品各管各的老接口，并成一套统一的新接口。新老现在并行</div>
+    <div class="tw"><table><thead><tr><th>哪一套</th><th>管什么</th><th>现在的状态</th><th>我们用没用</th><th>依据</th></tr></thead><tbody>${(D.版本||[]).map(x=>`<tr><td><b>${h(x.名)}</b>${x.路径?`<div class="sub2"><code>${h(x.路径)}</code></div>`:""}</td><td>${h(x.管什么)}</td><td>${h(x.状态)}</td><td>${x.用了?`<span class="tag on">在用</span>`:`<span class="hint">没用</span>`}<div class="sub2">${h(x.怎么用||"")}</div></td><td>${srcb(x.把握)}</td></tr>`).join("")}</tbody></table></div></div>
+  <div class="card" id="doc-obj"><h3>新版能管哪些对象、各能做什么</h3><div class="sub">四类对象，每类都是查、建、改、删四个动作，路径一个模子：<code>POST /adsApi/v1/{query|create|update|delete}/{对象}</code>。SP、SB、SD、DSP 共用，请求里用 <code>adProduct</code> 说明是哪种广告</div>
+    <div class="tw"><table><thead><tr><th>对象</th><th>它在广告后台是什么</th>${ops.map(o=>`<th>${o}</th>`).join("")}<th>工作台用到的</th></tr></thead><tbody>${(D.对象||[]).map(x=>`<tr><td><b>${h(x.对象)}</b><div class="sub2">${h(x.英文)}</div></td><td>${h(x.是什么)}</td>${ops.map(o=>`<td class="sub2">${x.接口[o]?`<code>${h(x.接口[o].路径.replace("POST /adsApi/v1/",""))}</code><div>${o==="查"?`每页最多 ${x.接口[o].每页最多}`:`一次最多 ${x.接口[o].一次最多}`}</div>`:"—"}</td>`).join("")}<td class="sub2">${h(x.我们用到)}</td></tr>`).join("")}</tbody></table></div>
+    <p class="hint" style="margin:8px 0 0">${srcb("接口定义")} 上面的上限是接口定义里写的最大值；定义里另有一句「每种广告产品的批量上限各不相同」，SP 的具体上限这次没查到，工作台一次只发一条。</p>
+    ${(D.对象||[]).map(x=>`<details class="more" style="margin-top:10px"><summary>${h(x.对象)}：SP 里能改什么、查的时候能按什么筛</summary><div class="tw" style="margin-top:8px"><table><thead><tr><th>要改的东西</th><th>新版里的字段</th><th>能填什么</th><th>工作台哪类动作用它</th></tr></thead><tbody>${(x.能改||[]).map(f=>`<tr><td><b>${h(f.改什么)}</b></td><td><code>${h(f.字段)}</code></td><td class="sub2">${h(f.取值||"")}</td><td class="sub2">${h(f.动作||"—")}</td></tr>`).join("")}</tbody></table></div>
+      <p class="hint" style="margin:8px 0 0">查的时候能按这些筛（括号里是一次最多给几个）：${Object.entries(x.接口.查.能按什么筛||{}).map(([k,v])=>`<code>${h(k.replace("Filter",""))}</code>(${v})`).join(" ")}。建的时候必填：${codes(x.接口.建.必填)}。写接口回的是逐条结果（${codes(x.接口.改.逐条结果)}），整体成功不代表每一条都成功。</p></details>`).join("")}</div>
+  <div class="card" id="doc-map"><h3>老版 → 新版：同一件事换了什么说法</h3><div class="sub">最大的变化：老版里关键词、否定关键词、商品定位、否定商品各有各的接口；新版全部并成「投放对象」一类，用类型和「是不是否定」来区分</div>
+    <div class="tw"><table><thead><tr><th>运营说的</th><th>老版（SP v3）</th><th>新版（v1）</th><th>依据</th></tr></thead><tbody>${(D.新旧对照||[]).map(x=>`<tr><td><b>${h(x.事)}</b></td><td class="sub2"><code>${h(x.老版)}</code></td><td class="sub2"><code>${h(x.新版)}</code>${x.注?`<div>${h(x.注)}</div>`:""}</td><td>${srcb("接口定义")}</td></tr>`).join("")}</tbody></table></div>
+    <p class="hint" style="margin:8px 0 0">「老版」这一列 ${srcb("凭记忆")}：是我们对 SP v3 的旧认识，没有逐条回查老文档；「新版」这一列逐条对过接口定义。</p></div>
+  <div class="card" id="doc-rpt"><h3>报表：表现数据怎么拿</h3><div class="sub">${h(R.一句话||"")}</div>
+    <div class="steps3">${(R.三步||[]).map((x,i)=>`<div><span>${i+1}</span><b>${h(x.做什么)}</b><code>${h(x.接口)}</code><p>${h(x.说明)}</p></div>`).join("")}</div>
+    <div class="sub-h" style="margin-top:14px">SP 有哪些报表</div><div class="tw"><table><thead><tr><th>报表</th><th>类型编号</th><th>能汇总到</th><th>回答什么问题</th><th>工作台</th></tr></thead><tbody>${(R.类型||[]).map(x=>`<tr><td><b>${h(x.名)}</b></td><td><code>${h(x.编号)}</code></td><td class="sub2">${codes(x.汇总到)}</td><td class="sub2">${h(x.回答)}</td><td>${x.在用?`<span class="tag on">${x.跑通?"在用·已跑通":"在用"}</span>`:`<span class="hint">没用</span>`}<div class="sub2">${h(x.用来||"")}</div></td></tr>`).join("")}</tbody></table></div>
+    <div class="sub-h" style="margin-top:14px">报表的规矩</div>${(R.规矩||[]).map(x=>`<div class="hrow w"><i class="${x.把握==="没查到"?"off":x.把握==="凭记忆"||x.把握==="发布记录"?"warn":""}"></i><b>${h(x.事)}</b><div><p>${h(x.说明)} ${srcb(x.把握)}</p></div></div>`).join("")}</div>
+  <div class="card" id="doc-rule"><h3>其他要知道的</h3>${(D.其他||[]).map(x=>`<div class="hrow w"><i class="${x.把握==="没查到"?"off":x.把握==="凭记忆"||x.把握==="发布记录"?"warn":""}"></i><b>${h(x.事)}</b><div><p>${h(x.说明)} ${srcb(x.把握)}</p>${x.出处?`<small>${h(x.出处)}</small>`:""}</div></div>`).join("")}</div>
+  <div class="grid2" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><div class="card" id="doc-fix"><h3>这次逐条核对，改了工作台哪几处</h3><ul class="plain">${(D.这次改了||[]).map(x=>`<li>${h(x)}</li>`).join("")}</ul></div>
+    <div class="card" id="doc-gap"><h3>没查到、不敢写死的</h3><ul class="plain">${(D.没查到||[]).map(x=>`<li>${h(x)}</li>`).join("")}</ul></div></div>`}
+function apiPull(){const A=S.adsapi||{},D=A.文档||{},L=A.报表,C=A.取数配置||{},busy=A.取数中,ready=C.配了店铺&&C.数据目录;
+  if(busy&&!UI.pullT)UI.pullT=setTimeout(()=>{UI.pullT=null;load()},15000);
+  const need=[!C.配了店铺&&"店铺（<code>ADS_STORE_NAME</code>、<code>ADS_COUNTRY</code>）",!C.数据目录&&"数据写到哪（<code>ADS_DATA_DIR</code>，要在这个仓库外面）"].filter(Boolean);
+  return `<div class="card" id="pull-map"><h3>每张表从哪来</h3><div class="sub">广告侧的表现在都能从接口拉；生意侧的三样（卖了多少、库存、毛利）不在广告接口里，仍然人填。手工导表照旧可用：同一个文件夹里人自己放的文件，接口不会覆盖</div>
+    <div class="tw"><table><thead><tr><th>表</th><th>现在从哪来</th><th>接口用的是什么</th><th>手工怎么导（可选）</th></tr></thead><tbody>${(D.取数||[]).map(x=>`<tr><td><b>${h(x.表)}</b><div class="sub2">${h(x.干什么)}</div></td><td>${x.来源==="接口"?`<span class="tag on">接口</span>`:x.来源==="接口预填"?`<span class="tag off">接口填一半</span>`:`<span class="chip">人填</span>`}</td><td class="sub2">${x.接口?`<code>${h(x.接口)}</code>`:"广告接口里没有这类数据"}</td><td class="sub2">${h(x.手工)}</td></tr>`).join("")}</tbody></table></div></div>
+  <div class="card" id="pull-last"><h3>上一次从接口取数</h3>${L?`<div class="sub">${h(L.时间)} · ${h(L.站点)} 站${L.范围?` · ${h(L.范围[0])} ～ ${h(L.范围[1])}`:""} · 调用 ${L.调用次数} 次。这里只留个数，不留名字和编号</div>
+    ${L.步骤.map(x=>`<div class="hrow w"><i class="${x.ok?"":x.名==="没走通"?"off":"warn"}"></i><b>${h(x.名)}</b><div><p>${h(x.说明)}</p></div></div>`).join("")}
+    ${(L.文件||[]).length?`<div class="tw" style="margin-top:10px"><table><thead><tr><th>文件</th><th class="num">行数</th><th>谁写的</th></tr></thead><tbody>${L.文件.map(f=>`<tr><td>${h(f.名)}</td><td class="num">${f.行数==null?"—":f.行数}</td><td>${f.来源==="接口"?`<span class="tag on">接口</span>`:`<span class="chip">${h(f.来源)}</span>`}</td></tr>`).join("")}</tbody></table></div>`:""}
+    ${(L.还要人补||[]).length?`<div class="warnbox">${ic("info")}<span>还要人补：${L.还要人补.map(h).join("；")}</span></div>`:""}`:`<p class="hint">这台电脑上还没拉过。</p>`}
+    <div class="aifill">${ready?B({label:busy?"正在拉…报表生成要几分钟":"从接口拉一次",icon:"refresh",cls:"sm",on:busy?"":"adsPull()",perm:"连接口"})+`<span class="hint">会花紫鸟积分：建 3 份报表、每分钟问一轮进度、再读结构；只读，不改任何广告${C.圈了产品?"":"。还没圈产品（<code>ADS_SCOPE_ASINS</code>）：第一次只出产品清单"}</span>`:`<span class="hint">这台电脑还差：${need.join("；")}。写在 <code>agent/.env.local</code>（不进仓）。</span>`}</div></div>
+  <div class="card" id="pull-how"><h3>命令行怎么用</h3><div class="sub">页面上的按钮和这几条命令是同一件事</div><pre class="cmd">${h((D.命令||[]).join("\n"))}</pre></div>`}
+async function adsPull(){if(!confirm("现在从广告接口拉一次数据？\n\n会花紫鸟积分（建 3 份报表、每分钟问一轮进度、再读结构）。只读，不改任何广告。\n数据写到你在 agent/.env.local 里配的目录。"))return;try{await api("/api/ads/pull",{confirm:true});toast("开始拉了，报表生成要几分钟");await load()}catch(e){}}
+
 /* ───────── 动作 ───────── */
 async function load(){S=await api("/api/state");render()}
 async function act(no,status,reason){try{await api("/api/action/"+encodeURIComponent(no),{status,reason});UI.rejecting=null;await load()}catch(e){}}
@@ -1038,7 +1086,7 @@ async function runLoop(){try{await api("/api/run",{trigger:S.hasRun?"改输入�
     if(p.running){UI.cur=Math.min(6,(p.steps.at(-1)?.i||0)+1);render();return setTimeout(tick,350)}UI.playing=false;UI.cur=0;UI.opts=null;UI.sel=null;UI.agrp=null;await load();const ok=p.steps.every(s=>s.ok);
     toast(ok?"这一圈跑完了，停下来等你。首页有要你处理的事":"这一圈停下了：看红色那一格，首页有要你补的");if(!isDemo())setTimeout(()=>{if(UI.page==="agent"&&!UI.playing)go("home")},1500)};setTimeout(tick,300)}
 $("#run").onclick=runLoop;
-const Q=new URLSearchParams(location.search);if(Q.get("sel"))UI.sel=Q.get("sel");if(Q.get("hk"))UI.hk=+Q.get("hk");if(Q.get("tab"))UI.atab=Q.get("tab");if(Q.get("grp"))UI.agrp=Q.get("grp");if(Q.get("camp"))UI.camp=Q.get("camp");if(Q.get("goal"))UI.goalOpen=true;if(Q.get("wtab"))UI.whyTab=Q.get("wtab");if(Q.get("agtab"))UI.agTab=Q.get("agtab");
+const Q=new URLSearchParams(location.search);if(Q.get("sel"))UI.sel=Q.get("sel");if(Q.get("hk"))UI.hk=+Q.get("hk");if(Q.get("tab"))UI.atab=Q.get("tab");if(Q.get("grp"))UI.agrp=Q.get("grp");if(Q.get("camp"))UI.camp=Q.get("camp");if(Q.get("goal"))UI.goalOpen=true;if(Q.get("apitab"))UI.apiTab=Q.get("apitab");if(Q.get("wtab"))UI.whyTab=Q.get("wtab");if(Q.get("agtab"))UI.agTab=Q.get("agtab");
 const MAXR=+Q.get("rows")||0;   // 截图用：明细表只留前几行
 const ONLY=Q.get("only")?Q.get("only").split(","):null;   // 截图用：?shot=1 隐藏侧栏顶栏；?only=todo,band 只留这些块
 function shotMode(){if(!ONLY&&!Q.get("shot"))return;document.body.classList.add("shot");if(Q.get("focus")){const el=document.getElementById(Q.get("focus"));if(el){const app=document.getElementById("app");app.innerHTML="";el.style.margin="0";app.appendChild(el)}return}if(ONLY)document.querySelectorAll("#app > *").forEach(el=>{el.style.display=ONLY.includes(el.id)?"":"none"})}
